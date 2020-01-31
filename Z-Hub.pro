@@ -31,7 +31,12 @@ SOURCES += \
     tester.cpp \
     TinyXML2/tinyxml2.cpp \
     dlfcn-win32/dlfcn.c \
-    parser-ext.cpp
+    parser-ext.cpp \
+    Server/net-hub.cpp \
+    Server/proto-parser.cpp \
+    Server/proto-util.cpp \
+    Server/server.cpp \
+    Dialogs/message-dialog.cpp
 
 HEADERS += \
     main-window.h \
@@ -44,10 +49,19 @@ HEADERS += \
     pthread/include/semaphore.h \
     TinyXML2/tinyxml2.h \
     main-hub.h \
-    parser-ext.h
+    parser-ext.h \
+    Server/net-hub-defs.h \
+    Server/net-hub.h \
+    Server/proto-parser.h \
+    Server/proto-util.h \
+    Server/protocol.h \
+    Server/server.h \
+    z-hub-defs.h \
+    Dialogs/message-dialog.h
 
 FORMS += \
-    main-window.ui
+    main-window.ui \
+    Dialogs/message-dialog.ui
 
 RESOURCES += \
     resources.qrc

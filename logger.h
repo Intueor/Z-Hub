@@ -33,7 +33,7 @@
 #include <stdint.h>
 #include <time.h>
 #define	HAVE_STRUCT_TIMESPEC
-#include "../Z-Server/pthread/include/pthread.h"
+#include "../Z-Hub/pthread/include/pthread.h"
 #endif
 #ifdef LOG_LEVEL_2
 #include "tester.h"
