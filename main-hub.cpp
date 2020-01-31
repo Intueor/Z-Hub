@@ -54,6 +54,121 @@ gOk:    p_chNumber++;
 	return true;
 }
 
+// Заполнение структуры цифрового представления IP и порта из строк.
+void FillNumericStructWithIPPortStrs(NumericAddress& a_NumericAddress, const QString& a_strIP, const QString& a_strPort)
+{
+	int iNumHelper, iCount, iDiff;
+	QStringList l_strIPParts;
+	unsigned char uchP;
+	bool bIpSh;
+	//
+	a_NumericAddress.bIsCorrect = true;
+	if(a_strIP.contains('.'))
+	{
+		a_NumericAddress.bIsIPv4 = true;
+		l_strIPParts = a_strIP.split('.');
+		if(l_strIPParts.count() != 4)
+		{
+gE:         a_NumericAddress.bIsCorrect = false;
+			return;
+		}
+		for(unsigned char uchI = 0; uchI != 4; uchI++)
+		{
+			if(!IsStrInteger((char*)l_strIPParts[uchI].toStdString().c_str()))
+			{
+				goto gE;
+			}
+			iNumHelper = l_strIPParts[uchI].toInt();
+			if((iNumHelper < 0) || (iNumHelper > 255))
+			{
+				goto gE;
+			}
+			else
+			{
+				a_NumericAddress.iIPNrs[uchI] = iNumHelper;
+			}
+		}
+	}
+	else
+	{
+		if(a_strIP.contains(':'))
+		{
+			a_NumericAddress.bIsIPv4 = false;
+			l_strIPParts = a_strIP.split(':');
+			iCount = l_strIPParts.count();
+			if(iCount > 8)
+			{
+				goto gE;
+			}
+			iDiff = 9 - iCount;
+			uchP = 0;
+			bIpSh = false;
+			for(unsigned char uchI = 0; uchI != 8; uchI++)
+			{
+				if(l_strIPParts[uchP] == "")
+				{
+					if(uchP == iCount - 1)
+					{
+						a_NumericAddress.iIPNrs[uchI] = 0;
+						break;
+					}
+					if(bIpSh)
+					{
+						goto gE;
+					}
+					if(iDiff != 0)
+					{
+						a_NumericAddress.iIPNrs[uchI] = 0;
+						if(uchP == 0)
+						{
+							uchP++;
+							continue;
+						}
+						iDiff--;
+						if(iDiff == 0)
+						{
+							uchP++;
+							bIpSh = true;
+						}
+						continue;
+					}
+				}
+				if(!IsStrInteger((char*)l_strIPParts[uchP].toStdString().c_str(), true))
+				{
+					goto gE;
+				}
+				iNumHelper = l_strIPParts[uchP].toInt(nullptr, 16);
+				if((iNumHelper < 0) || (iNumHelper > 65535))
+				{
+					goto gE;
+				}
+				else
+				{
+					a_NumericAddress.iIPNrs[uchI] = iNumHelper;
+				}
+				uchP++;
+			}
+		}
+		else
+		{
+			goto gE;
+		}
+	}
+	if(!IsStrInteger((char*)a_strPort.toStdString().c_str()))
+	{
+		goto gE;
+	}
+	iNumHelper = a_strPort.toInt();
+	if((iNumHelper < 0) || (iNumHelper > 65535))
+	{
+		goto gE;
+	}
+	else
+	{
+		a_NumericAddress.iPort = iNumHelper;
+	}
+}
+
 // Создание уникального номера.
 unsigned long long GenerateID()
 {

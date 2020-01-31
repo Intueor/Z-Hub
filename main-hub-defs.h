@@ -1,6 +1,10 @@
 #ifndef MAINHUBDEFS_H
 #define MAINHUBDEFS_H
 
+//== КОНСТАНТЫ.
+const QString cstrStatusReady = "Ready";
+const QString cstrStatusShutdown = "Shutdown...";
+
 //== МАКРОСЫ.
 // Общее.
 #define DEF_CHAR_PTH(def)               &(_chpPH = def)

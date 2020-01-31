@@ -1,6 +1,7 @@
 #ifndef ZHUBDEFS_H
 #define ZHUBDEFS_H
 
-//== МАКРОСЫ.
+//== КОНСТАНТЫ.
+const QString cstrStatusStopServer = "Stop server...";
 
 #endif // ZHUBDEFS_H

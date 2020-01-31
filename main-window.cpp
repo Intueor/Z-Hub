@@ -12,10 +12,6 @@
 #define SERVER_WAITING_ATTEMPTS			128
 
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
-// Строки состояний.
-const QString MainWindow::cstrStatusReady = "Ready";
-const QString MainWindow::cstrStatusStopServer = "Stop server...";
-const QString MainWindow::cstrStatusShutdown = "Shutdown...";
 // Основное.
 LOGDECL_INIT_INCLASS(MainWindow)
 LOGDECL_INIT_PTHRD_INCLASS_OWN_ADD(MainWindow)
@@ -70,19 +66,12 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	{
 		LOG_P_0(LOG_CAT_W, "mainwidow_ui.ini is missing and will be created by default at the exit from program.");
 	}
-	if(!LoadBansCatalogue(vec_IPBanUnits))
-	{
-		LOG_P_0(LOG_CAT_E, "Can`t load bans catalogue.");
-		goto gEI;
-	}
+	if(!LoadBansCatalogue(vec_IPBanUnits)) goto gEI;
+	if(!LoadServerConfig(oIPPortPassword, m_chServerName)) goto gEI;
 	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
 	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
 	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
 	p_Server->SetClientRequestArrivedCB(ClientRequestArrivedCallback);
-	if(!LoadServerConfig(oIPPortPassword, m_chServerName))
-	{
-		goto gEI;
-	};
 	if(!ServerStartProcedures(oIPPortPassword, m_chServerName))
 	{
 gEI:	iInitRes = RETVAL_ERR;
@@ -94,8 +83,14 @@ gEI:	iInitRes = RETVAL_ERR;
 // Деструктор.
 MainWindow::~MainWindow()
 {
-	LCHECK_BOOL(ServerStopProcedures());
-	delete p_Server;
+	if(RETVAL == RETVAL_OK)
+	{
+		LOG_P_0(LOG_CAT_I, "EXIT.")
+	}
+	else
+	{
+		LOG_P_0(LOG_CAT_E, "EXIT WITH ERROR: " << RETVAL);
+	}
 	LOG_CLOSE;
 	delete p_ui;
 }
@@ -105,6 +100,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	p_QLabelStatusBarText->setText(cstrStatusShutdown);
 	p_ui->statusBar->repaint();
+	if(p_Server)
+	{
+		LCHECK_BOOL(ServerStopProcedures());
+		delete p_Server;
+	}
 	// Main.
 	p_UISettings->setValue("Geometry", saveGeometry());
 	p_UISettings->setValue("WindowState", saveState());

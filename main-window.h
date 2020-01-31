@@ -88,9 +88,6 @@ private:
 private slots:
 
 private:
-	static const QString cstrStatusReady; ///< Строка состояния.
-	static const QString cstrStatusStopServer; ///< Строка состояния.
-	static const QString cstrStatusShutdown; ///< Строка состояния.
 	LOGDECL
 	LOGDECL_PTHRD_INCLASS_ADD
 	static Ui::MainWindow *p_ui; ///< Указатель на UI.
