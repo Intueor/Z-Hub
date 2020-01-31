@@ -164,10 +164,9 @@ public:
 								///< \param[in,out] p_chIP Указатель на буфер имени IP.
 								///< \param[in,out] p_chPort Указатель на буфер имени порта.
 								///< \param[in] bTryLock Установить в false при использовании внутри кэлбэков.
-	/// Отказ от работы или принудительное отключение клиента.
-	static bool RejectOrWithdrawClient(int iConnection, bool bKick, bool bTryLock = true);
+	/// Принудительное отключение клиента.
+	static bool WithdrawClient(int iConnection, bool bTryLock = true);
 								///< \param[in] iConnection Номер соединения.
-								///< \param[in] bKick При true - выбросить клиента, при false - отключить.
 								///< \param[in] bTryLock Установить в false при использовании внутри кэлбэков.
 								///< \return true - при удаче.
 	/// Получение флага авторизованного соединения.

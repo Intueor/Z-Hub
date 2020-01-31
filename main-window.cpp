@@ -332,8 +332,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 		MSleep(USER_RESPONSE_MS);
 	}
 gSS:LOG_P_0(LOG_CAT_E, "Can`t start server.");
-	p_Message_Dialog = new Message_Dialog(tr("Ошибка").toStdString().c_str(),
-										  tr("Невозможно запустить сервер").toStdString().c_str());
+	p_Message_Dialog = new Message_Dialog(QString("Error").toStdString().c_str(), QString("Failed to start server").toStdString().c_str());
 	p_Message_Dialog->exec();
 	p_Message_Dialog->deleteLater();
 	return false;
@@ -363,8 +362,7 @@ bool MainWindow::ServerStopProcedures()
 			MSleep(USER_RESPONSE_MS);
 		}
 	gSB:LOG_P_0(LOG_CAT_E, "Can`t stop server.");
-		p_Message_Dialog = new Message_Dialog(tr("Ошибка").toStdString().c_str(),
-											  tr("Невозможно остановить сервер").toStdString().c_str());
+		p_Message_Dialog = new Message_Dialog(QString("Error").toStdString().c_str(), QString("Failed to stop server").toStdString().c_str());
 		p_Message_Dialog->exec();
 		p_Message_Dialog->deleteLater();
 		p_QLabelStatusBarText->setText(cstrStatusReady);

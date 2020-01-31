@@ -332,24 +332,15 @@ int Server::AccessSelectedTypeOfData(int iConnection, void** pp_vDataBuffer, uns
 	return NO_CONNECTION;
 }
 
-// Отказ от работы или принудительное отключение клиента.
-bool Server::RejectOrWithdrawClient(int iConnection, bool bKick, bool bTryLock)
+// Принудительное отключение клиента.
+bool Server::WithdrawClient(int iConnection, bool bTryLock)
 {
 	TryMutexInit;
 	bool bRetval = true;
-	int iMsg;
 	//
 	if(bTryLock) TryMutexLock;
-	mThreadDadas[iConnection].bKick = bKick; // Установка признака принудительного отключения.
-	if(bKick)
-	{
-		iMsg = PROTO_S_KICK; // Для сообщения клиенту о принудительном отключении.
-	}
-	else
-	{
-		iMsg = PROTO_S_UNSECURED; // Для сообщения клиенту об отсутствии авторизации.
-	}
-	if(SendToConnectionImmediately(iConnection, (char)iMsg, mThreadDadas[iConnection].bFullOnClient))
+	mThreadDadas[iConnection].bKick = true; // Установка признака принудительного отключения.
+	if(SendToConnectionImmediately(iConnection, (char)PROTO_S_KICK, mThreadDadas[iConnection].bFullOnClient))
 	{
 		if(bTryLock) TryMutexUnlock;
 		MSleep(WAITING_FOR_CLIENT_DSC);
@@ -359,15 +350,12 @@ bool Server::RejectOrWithdrawClient(int iConnection, bool bKick, bool bTryLock)
 	{
 		bRetval = false;
 	}
-	if(bKick)
-	{
 #ifndef WIN32
-		shutdown(mThreadDadas[iConnection].oConnectionData.iSocket, SHUT_RDWR);
-		close(mThreadDadas[iConnection].oConnectionData.iSocket);
+	shutdown(mThreadDadas[iConnection].oConnectionData.iSocket, SHUT_RDWR);
+	close(mThreadDadas[iConnection].oConnectionData.iSocket);
 #else
-		closesocket(mThreadDadas[iConnection].oConnectionData.iSocket);
+	closesocket(mThreadDadas[iConnection].oConnectionData.iSocket);
 #endif
-	}
 	if(bTryLock) TryMutexUnlock;
 	return bRetval;
 }
@@ -677,7 +665,6 @@ gDp:	mThreadDadas[iTPos].iCurrentFreePocket =
 							SendToConnectionImmediately(iTPos, PROTO_S_PASSW_ERR);
 							mThreadDadas[iTPos].bSecured = false;
 							LOG_P_0(LOG_CAT_W, "Authentification failed for ID: " << iTPos);
-							LCHECK_BOOL(RejectOrWithdrawClient(iTPos, false, false));
 						}
 						p_CurrentData->oProtocolStorage.Release();
 						p_CurrentData->bBusy = false;

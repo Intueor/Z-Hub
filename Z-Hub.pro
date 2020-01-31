@@ -23,7 +23,6 @@ win32 {
 DEFINES += WIN32 _WINDOWS _CRT_SECURE_NO_WARNINGS
 }
 
-
 SOURCES += \
     main.cpp \
     main-window.cpp \
