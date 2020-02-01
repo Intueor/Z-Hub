@@ -101,6 +101,7 @@ private:
 	static char m_chIP[IP_STR_LEN]; ///< Буфер под строку адреса.
 	static char m_chPort[PORT_STR_LEN]; ///< Буфер под строку порта.
 	static char m_chPassword[AUTH_PASSWORD_STR_LEN]; ///< Буфер под строку пароля.
+
 };
 
 #endif // MAINWINDOW_H

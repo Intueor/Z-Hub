@@ -2,8 +2,11 @@
 #define MAINHUBDEFS_H
 
 //== КОНСТАНТЫ.
-const QString cstrStatusReady = "Ready";
-const QString cstrStatusShutdown = "Shutdown...";
+const QString cstrMsgError = "Ошибка";
+const QString cstrMsgWarning = "Внимание";
+const QString cstrMsgInfo = "Информация";
+const QString cstrStatusReady = "Готов к работе";
+const QString cstrStatusShutdown = "Отключение...";
 
 //== МАКРОСЫ.
 // Общее.
@@ -19,5 +22,7 @@ const QString cstrStatusShutdown = "Shutdown...";
 #define ThrUiAccessE(element,func)              QMetaObject::invokeMethod(p_ui->element, #func, Qt::QueuedConnection)
 #define ThrUiAccessVT(element,func,type,value)  QMetaObject::invokeMethod(element, #func, Qt::QueuedConnection, Q_ARG(type, value))
 #define ThrUiAccessET(element,func)             QMetaObject::invokeMethod(element, #func, Qt::QueuedConnection)
+#define SetStatusBarText(qstring)				p_QLabelStatusBarText->setText(qstring);			\
+												p_ui->statusBar->repaint()
 
 #endif // MAINHUBDEFS_H

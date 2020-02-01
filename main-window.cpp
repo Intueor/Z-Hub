@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	p_UISettings = new QSettings(cp_chUISettingsName, QSettings::IniFormat);
 	p_ui->setupUi(this);
 	p_QLabelStatusBarText = new QLabel(this);
+	p_QLabelStatusBarText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 	p_ui->statusBar->addWidget(p_QLabelStatusBarText);
 	if(IsFileExists((char*)cp_chUISettingsName))
 	{
@@ -98,8 +99,7 @@ MainWindow::~MainWindow()
 // Процедуры при закрытии окна приложения.
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	p_QLabelStatusBarText->setText(cstrStatusShutdown);
-	p_ui->statusBar->repaint();
+	SetStatusBarText(cstrStatusShutdown);
 	if(p_Server)
 	{
 		LCHECK_BOOL(ServerStopProcedures());
@@ -317,6 +317,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 {
 	Message_Dialog* p_Message_Dialog;
 	//
+	SetStatusBarText(cstrStatusStartServer);
 	if(!p_Server->Start(&o_IPPortPassword, p_chServerName))
 	{
 		goto gSS;
@@ -325,8 +326,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 	{
 		if(p_Server->CheckServerAlive())
 		{
-			p_QLabelStatusBarText->setText(cstrStatusReady);
-			p_ui->statusBar->repaint();
+			SetStatusBarText(cstrStatusWorking);
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
@@ -345,8 +345,7 @@ bool MainWindow::ServerStopProcedures()
 	//
 	if(p_Server->CheckServerAlive())
 	{
-		p_QLabelStatusBarText->setText(cstrStatusStopServer);
-		p_ui->statusBar->repaint();
+		SetStatusBarText(cstrStatusStopServer);
 		if(!p_Server->Stop())
 		{
 			goto gSB;
@@ -355,8 +354,7 @@ bool MainWindow::ServerStopProcedures()
 		{
 			if(!p_Server->CheckServerAlive())
 			{
-				p_QLabelStatusBarText->setText(cstrStatusReady);
-				p_ui->statusBar->repaint();
+				SetStatusBarText(cstrStatusReady);
 				return true;
 			}
 			MSleep(USER_RESPONSE_MS);
@@ -365,8 +363,7 @@ bool MainWindow::ServerStopProcedures()
 		p_Message_Dialog = new Message_Dialog(QString("Error").toStdString().c_str(), QString("Failed to stop server").toStdString().c_str());
 		p_Message_Dialog->exec();
 		p_Message_Dialog->deleteLater();
-		p_QLabelStatusBarText->setText(cstrStatusReady);
-		p_ui->statusBar->repaint();
+		SetStatusBarText(cstrStatusWorking);
 		return false;
 	}
 	else return true;

@@ -2,6 +2,8 @@
 #define ZHUBDEFS_H
 
 //== КОНСТАНТЫ.
-const QString cstrStatusStopServer = "Stop server...";
+const QString cstrStatusStartServer = "Запуск сервера...";
+const QString cstrStatusWorking = "Включён";
+const QString cstrStatusStopServer = "Остановка сервера...";
 
 #endif // ZHUBDEFS_H
