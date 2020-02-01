@@ -15,9 +15,6 @@
 #include "main-hub.h"
 #include "z-hub-defs.h"
 
-//== МАКРОСЫ.
-#define LOG_DIR_PATH			"../Z-Hub/logs/"
-
 //== ПРОСТРАНСТВА ИМЁН.
 namespace Ui {
 	class MainWindow;

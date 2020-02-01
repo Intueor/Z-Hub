@@ -3,8 +3,8 @@
 #include <string.h>
 
 //== МАКРОСЫ.
-#define LOG_NAME				"Z-Server"
-#define LOG_DIR_PATH			"../Z-Server/logs/"
+#define LOG_NAME				"server"
+#define LOG_DIR_PATH			"../Z-Hub/logs/"
 
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 LOGDECL_INIT_INCLASS(Server)

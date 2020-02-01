@@ -5,11 +5,8 @@
 #include "Dialogs/message-dialog.h"
 
 //== МАКРОСЫ.
-#define LOG_NAME						"main-window"
-#define H_MAINWINDOW_UI_CONF_PATH       "../Z-Hub/settings/mainwindow_ui.ini"
-#define S_BANS_CAT_PATH					"../Z-Hub/settings/bans.xml"
-#define S_CONF_PATH                     "../Z-Hub/settings/server.xml"
-#define SERVER_WAITING_ATTEMPTS			128
+#define LOG_NAME				"main-window"
+#define LOG_DIR_PATH			"../Z-Hub/logs/"
 
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 // Основное.
