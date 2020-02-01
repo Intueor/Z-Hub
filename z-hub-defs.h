@@ -8,8 +8,7 @@
 #define SERVER_WAITING_ATTEMPTS			128
 
 //== КОНСТАНТЫ.
-const QString cstrStatusStartServer = "Запуск сервера...";
+// Многократно используемые строки.
 const QString cstrStatusWorking = "Включён";
-const QString cstrStatusStopServer = "Остановка сервера...";
 
 #endif // ZHUBDEFS_H

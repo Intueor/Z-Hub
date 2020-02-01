@@ -2,6 +2,7 @@
 #define MAINHUBDEFS_H
 
 //== КОНСТАНТЫ.
+// Многократно используемые строки.
 const QString cstrStatusReady = "Готов к работе";
 const QString cstrStatusShutdown = "Отключение...";
 

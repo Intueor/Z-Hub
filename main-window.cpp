@@ -314,7 +314,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 {
 	Message_Dialog* p_Message_Dialog;
 	//
-	SetStatusBarText(cstrStatusStartServer);
+	SetStatusBarText("Запуск сервера...");
 	if(!p_Server->Start(&o_IPPortPassword, p_chServerName))
 	{
 		goto gSS;
@@ -342,7 +342,7 @@ bool MainWindow::ServerStopProcedures()
 	//
 	if(p_Server->CheckServerAlive())
 	{
-		SetStatusBarText(cstrStatusStopServer);
+		SetStatusBarText("Остановка сервера...");
 		if(!p_Server->Stop())
 		{
 			goto gSB;
