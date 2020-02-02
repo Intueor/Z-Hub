@@ -82,6 +82,9 @@ private:
 	/// Процедуры остановки сервера.
 	static bool ServerStopProcedures();
 							///< \return true, при удаче.
+	/// Установка текста строки статуса.
+	static void SetStatusBarText(QString strMsg);
+							///< \param[in] strMsg Строка с сообщением.
 private slots:
 
 private:

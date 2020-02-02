@@ -16,7 +16,8 @@ CONFIG += no_batch
 }
 
 win32 {
-LIBS += ..\\Z-Editor\\pthread\\lib\\pthreadVC2.lib
+LIBS += ..\\Z-Hub\\pthread\\lib\\pthreadVC2.lib \
+	..\\Z-Hub\\win-libs\\Ws2_32.lib
 }
 
 win32 {
@@ -67,4 +68,5 @@ RESOURCES += \
 
 DISTFILES += \
     pthread/lib/pthreadVC2.lib \
-    pthread/dll/pthreadVC2.dll
+    pthread/dll/pthreadVC2.dll \
+    win-libs/WS2_32.Lib

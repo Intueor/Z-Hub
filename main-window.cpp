@@ -365,3 +365,10 @@ bool MainWindow::ServerStopProcedures()
 	}
 	else return true;
 }
+
+// Установка текста строки статуса.
+void MainWindow::SetStatusBarText(QString strMsg)
+{
+	p_QLabelStatusBarText->setText(strMsg);
+	p_ui->statusBar->repaint();
+}

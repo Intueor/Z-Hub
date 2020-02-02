@@ -16,7 +16,5 @@ const QString cstrStatusShutdown = "Отключение...";
 	dbframe.dbY = qreal.y();                                                                        \
 	dbframe.dbH = qreal.height();                                                                   \
 	dbframe.dbW = qreal.width();
-#define SetStatusBarText(qstring)				p_QLabelStatusBarText->setText(qstring);			\
-												p_ui->statusBar->repaint()
 
 #endif // MAINHUBDEFS_H
