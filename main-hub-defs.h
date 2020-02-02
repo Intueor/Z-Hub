@@ -5,6 +5,7 @@
 // Многократно используемые строки.
 const QString cstrStatusReady = "Готов к работе";
 const QString cstrStatusShutdown = "Отключение...";
+const QString cstrLogCorruptConf = "Configuration file is corrupt! ";
 
 //== МАКРОСЫ.
 // Общее.

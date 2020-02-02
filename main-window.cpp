@@ -168,7 +168,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	if(!FindChildNodes(xmlDocSConf.LastChild(), l_pName,
 					   "Name", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, "Configuration file is corrupt! No 'Name' node.");
+		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No 'Name' node.");
 		return false;
 	}
 	CopyStrArray((char*)l_pName.front()->FirstChild()->Value(), p_chServerName, SERVER_NAME_STR_LEN);
@@ -176,7 +176,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	if(!FindChildNodes(xmlDocSConf.LastChild(), l_pNet,
 					   "Net", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, "Configuration file is corrupt! No 'Net' node.");
+		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No 'Net' node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListServerIP, "IP",
@@ -199,7 +199,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, "Configuration file is corrupt! No '(Net)IP' node.");
+		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No '(Net)IP' node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListPort, "Port",
@@ -215,7 +215,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, "Configuration file is corrupt! No '(Net)Port' node.");
+		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No '(Net)Port' node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListPassword, "Password",
@@ -225,7 +225,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	} FIND_IN_CHILDLIST_END(p_ListPassword);
 	if(o_IPPortPassword.p_chPasswordNameBuffer == nullptr)
 	{
-		LOG_P_0(LOG_CAT_E, "Configuration file is corrupt! No 'Password' node.");
+		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No 'Password' node.");
 		return false;
 	}
 	else
