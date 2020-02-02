@@ -17,5 +17,8 @@ const QString cstrLogCorruptConf = "Configuration file is corrupt! ";
 	dbframe.dbY = qreal.y();                                                                        \
 	dbframe.dbH = qreal.height();                                                                   \
 	dbframe.dbW = qreal.width();
+// Диалоги.
+#define DIALOGS_ACCEPT                  0
+#define DIALOGS_REJECT                  -1
 
 #endif // MAINHUBDEFS_H
