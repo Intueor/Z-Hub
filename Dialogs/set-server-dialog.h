@@ -2,9 +2,9 @@
 #define SET_SERVER_DIALOG_H
 
 //== ВКЛЮЧЕНИЯ.
-#include "../Z-Server/main-hub.h"
-#include "../Z-Server/Server/protocol.h"
 #include <QDialog>
+#include "../Z-Hub/Server/net-hub-defs.h"
+#include "../Z-Hub/main-hub.h"
 
 //== ПРОСТРАНСТВА ИМЁН.
 namespace Ui {

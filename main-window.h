@@ -87,6 +87,8 @@ private slots:
 	/// При переключении кнопки 'Запуск при входе в приложение'.
 	void on_action_StartOnLaunch_triggered(bool checked);
 							///< \param[in] checked Позиция переключателя.
+	/// При нажатии кнопки 'Имя сервера'.
+	void on_action_ServerName_triggered();
 
 public:
 	static int iInitRes; ///< Результат инициализации.

@@ -1,9 +1,9 @@
 #ifndef PROTO_UTIL_H
 #define PROTO_UTIL_H
 
-//== МАКРОСЫ.
-#define SERVER_NAME_STR_LEN		64
-#define AUTH_PASSWORD_STR_LEN	64
+//== ВКЛЮЧЕНИЯ.
+#include "net-hub-defs.h"
+
 // Утиль.
 #define _PPControlSize(name)			iSizeOfStructure = (int)sizeof(name);													\
 										if(iSizeOfStructure < iCurrentLength)                                                   \

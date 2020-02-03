@@ -3,6 +3,7 @@
 #include "main-window.h"
 #include "ui_main-window.h"
 #include "Dialogs/message-dialog.h"
+#include "Dialogs/set-name-dialog.h"
 
 //== МАКРОСЫ.
 #define LOG_NAME				"main-window"
@@ -244,6 +245,37 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	return true;
 }
 
+// Сохранение конфигурации сервера.
+bool MainWindow::SaveServerConfig()
+{
+	XMLError eResult;
+	tinyxml2::XMLDocument xmlServerConf;
+	XMLNode* p_NodeRoot;
+	XMLNode* p_NodeName;
+	XMLNode* p_NodeNet;
+	XMLNode* p_NodeIP;
+	XMLNode* p_NodePort;
+	XMLNode* p_NodePassword;
+	//
+	xmlServerConf.InsertEndChild(xmlServerConf.NewDeclaration());
+	p_NodeRoot = xmlServerConf.InsertEndChild(xmlServerConf.NewElement("Root"));
+	p_NodeName = p_NodeRoot->InsertEndChild(xmlServerConf.NewElement("Name"));
+	p_NodeName->ToElement()->SetText(m_chServerName);
+	p_NodeNet = p_NodeRoot->InsertEndChild(xmlServerConf.NewElement("Net"));
+	p_NodeIP = p_NodeNet->InsertEndChild(xmlServerConf.NewElement("IP"));
+	p_NodeIP->ToElement()->SetText(oIPPortPassword.p_chIPNameBuffer);
+	p_NodePort = p_NodeNet->InsertEndChild(xmlServerConf.NewElement("Port"));
+	p_NodePort->ToElement()->SetText(oIPPortPassword.p_chPortNameBuffer);
+	p_NodePassword = p_NodeNet->InsertEndChild(xmlServerConf.NewElement("Password"));
+	p_NodePassword->ToElement()->SetText(oIPPortPassword.p_chPasswordNameBuffer);
+	eResult = xmlServerConf.SaveFile(S_CONF_PATH);
+	if (eResult != XML_SUCCESS)
+	{
+		LOG_P_0(LOG_CAT_E, "Can`t save server configuration.");
+		return false;
+	}
+	return true;
+}
 
 // Кэлбэк обработки отслеживания статута клиентов.
 void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
@@ -402,4 +434,18 @@ void MainWindow::on_action_StartStop_triggered(bool checked)
 void MainWindow::on_action_StartOnLaunch_triggered(bool checked)
 {
 	 p_UISettings->setValue("AutostartServer", checked);
+}
+
+// При нажатии кнопки 'Имя сервера'.
+void MainWindow::on_action_ServerName_triggered()
+{
+	Set_Name_Dialog* p_Set_Name_Dialog;
+	//
+	p_Set_Name_Dialog = new Set_Name_Dialog(m_chServerName);
+	if(p_Set_Name_Dialog->exec() == DIALOGS_ACCEPT)
+	{
+		LCHECK_BOOL(SaveServerConfig());
+		LOG_P_0(LOG_CAT_I, "Server configuration is updated.");
+		LOG_P_1(LOG_CAT_I, "Server name: " << m_chServerName);
+	}
 }

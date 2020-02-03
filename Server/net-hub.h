@@ -13,9 +13,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #endif
-#include "../logger.h"
+#include "../Z-Hub/logger.h"
 #include "proto-parser.h"
-#include "../Server/net-hub-defs.h"
+#include "net-hub-defs.h"
 
 //== МАКРОСЫ.
 #define TryMutexInit			int* p_iLocked = 0;

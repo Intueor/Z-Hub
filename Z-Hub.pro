@@ -25,6 +25,7 @@ DEFINES += WIN32 _WINDOWS _CRT_SECURE_NO_WARNINGS
 }
 
 SOURCES += \
+    Dialogs/set-name-dialog.cpp \
     Dialogs/set-server-dialog.cpp \
     main.cpp \
     main-window.cpp \
@@ -40,6 +41,7 @@ SOURCES += \
     Dialogs/message-dialog.cpp
 
 HEADERS += \
+    Dialogs/set-name-dialog.h \
     Dialogs/set-server-dialog.h \
     main-window.h \
     logger.h \
@@ -62,6 +64,7 @@ HEADERS += \
     Dialogs/message-dialog.h
 
 FORMS += \
+    Dialogs/set-name-dialog.ui \
     Dialogs/set-server-dialog.ui \
     main-window.ui \
     Dialogs/message-dialog.ui

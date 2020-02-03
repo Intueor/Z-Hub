@@ -2,6 +2,13 @@
 #define NETHUBDEFS_H
 
 //== МАКРОСЫ.
+#define MSG_STR_LEN				128
+#define SCH_OBJ_NAME_STR_LEN    64
+#define WORLD_FILENAME_STR_LEN	64
+#define _NMG					-32768		// !!! Текущий свободный номер _NMG-9 !!!
+#define PROTOCOL_CODE			314159265358
+#define SERVER_NAME_STR_LEN		64
+#define AUTH_PASSWORD_STR_LEN	64
 #define INTERFACE_RESPONSE_MS       10
 #define USER_RESPONSE_MS            100
 #define WAITING_FOR_CLIENT_DSC      1000
