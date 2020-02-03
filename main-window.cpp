@@ -58,23 +58,31 @@ MainWindow::MainWindow(QWidget* p_parent) :
 			LOG_P_1(LOG_CAT_E, "Can`t restore WindowState UI state.");
 			RETVAL_SET(RETVAL_ERR);
 		}
-		// Other.
 	}
 	else
 	{
 		LOG_P_0(LOG_CAT_W, "mainwidow_ui.ini is missing and will be created by default at the exit from program.");
 	}
 	if(!LoadBansCatalogue(vec_IPBanUnits)) goto gEI;
-	if(!LoadServerConfig(oIPPortPassword, m_chServerName)) goto gEI;
-	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
-	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
-	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
-	p_Server->SetClientRequestArrivedCB(ClientRequestArrivedCallback);
-	if(!ServerStartProcedures(oIPPortPassword, m_chServerName))
+	if(!LoadServerConfig(oIPPortPassword, m_chServerName))
 	{
 gEI:	iInitRes = RETVAL_ERR;
 		RETVAL_SET(RETVAL_ERR);
 		return;
+	}
+	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
+	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
+	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
+	p_Server->SetClientRequestArrivedCB(ClientRequestArrivedCallback);
+	if(p_UISettings->value("AutostartServer").toBool())
+	{
+		p_ui->action_StartOnLaunch->setChecked(true);
+		p_ui->action_StartStop->setChecked(true);
+		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword, m_chServerName));
+	}
+	else
+	{
+		SetStatusBarText(cstrStatusReady);
 	}
 }
 
@@ -314,6 +322,8 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 {
 	Message_Dialog* p_Message_Dialog;
 	//
+	p_ui->action_ServerName->setDisabled(true);
+	p_ui->action_ServerSettings->setDisabled(true);
 	SetStatusBarText("Запуск сервера...");
 	if(!p_Server->Start(&o_IPPortPassword, p_chServerName))
 	{
@@ -329,7 +339,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 		MSleep(USER_RESPONSE_MS);
 	}
 gSS:LOG_P_0(LOG_CAT_E, "Can`t start server.");
-	p_Message_Dialog = new Message_Dialog(QString("Error").toStdString().c_str(), QString("Failed to start server").toStdString().c_str());
+	p_Message_Dialog = new Message_Dialog(cstrMsgError.toStdString().c_str(), QString("Failed to start server").toStdString().c_str());
 	p_Message_Dialog->exec();
 	p_Message_Dialog->deleteLater();
 	return false;
@@ -352,12 +362,14 @@ bool MainWindow::ServerStopProcedures()
 			if(!p_Server->CheckServerAlive())
 			{
 				SetStatusBarText(cstrStatusReady);
+				p_ui->action_ServerName->setDisabled(false);
+				p_ui->action_ServerSettings->setDisabled(false);
 				return true;
 			}
 			MSleep(USER_RESPONSE_MS);
 		}
 	gSB:LOG_P_0(LOG_CAT_E, "Can`t stop server.");
-		p_Message_Dialog = new Message_Dialog(QString("Error").toStdString().c_str(), QString("Failed to stop server").toStdString().c_str());
+		p_Message_Dialog = new Message_Dialog(cstrMsgError.toStdString().c_str(), QString("Failed to stop server").toStdString().c_str());
 		p_Message_Dialog->exec();
 		p_Message_Dialog->deleteLater();
 		SetStatusBarText(cstrStatusWorking);
@@ -371,4 +383,23 @@ void MainWindow::SetStatusBarText(QString strMsg)
 {
 	p_QLabelStatusBarText->setText(strMsg);
 	p_ui->statusBar->repaint();
+}
+
+// При переключении кнопки 'Запуск \ остановка сервера'.
+void MainWindow::on_action_StartStop_triggered(bool checked)
+{
+	if(checked)
+	{
+		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword, m_chServerName));
+	}
+	else
+	{
+		LCHECK_BOOL(ServerStopProcedures());
+	}
+}
+
+// При переключении кнопки 'Запуск при входе в приложение'.
+void MainWindow::on_action_StartOnLaunch_triggered(bool checked)
+{
+	 p_UISettings->setValue("AutostartServer", checked);
 }

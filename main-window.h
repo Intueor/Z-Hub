@@ -32,11 +32,6 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-private:
-
-public:
-	static int iInitRes; ///< Результат инициализации.
-
 public:
 	/// Конструктор.
 	explicit MainWindow(QWidget* p_parent = nullptr);
@@ -86,6 +81,15 @@ private:
 	static void SetStatusBarText(QString strMsg);
 							///< \param[in] strMsg Строка с сообщением.
 private slots:
+	// При переключении кнопки 'Запуск \ остановка сервера'.
+	void on_action_StartStop_triggered(bool checked);
+							///< \param[in] checked Позиция переключателя.
+	/// При переключении кнопки 'Запуск при входе в приложение'.
+	void on_action_StartOnLaunch_triggered(bool checked);
+							///< \param[in] checked Позиция переключателя.
+
+public:
+	static int iInitRes; ///< Результат инициализации.
 
 private:
 	LOGDECL
@@ -101,8 +105,6 @@ private:
 	static char m_chIP[IP_STR_LEN]; ///< Буфер под строку адреса.
 	static char m_chPort[PORT_STR_LEN]; ///< Буфер под строку порта.
 	static char m_chPassword[AUTH_PASSWORD_STR_LEN]; ///< Буфер под строку пароля.
-
 };
 
 #endif // MAINWINDOW_H
-

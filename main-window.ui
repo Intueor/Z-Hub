@@ -27,8 +27,44 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Сеть</string>
+    </property>
+    <addaction name="action_StartStop"/>
+    <addaction name="action_StartOnLaunch"/>
+    <addaction name="action_ServerName"/>
+    <addaction name="action_ServerSettings"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_StartStop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Запуск \ остановка сервера</string>
+   </property>
+  </action>
+  <action name="action_StartOnLaunch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Запуск при входе в приложение</string>
+   </property>
+  </action>
+  <action name="action_ServerName">
+   <property name="text">
+    <string>Имя сервера</string>
+   </property>
+  </action>
+  <action name="action_ServerSettings">
+   <property name="text">
+    <string>Основные параметры сервера</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
