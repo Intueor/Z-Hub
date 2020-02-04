@@ -13,7 +13,7 @@
 #define USER_RESPONSE_MS            100
 #define WAITING_FOR_CLIENT_DSC      1000
 #define WAITING_FOR_SRV_STEP		1000
-#define MAX_CONN                    2
+#define MAX_CONN                    1
 #define NO_CONNECTION               _NMG-5 // См. protocol.h для занятия нового свободного номера.
 #define S_MAX_STORED_POCKETS		64
 #define C_MAX_STORED_POCKETS		64

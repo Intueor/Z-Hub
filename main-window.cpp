@@ -298,6 +298,14 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 		{
 			LOG_P_0(LOG_CAT_I, "IP: [" << m_chIPNameBuffer << "] Port: " << m_chPortNameBuffer);
 		}
+		if(bConnected)
+		{
+			p_ui->label_ConnectedClient->setText(QString(m_chIPNameBuffer) + ":" + QString(m_chPortNameBuffer));
+		}
+		else
+		{
+			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
+		}
 	}
 	else
 	{
@@ -367,6 +375,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 		if(p_Server->CheckServerAlive())
 		{
 			SetStatusBarText(m_chStatusWorking);
+			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
@@ -401,6 +410,7 @@ bool MainWindow::ServerStopProcedures()
 				SetStatusBarText(m_chStatusReady);
 				p_ui->action_ServerName->setDisabled(false);
 				p_ui->action_ServerSettings->setDisabled(false);
+				p_ui->label_ConnectedClient->clear();
 				return true;
 			}
 			MSleep(USER_RESPONSE_MS);

@@ -10,5 +10,6 @@
 //== КОНСТАНТЫ.
 // Многократно используемые строки.
 const char m_chStatusWorking[] = "Включён";
+const char m_chClientLabelWaiting[] = "Ожидается";
 
 #endif // ZHUBDEFS_H
