@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	qRegisterMetaType<QVector<int>>("QVector<int>");
 	//
 	LOG_CTRL_INIT;
-	LOG_P_0(LOG_CAT_I, "START.");
+	LOG_P_0(LOG_CAT_I, m_chLogStart);
 	iInitRes = RETVAL_OK;
 	p_UISettings = new QSettings(cp_chUISettingsName, QSettings::IniFormat);
 	p_ui->setupUi(this);
@@ -46,24 +46,24 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	p_ui->statusBar->addWidget(p_QLabelStatusBarText);
 	if(IsFileExists((char*)cp_chUISettingsName))
 	{
-		LOG_P_2(LOG_CAT_I, "Restore UI states.");
+		LOG_P_2(LOG_CAT_I, m_chLogRestoreUI);
 		// Splitters.
 
 		// MainWidow.
 		if(!restoreGeometry(p_UISettings->value("Geometry").toByteArray()))
 		{
-			LOG_P_1(LOG_CAT_E, "Can`t restore Geometry UI state.");
+			LOG_P_1(LOG_CAT_E, m_chLogNoGeometryState);
 			RETVAL_SET(RETVAL_ERR);
 		}
 		if(!restoreState(p_UISettings->value("WindowState").toByteArray()))
 		{
-			LOG_P_1(LOG_CAT_E, "Can`t restore WindowState UI state.");
+			LOG_P_1(LOG_CAT_E, m_chLogNoWindowState);
 			RETVAL_SET(RETVAL_ERR);
 		}
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_W, "mainwidow_ui.ini is missing and will be created by default at the exit from program.");
+		LOG_P_0(LOG_CAT_W, m_chLogMainWindowIniAbsent);
 	}
 	if(!LoadBansCatalogue(vec_IPBanUnits)) goto gEI;
 	if(!LoadServerConfig(oIPPortPassword, m_chServerName))
@@ -84,7 +84,7 @@ gEI:	iInitRes = RETVAL_ERR;
 	}
 	else
 	{
-		SetStatusBarText(cstrStatusReady);
+		SetStatusBarText(m_chStatusReady);
 	}
 }
 
@@ -93,11 +93,11 @@ MainWindow::~MainWindow()
 {
 	if(RETVAL == RETVAL_OK)
 	{
-		LOG_P_0(LOG_CAT_I, "EXIT.")
+		LOG_P_0(LOG_CAT_I, m_chLogExit)
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, "EXIT WITH ERROR: " << RETVAL);
+		LOG_P_0(LOG_CAT_E, m_chLogErrorExit << RETVAL);
 	}
 	LOG_CLOSE;
 	delete p_ui;
@@ -106,7 +106,7 @@ MainWindow::~MainWindow()
 // Процедуры при закрытии окна приложения.
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	SetStatusBarText(cstrStatusShutdown);
+	SetStatusBarText(m_chStatusShutdown);
 	if(p_Server)
 	{
 		LCHECK_BOOL(ServerStopProcedures());
@@ -131,14 +131,14 @@ bool MainWindow::LoadBansCatalogue(vector<Server::IPBanUnit>& o_vec_IPBanUnits)
 	eResult = xmlDocBans.LoadFile(S_BANS_CAT_PATH);
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, "Can`t open bans catalogue file: " << S_BANS_CAT_PATH);
+		LOG_P_0(LOG_CAT_E, m_chLogCantOpen << "bans catalogue file: " << S_BANS_CAT_PATH);
 		return false;
 	}
-	LOG_P_1(LOG_CAT_I, "Bans catalogue is loaded.");
+	LOG_P_1(LOG_CAT_I, "Bans catalogue" << m_chLogIsLoaded);
 	if(!FindChildNodes(xmlDocBans.LastChild(), l_pIPBans,
 					   "IPBans", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, "Bans catalogue file is corrupt. 'IPBans' node is absend.");
+		LOG_P_0(LOG_CAT_E, m_chLogBansCorrupt << "'IPBans' node is absend.");
 		return false;
 	}
 	PARSE_CHILDLIST(l_pIPBans.front(), p_ListIPs, "IP",
@@ -147,7 +147,7 @@ bool MainWindow::LoadBansCatalogue(vector<Server::IPBanUnit>& o_vec_IPBanUnits)
 		strHelper = QString(p_NodeIP->FirstChild()->Value());
 		if(strHelper.isEmpty())
 		{
-			LOG_P_2(LOG_CAT_I, "Bans catalogue file is corrupt. 'IP' node is empty.");
+			LOG_P_2(LOG_CAT_I, m_chLogBansCorrupt << "'IP' node is empty.");
 			return false;
 		}
 		memcpy(oIPBanUnit.m_chIP,
@@ -171,14 +171,14 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	eResult = xmlDocSConf.LoadFile(S_CONF_PATH);
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, "Can`t open configuration file: " << S_CONF_PATH);
+		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << S_CONF_PATH);
 		return false;
 	}
-	LOG_P_1(LOG_CAT_I, "Configuration is loaded.");
+	LOG_P_1(LOG_CAT_I, "Configuration" << m_chLogIsLoaded);
 	if(!FindChildNodes(xmlDocSConf.LastChild(), l_pName,
 					   "Name", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No 'Name' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No 'Name' node.");
 		return false;
 	}
 	CopyStrArray((char*)l_pName.front()->FirstChild()->Value(), p_chServerName, SERVER_NAME_STR_LEN);
@@ -186,7 +186,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	if(!FindChildNodes(xmlDocSConf.LastChild(), l_pNet,
 					   "Net", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No 'Net' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No 'Net' node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListServerIP, "IP",
@@ -209,7 +209,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No '(Net)IP' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No '(Net)IP' node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListPort, "Port",
@@ -225,7 +225,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No '(Net)Port' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No '(Net)Port' node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListPassword, "Password",
@@ -235,7 +235,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	} FIND_IN_CHILDLIST_END(p_ListPassword);
 	if(o_IPPortPassword.p_chPasswordNameBuffer == nullptr)
 	{
-		LOG_P_0(LOG_CAT_E, cstrLogCorruptConf.toStdString() << "No 'Password' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No 'Password' node.");
 		return false;
 	}
 	else
@@ -272,7 +272,7 @@ bool MainWindow::SaveServerConfig()
 	eResult = xmlServerConf.SaveFile(S_CONF_PATH);
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, "Can`t save server configuration.");
+		LOG_P_0(LOG_CAT_E, m_chLogCantSave << "server configuration.");
 		return false;
 	}
 	return true;
@@ -366,15 +366,19 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 	{
 		if(p_Server->CheckServerAlive())
 		{
-			SetStatusBarText(cstrStatusWorking);
+			SetStatusBarText(m_chStatusWorking);
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
 	}
-gSS:LOG_P_0(LOG_CAT_E, "Can`t start server.");
-	p_Message_Dialog = new Message_Dialog(cstrMsgError.toStdString().c_str(), QString("Failed to start server").toStdString().c_str());
+gSS:LOG_P_0(LOG_CAT_E, m_chLogCantStart << "server.");
+	p_Message_Dialog = new Message_Dialog(m_chMsgError, "Невозможно запустить сервер");
 	p_Message_Dialog->exec();
 	p_Message_Dialog->deleteLater();
+	SetStatusBarText(m_chStatusReady);
+	p_ui->action_StartStop->setChecked(false);
+	p_ui->action_ServerName->setDisabled(false);
+	p_ui->action_ServerSettings->setDisabled(false);
 	return false;
 }
 
@@ -394,18 +398,18 @@ bool MainWindow::ServerStopProcedures()
 		{
 			if(!p_Server->CheckServerAlive())
 			{
-				SetStatusBarText(cstrStatusReady);
+				SetStatusBarText(m_chStatusReady);
 				p_ui->action_ServerName->setDisabled(false);
 				p_ui->action_ServerSettings->setDisabled(false);
 				return true;
 			}
 			MSleep(USER_RESPONSE_MS);
 		}
-	gSB:LOG_P_0(LOG_CAT_E, "Can`t stop server.");
-		p_Message_Dialog = new Message_Dialog(cstrMsgError.toStdString().c_str(), QString("Failed to stop server").toStdString().c_str());
+	gSB:LOG_P_0(LOG_CAT_E, m_chLogCantStop << "server.");
+		p_Message_Dialog = new Message_Dialog(m_chMsgError, "Невозможно остановить сервер");
 		p_Message_Dialog->exec();
 		p_Message_Dialog->deleteLater();
-		SetStatusBarText(cstrStatusWorking);
+		SetStatusBarText(m_chStatusWorking);
 		return false;
 	}
 	else return true;
@@ -446,7 +450,7 @@ void MainWindow::on_action_ServerName_triggered()
 	if(p_Set_Name_Dialog->exec() == DIALOGS_ACCEPT)
 	{
 		LCHECK_BOOL(SaveServerConfig());
-		LOG_P_0(LOG_CAT_I, "Server configuration is updated.");
+		LOG_P_0(LOG_CAT_I, m_chLogServerUpdated);
 		LOG_P_1(LOG_CAT_I, "Server name: " << m_chServerName);
 	}
 }
@@ -466,7 +470,7 @@ gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
 										Set_Server_Dialog::oIPPortPasswordStrings.strPort);
 		if(!oNumericAddress.bIsCorrect)
 		{
-			p_Message_Dialog = new Message_Dialog(cstrMsgError.toStdString().c_str(), "Неверные данные адрес/порт");
+			p_Message_Dialog = new Message_Dialog(m_chMsgError, m_chMsgWrongIPPort);
 			p_Message_Dialog->exec();
 			p_Message_Dialog->deleteLater();
 			goto gA;
@@ -475,7 +479,7 @@ gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
 		CopyStrArray((char*)Set_Server_Dialog::oIPPortPasswordStrings.strPort.toStdString().c_str(), m_chPort, PORT_STR_LEN);
 		CopyStrArray((char*)Set_Server_Dialog::oIPPortPasswordStrings.strPassword.toStdString().c_str(), m_chPassword, AUTH_PASSWORD_STR_LEN);
 		LCHECK_BOOL(SaveServerConfig());
-		LOG_P_0(LOG_CAT_I, "Server configuration is updated.");
+		LOG_P_0(LOG_CAT_I, m_chLogServerUpdated);
 		LOG_P_1(LOG_CAT_I, "Server IP: " << oIPPortPassword.p_chIPNameBuffer);
 		LOG_P_1(LOG_CAT_I, "Server port: " << oIPPortPassword.p_chPortNameBuffer);
 	}

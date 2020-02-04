@@ -9,6 +9,6 @@
 
 //== КОНСТАНТЫ.
 // Многократно используемые строки.
-const QString cstrStatusWorking = "Включён";
+const char m_chStatusWorking[] = "Включён";
 
 #endif // ZHUBDEFS_H
