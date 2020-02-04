@@ -104,19 +104,28 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="menu_Net">
     <property name="title">
      <string>Сеть</string>
     </property>
-    <addaction name="action_StartStop"/>
-    <addaction name="action_StartOnLaunch"/>
+    <addaction name="action_StartStopServer"/>
+    <addaction name="action_StartOnLaunchApp"/>
     <addaction name="action_ServerName"/>
     <addaction name="action_ServerSettings"/>
    </widget>
-   <addaction name="menu"/>
+   <widget class="QMenu" name="menu_Env">
+    <property name="title">
+     <string>Среда</string>
+    </property>
+    <addaction name="action_StartStopEnv"/>
+    <addaction name="action_StartOnLaunchServer"/>
+    <addaction name="action_EnvName"/>
+   </widget>
+   <addaction name="menu_Net"/>
+   <addaction name="menu_Env"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action_StartStop">
+  <action name="action_StartStopServer">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -124,7 +133,7 @@
     <string>Запуск \ остановка сервера</string>
    </property>
   </action>
-  <action name="action_StartOnLaunch">
+  <action name="action_StartOnLaunchApp">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -140,6 +149,21 @@
   <action name="action_ServerSettings">
    <property name="text">
     <string>Основные параметры сервера</string>
+   </property>
+  </action>
+  <action name="action_StartStopEnv">
+   <property name="text">
+    <string>Старт \ стоп среды</string>
+   </property>
+  </action>
+  <action name="action_StartOnLaunchServer">
+   <property name="text">
+    <string>Старт при запуске сервера</string>
+   </property>
+  </action>
+  <action name="action_EnvName">
+   <property name="text">
+    <string>Имя среды</string>
    </property>
   </action>
  </widget>

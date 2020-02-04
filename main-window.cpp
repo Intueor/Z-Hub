@@ -78,8 +78,8 @@ gEI:	iInitRes = RETVAL_ERR;
 	p_Server->SetClientRequestArrivedCB(ClientRequestArrivedCallback);
 	if(p_UISettings->value("AutostartServer").toBool())
 	{
-		p_ui->action_StartOnLaunch->setChecked(true);
-		p_ui->action_StartStop->setChecked(true);
+		p_ui->action_StartOnLaunchApp->setChecked(true);
+		p_ui->action_StartStopServer->setChecked(true);
 		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword, m_chServerName));
 	}
 	else
@@ -385,7 +385,7 @@ gSS:LOG_P_0(LOG_CAT_E, m_chLogCantStart << "server.");
 	p_Message_Dialog->exec();
 	p_Message_Dialog->deleteLater();
 	SetStatusBarText(m_chStatusReady);
-	p_ui->action_StartStop->setChecked(false);
+	p_ui->action_StartStopServer->setChecked(false);
 	p_ui->action_ServerName->setDisabled(false);
 	p_ui->action_ServerSettings->setDisabled(false);
 	return false;
