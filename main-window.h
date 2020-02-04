@@ -89,6 +89,8 @@ private slots:
 							///< \param[in] checked Позиция переключателя.
 	/// При нажатии кнопки 'Имя сервера'.
 	void on_action_ServerName_triggered();
+	/// При нажатии кнопки 'Основные параметры сервера'.
+	void on_action_ServerSettings_triggered();
 
 public:
 	static int iInitRes; ///< Результат инициализации.
@@ -102,7 +104,7 @@ private:
 	static QLabel* p_QLabelStatusBarText; ///< Указатель на объект метки статуса.
 	static Server* p_Server; ///< Ссылка на объект сервера.
 	static vector<Server::IPBanUnit> vec_IPBanUnits; ///< Список банов по адресам.
-	static NetHub::IPPortPassword oIPPortPassword; ///< Структура со строками с установками сервера.
+	static NetHub::IPPortPassword oIPPortPassword; ///< Структура со указателями на строки с установками сервера.
 	static char m_chServerName[SERVER_NAME_STR_LEN]; ///< Буфер под строку с именем сервера.
 	static char m_chIP[IP_STR_LEN]; ///< Буфер под строку адреса.
 	static char m_chPort[PORT_STR_LEN]; ///< Буфер под строку порта.

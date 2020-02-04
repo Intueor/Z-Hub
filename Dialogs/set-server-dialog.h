@@ -18,17 +18,12 @@ class Set_Server_Dialog : public QDialog
 	Q_OBJECT
 
 public:
-	/// Структура комбинации числовых данных адреса, порта и строки с паролем.
-	struct NumAddrPassw
-	{
-		NumericAddress oNumericAddress; // Структура с данными и статусом операции.
-		char m_chPassword[AUTH_PASSWORD_STR_LEN]; // Массив строки пароля.
-	};
 	/// Структура со строками IP и порта.
-	struct IPPortStrings
+	struct IPPortPasswordStrings
 	{
 		QString strIP; ///< Строка с введённым IP.
 		QString strPort; ///< Строка с введённым портом.
+		QString strPassword; ///< Строка с паролем.
 	};
 
 public:
@@ -40,12 +35,6 @@ public:
 											///< \param[in] p_parent - Указатель на родительский виджет.
 	/// Деструктор.
 	~Set_Server_Dialog();
-	/// Получение ссылки на принятые данные IP, порта и пароля.
-	static NumAddrPassw &GetReceivedValues();
-											///< \return Ссылка на структуру с данными и статусом операции.
-	// Получение ссылки на принятые строки IP и порта.
-	static IPPortStrings &GetReceivedIPPortStrings();
-											///< \return Ссылка на структуру со строками.
 
 private slots:
 	/// Принято.
@@ -53,10 +42,11 @@ private slots:
 	/// Отменено.
 	void reject();
 
+public:
+	static IPPortPasswordStrings oIPPortPasswordStrings; ///< Объект со строками IP и порта.
+
 private:
-	static IPPortStrings oIPPortStrings; ///< Объект со строками IP и порта.
 	Ui::Set_Server_Dialog* p_ui; ///< Указатель на UI.
-	static NumAddrPassw oNumAddrPassw; ///< Объект структуры комбинации числовых данных адреса, порта и строки с паролем.
 };
 
 #endif // SET_SERVER_DIALOG_H

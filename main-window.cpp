@@ -4,6 +4,7 @@
 #include "ui_main-window.h"
 #include "Dialogs/message-dialog.h"
 #include "Dialogs/set-name-dialog.h"
+#include "Dialogs/set-server-dialog.h"
 
 //== МАКРОСЫ.
 #define LOG_NAME				"main-window"
@@ -447,5 +448,35 @@ void MainWindow::on_action_ServerName_triggered()
 		LCHECK_BOOL(SaveServerConfig());
 		LOG_P_0(LOG_CAT_I, "Server configuration is updated.");
 		LOG_P_1(LOG_CAT_I, "Server name: " << m_chServerName);
+	}
+}
+
+// При нажатии кнопки 'Основные параметры сервера'.
+void MainWindow::on_action_ServerSettings_triggered()
+{
+	Set_Server_Dialog* p_Set_Server_Dialog;
+	Message_Dialog* p_Message_Dialog;
+	NumericAddress oNumericAddress;
+	//
+gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
+	p_Set_Server_Dialog->deleteLater();
+	if(p_Set_Server_Dialog->exec() == DIALOGS_ACCEPT)
+	{
+		FillNumericStructWithIPPortStrs(oNumericAddress, Set_Server_Dialog::oIPPortPasswordStrings.strIP,
+										Set_Server_Dialog::oIPPortPasswordStrings.strPort);
+		if(!oNumericAddress.bIsCorrect)
+		{
+			p_Message_Dialog = new Message_Dialog(cstrMsgError.toStdString().c_str(), "Неверные данные адрес/порт");
+			p_Message_Dialog->exec();
+			p_Message_Dialog->deleteLater();
+			goto gA;
+		}
+		CopyStrArray((char*)Set_Server_Dialog::oIPPortPasswordStrings.strIP.toStdString().c_str(), m_chIP, IP_STR_LEN);
+		CopyStrArray((char*)Set_Server_Dialog::oIPPortPasswordStrings.strPort.toStdString().c_str(), m_chPort, PORT_STR_LEN);
+		CopyStrArray((char*)Set_Server_Dialog::oIPPortPasswordStrings.strPassword.toStdString().c_str(), m_chPassword, AUTH_PASSWORD_STR_LEN);
+		LCHECK_BOOL(SaveServerConfig());
+		LOG_P_0(LOG_CAT_I, "Server configuration is updated.");
+		LOG_P_1(LOG_CAT_I, "Server IP: " << oIPPortPassword.p_chIPNameBuffer);
+		LOG_P_1(LOG_CAT_I, "Server port: " << oIPPortPassword.p_chPortNameBuffer);
 	}
 }

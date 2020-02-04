@@ -16,9 +16,8 @@ Set_Name_Dialog::Set_Name_Dialog(char* p_chName, QWidget* p_parent) :
 	p_ui(new Ui::Set_Name_Dialog)
 {
 	p_ui->setupUi(this);
-	p_ui->retranslateUi(this);
-	p_ui->Accept_buttonBox->button(QDialogButtonBox::StandardButton::Ok)->setText(tr("Принять"));
-	p_ui->Accept_buttonBox->button(QDialogButtonBox::StandardButton::Cancel)->setText(tr("Отмена"));
+	p_ui->Accept_buttonBox->button(QDialogButtonBox::StandardButton::Ok)->setText("Принять");
+	p_ui->Accept_buttonBox->button(QDialogButtonBox::StandardButton::Cancel)->setText("Отмена");
 	p_ui->ServerName_lineEdit->setText(QString(p_chName));
 	p_chNameInt = p_chName;
 }
