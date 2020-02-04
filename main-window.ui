@@ -37,7 +37,7 @@
     <item>
      <widget class="QGroupBox" name="groupBox_ConnectedClient">
       <property name="title">
-       <string>Подключённый клиент</string>
+       <string>Клиент</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -120,6 +120,7 @@
     <addaction name="action_StartStopEnv"/>
     <addaction name="action_StartOnLaunchServer"/>
     <addaction name="action_EnvName"/>
+    <addaction name="action_Autosave"/>
    </widget>
    <addaction name="menu_Net"/>
    <addaction name="menu_Env"/>
@@ -152,11 +153,17 @@
    </property>
   </action>
   <action name="action_StartStopEnv">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Старт \ стоп среды</string>
    </property>
   </action>
   <action name="action_StartOnLaunchServer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Старт при запуске сервера</string>
    </property>
@@ -164,6 +171,14 @@
   <action name="action_EnvName">
    <property name="text">
     <string>Имя среды</string>
+   </property>
+  </action>
+  <action name="action_Autosave">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Автосохранение при выходе</string>
    </property>
   </action>
  </widget>
