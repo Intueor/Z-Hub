@@ -27,6 +27,7 @@ DEFINES += WIN32 _WINDOWS _CRT_SECURE_NO_WARNINGS
 SOURCES += \
     Dialogs/set-name-dialog.cpp \
     Dialogs/set-server-dialog.cpp \
+    Dialogs/set_proposed_string_dialog.cpp \
     main.cpp \
     main-window.cpp \
     main-hub.cpp \
@@ -43,6 +44,7 @@ SOURCES += \
 HEADERS += \
     Dialogs/set-name-dialog.h \
     Dialogs/set-server-dialog.h \
+    Dialogs/set_proposed_string_dialog.h \
     main-window.h \
     logger.h \
     main-hub-defs.h \
@@ -66,6 +68,7 @@ HEADERS += \
 FORMS += \
     Dialogs/set-name-dialog.ui \
     Dialogs/set-server-dialog.ui \
+    Dialogs/set_proposed_string_dialog.ui \
     main-window.ui \
     Dialogs/message-dialog.ui
 
