@@ -68,8 +68,8 @@ private:
 							///< \return true, при удаче.
 	/// Загрузка конфигурации сервера.
 	static bool LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char* p_chServerName);
-							///< \param[in] o_IPPortPassword Ссылка на структуру для заполнения полей IP, порта и пароля сервера.
-							///< \param[in] p_chServerName Указатель на буфер с именем сервера для заполенения.
+							///< \param[out] o_IPPortPassword Ссылка на структуру для заполнения полей IP, порта и пароля сервера.
+							///< \param[out] p_chServerName Указатель на буфер с именем сервера для заполенения.
 							///< \return true, при удаче.
 	/// Сохранение конфигурации сервера.
 	static bool SaveServerConfig();
@@ -91,6 +91,17 @@ private slots:
 	void on_action_ServerName_triggered();
 	/// При нажатии кнопки 'Основные параметры сервера'.
 	void on_action_ServerSettings_triggered();
+	/// При нажатии кнопки 'Старт \ стоп среды'.
+	void on_action_StartStopEnv_triggered(bool checked);
+							///< \param[in] checked Позиция переключателя.
+	// При нажатии кнопки 'Старт при запуске сервера'.
+	void on_action_StartOnLaunchServer_triggered(bool checked);
+							///< \param[in] checked Позиция переключателя.
+	/// При нажатии кнопки 'Имя среды'.
+	void on_action_EnvName_triggered();
+	// При нажатии кнопки 'Сохранение при выходе из приложения'.
+	void on_action_Autosave_triggered(bool checked);
+							///< \param[in] checked Позиция переключателя.
 
 public:
 	static int iInitRes; ///< Результат инициализации.

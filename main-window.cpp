@@ -72,6 +72,8 @@ gEI:	iInitRes = RETVAL_ERR;
 		RETVAL_SET(RETVAL_ERR);
 		return;
 	}
+	//if(!LoadEnvConfig(m_chEnvName)) goto gEI;
+	p_ui->action_Autosave->setChecked(p_UISettings->value("Autosave").toBool());
 	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
 	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
 	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
@@ -107,6 +109,8 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	SetStatusBarText(m_chStatusShutdown);
+	//EnvStopProcedures();
+	//SaveEnv();
 	if(p_Server)
 	{
 		LCHECK_BOOL(ServerStopProcedures());
@@ -376,6 +380,12 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 		{
 			SetStatusBarText(m_chStatusWorking);
 			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
+			if(p_UISettings->value("AutostartEnv").toBool())
+			{
+				p_ui->action_StartOnLaunchServer->setChecked(true);
+				p_ui->action_StartStopEnv->setChecked(true);
+				//LCHECK_BOOL(EnvStartProcedures(blabla...));
+			}
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
@@ -493,4 +503,35 @@ gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
 		LOG_P_1(LOG_CAT_I, "Server IP: " << oIPPortPassword.p_chIPNameBuffer);
 		LOG_P_1(LOG_CAT_I, "Server port: " << oIPPortPassword.p_chPortNameBuffer);
 	}
+}
+
+// При нажатии кнопки 'Старт \ стоп среды'.
+void MainWindow::on_action_StartStopEnv_triggered(bool checked)
+{
+	if(checked)
+	{
+		//LCHECK_BOOL(EnvStartProcedures(blabla...));
+	}
+	else
+	{
+		//LCHECK_BOOL(EnvStopProcedures());
+	}
+}
+
+// При нажатии кнопки 'Старт при запуске сервера'.
+void MainWindow::on_action_StartOnLaunchServer_triggered(bool checked)
+{
+	p_UISettings->setValue("AutostartEnv", checked);
+}
+
+// При нажатии кнопки 'Имя среды'.
+void MainWindow::on_action_EnvName_triggered()
+{
+	//LCHECK_BOOL(SaveEnvConfig());
+}
+
+// При нажатии кнопки 'Сохранение при выходе из приложения'.
+void MainWindow::on_action_Autosave_triggered(bool checked)
+{
+	p_UISettings->setValue("Autosave", checked);
 }
