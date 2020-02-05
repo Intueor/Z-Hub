@@ -3,7 +3,7 @@
 #include "main-window.h"
 #include "ui_main-window.h"
 #include "Dialogs/message-dialog.h"
-#include "Dialogs/set-name-dialog.h"
+#include "Dialogs/set_proposed_string_dialog.h"
 #include "Dialogs/set-server-dialog.h"
 
 //== МАКРОСЫ.
@@ -464,10 +464,10 @@ void MainWindow::on_action_StartOnLaunchApp_triggered(bool checked)
 // При нажатии кнопки 'Имя сервера'.
 void MainWindow::on_action_ServerName_triggered()
 {
-	Set_Name_Dialog* p_Set_Name_Dialog;
+	Set_Proposed_String_Dialog* p_Set_Proposed_String_Dialog;
 	//
-	p_Set_Name_Dialog = new Set_Name_Dialog(m_chServerName);
-	if(p_Set_Name_Dialog->exec() == DIALOGS_ACCEPT)
+	p_Set_Proposed_String_Dialog = new Set_Proposed_String_Dialog((char*)"Имя сервера", m_chServerName, SERVER_NAME_STR_LEN);
+	if(p_Set_Proposed_String_Dialog->exec() == DIALOGS_ACCEPT)
 	{
 		LCHECK_BOOL(SaveServerConfig());
 		LOG_P_0(LOG_CAT_I, m_chLogServerUpdated);

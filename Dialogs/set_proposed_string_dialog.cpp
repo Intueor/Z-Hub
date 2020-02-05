@@ -2,7 +2,7 @@
 #include <QPushButton>
 #include "set_proposed_string_dialog.h"
 #include "ui_set_proposed_string_dialog.h"
-#include "main-hub.h"
+#include "../Z-Hub/main-hub.h"
 
 unsigned char Set_Proposed_String_Dialog::uchMaxLengthInt;
 char* Set_Proposed_String_Dialog::p_chTextInt = nullptr;
