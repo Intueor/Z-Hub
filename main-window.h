@@ -82,10 +82,10 @@ private:
 							///< \param[in] strMsg Строка с сообщением.
 private slots:
 	// При переключении кнопки 'Запуск \ остановка сервера'.
-	void on_action_StartStop_triggered(bool checked);
+	void on_action_StartStopServer_triggered(bool checked);
 							///< \param[in] checked Позиция переключателя.
 	/// При переключении кнопки 'Запуск при входе в приложение'.
-	void on_action_StartOnLaunch_triggered(bool checked);
+	void on_action_StartOnLaunchApp_triggered(bool checked);
 							///< \param[in] checked Позиция переключателя.
 	/// При нажатии кнопки 'Имя сервера'.
 	void on_action_ServerName_triggered();

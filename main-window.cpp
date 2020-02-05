@@ -433,7 +433,7 @@ void MainWindow::SetStatusBarText(QString strMsg)
 }
 
 // При переключении кнопки 'Запуск \ остановка сервера'.
-void MainWindow::on_action_StartStop_triggered(bool checked)
+void MainWindow::on_action_StartStopServer_triggered(bool checked)
 {
 	if(checked)
 	{
@@ -446,7 +446,7 @@ void MainWindow::on_action_StartStop_triggered(bool checked)
 }
 
 // При переключении кнопки 'Запуск при входе в приложение'.
-void MainWindow::on_action_StartOnLaunch_triggered(bool checked)
+void MainWindow::on_action_StartOnLaunchApp_triggered(bool checked)
 {
 	 p_UISettings->setValue("AutostartServer", checked);
 }
