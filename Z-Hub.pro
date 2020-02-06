@@ -26,6 +26,7 @@ DEFINES += WIN32 _WINDOWS _CRT_SECURE_NO_WARNINGS
 
 SOURCES += \
     Dialogs/set-server-dialog.cpp \
+    Dialogs/set_proposed_bool_dialog.cpp \
     Dialogs/set_proposed_string_dialog.cpp \
     element.cpp \
     environment.cpp \
@@ -45,6 +46,7 @@ SOURCES += \
 
 HEADERS += \
     Dialogs/set-server-dialog.h \
+    Dialogs/set_proposed_bool_dialog.h \
     Dialogs/set_proposed_string_dialog.h \
     element.h \
     environment.h \
@@ -72,6 +74,7 @@ HEADERS += \
 
 FORMS += \
     Dialogs/set-server-dialog.ui \
+    Dialogs/set_proposed_bool_dialog.ui \
     Dialogs/set_proposed_string_dialog.ui \
     main-window.ui \
     Dialogs/message-dialog.ui

@@ -16,6 +16,7 @@ class Set_Proposed_String_Dialog : public QDialog
 	Q_OBJECT
 
 public:
+	/// Конструктор.
 	explicit Set_Proposed_String_Dialog(char* p_chDialogCaption, char* p_chText, unsigned char uchMaxLength, QWidget* p_parent = nullptr);
 								///< \param[in] p_chDialogCaption Указатель на массив строки с именем.
 								///< \param[in,out] p_chText Указатель на массив строки для начального отображения и последующего заполнения.

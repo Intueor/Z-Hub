@@ -73,7 +73,11 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="Port_lineEdit"/>
+       <widget class="QLineEdit" name="Port_lineEdit">
+        <property name="inputMask">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -100,7 +104,11 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="Password_lineEdit"/>
+       <widget class="QLineEdit" name="Password_lineEdit">
+        <property name="inputMask">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -127,7 +135,11 @@
        <number>1</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="IP_lineEdit"/>
+       <widget class="QLineEdit" name="IP_lineEdit">
+        <property name="inputMask">
+         <string notr="true"/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

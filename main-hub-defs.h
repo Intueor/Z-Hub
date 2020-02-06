@@ -6,7 +6,8 @@
 const char m_chStatusReady[] = "Готов к работе";
 const char m_chStatusShutdown[] = "Отключение...";
 const char m_chMsgError[] = "Ошибка";
-const char m_chMsgWrongIPPort[] = "Неверные данные адрес/порт";
+const char m_chMsgWarning[] = "Внимание";
+const char m_chMsgWrongIPPort[] = "Неверные данные адрес/порт.";
 const char m_chLogStart[] = "START.";
 const char m_chLogExit[] = "EXIT.";
 const char m_chLogErrorExit[] = "EXIT WITH ERROR: ";

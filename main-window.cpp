@@ -5,6 +5,7 @@
 #include "Dialogs/message-dialog.h"
 #include "Dialogs/set_proposed_string_dialog.h"
 #include "Dialogs/set-server-dialog.h"
+#include "Dialogs/set_proposed_bool_dialog.h"
 
 //== МАКРОСЫ.
 #define LOG_NAME				"main-window"
@@ -580,13 +581,26 @@ gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
 // При нажатии кнопки 'Старт \ стоп среды'.
 void MainWindow::on_action_StartStopEnv_triggered(bool checked)
 {
+	Set_Proposed_Bool_Dialog* p_Set_Proposed_Bool_Dialog;
+	bool bAutosave = p_ui->action_Autosave->isChecked();
+	//
 	if(checked)
 	{
 		LCHECK_BOOL(EnvStartProcedures());
 	}
 	else
 	{
-		LCHECK_BOOL(EnvStopProcedures(p_ui->action_Autosave->isChecked()));
+		if(!bAutosave)
+		{
+			p_Set_Proposed_Bool_Dialog = new Set_Proposed_Bool_Dialog(
+						(char*)m_chMsgWarning, (char*)"Опция сохранения среды при остановке не выбрана. Остановить без записи?");
+			if(p_Set_Proposed_Bool_Dialog->exec() == DIALOGS_REJECT)
+			{
+				p_ui->action_StartStopEnv->setChecked(true);
+				return;
+			}
+		}
+		LCHECK_BOOL(EnvStopProcedures(bAutosave));
 	}
 }
 

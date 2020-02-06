@@ -1,39 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Message_Dialog</class>
- <widget class="QDialog" name="Message_Dialog">
+ <class>Set_Proposed_Bool_Dialog</class>
+ <widget class="QDialog" name="Set_Proposed_Bool_Dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>360</width>
+    <width>500</width>
     <height>47</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>360</width>
+    <width>500</width>
     <height>47</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>360</width>
+    <width>500</width>
     <height>47</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string/>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="../resources.qrc">
-    <normaloff>:/icons/z-icon.ico</normaloff>:/icons/z-icon.ico</iconset>
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -68,9 +64,6 @@
      <property name="alignment">
       <set>Qt::AlignCenter</set>
      </property>
-     <property name="textInteractionFlags">
-      <set>Qt::NoTextInteraction</set>
-     </property>
     </widget>
    </item>
    <item>
@@ -79,29 +72,43 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>clicked(QAbstractButton*)</signal>
-   <receiver>Message_Dialog</receiver>
-   <slot>close()</slot>
+   <signal>accepted()</signal>
+   <receiver>Set_Proposed_Bool_Dialog</receiver>
+   <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>179</x>
-     <y>33</y>
+     <x>248</x>
+     <y>254</y>
     </hint>
     <hint type="destinationlabel">
-     <x>179</x>
-     <y>23</y>
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Set_Proposed_Bool_Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
     </hint>
    </hints>
   </connection>
