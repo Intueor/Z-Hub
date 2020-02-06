@@ -26,6 +26,7 @@ char MainWindow::m_chServerName[SERVER_NAME_STR_LEN];
 char MainWindow::m_chIP[IP_STR_LEN];
 char MainWindow::m_chPort[PORT_STR_LEN];
 char MainWindow::m_chPassword[AUTH_PASSWORD_STR_LEN];
+char MainWindow::m_chEnvName[ENV_NAME_LEN];
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс главного окна.
@@ -72,7 +73,7 @@ gEI:	iInitRes = RETVAL_ERR;
 		RETVAL_SET(RETVAL_ERR);
 		return;
 	}
-	//if(!LoadEnvConfig(m_chEnvName)) goto gEI;
+	if(!LoadEnvConfig(m_chEnvName)) goto gEI;
 	p_ui->action_Autosave->setChecked(p_UISettings->value("Autosave").toBool());
 	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
 	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
@@ -178,7 +179,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << S_CONF_PATH);
 		return false;
 	}
-	LOG_P_1(LOG_CAT_I, "Configuration" << m_chLogIsLoaded);
+	LOG_P_1(LOG_CAT_I, "Server configuration" << m_chLogIsLoaded);
 	if(!FindChildNodes(xmlDocSConf.LastChild(), l_pName,
 					   "Name", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
@@ -250,6 +251,31 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	return true;
 }
 
+// Загрузка конфигурации среды.
+bool MainWindow::LoadEnvConfig(char* p_chName)
+{
+	tinyxml2::XMLDocument xmlDocEConf;
+	list <XMLNode*> l_pName;
+	XMLError eResult;
+	//
+	eResult = xmlDocEConf.LoadFile(E_CONF_PATH);
+	if (eResult != XML_SUCCESS)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << E_CONF_PATH);
+		return false;
+	}
+	LOG_P_1(LOG_CAT_I, "Environment configuration" << m_chLogIsLoaded);
+	if(!FindChildNodes(xmlDocEConf.LastChild(), l_pName,
+					   "Name", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No 'Name' node.");
+		return false;
+	}
+	CopyStrArray((char*)l_pName.front()->FirstChild()->Value(), p_chName, ENV_NAME_LEN);
+	LOG_P_1(LOG_CAT_I, "Environment name: " << p_chName);
+	return true;
+}
+
 // Сохранение конфигурации сервера.
 bool MainWindow::SaveServerConfig()
 {
@@ -277,6 +303,27 @@ bool MainWindow::SaveServerConfig()
 	if (eResult != XML_SUCCESS)
 	{
 		LOG_P_0(LOG_CAT_E, m_chLogCantSave << "server configuration.");
+		return false;
+	}
+	return true;
+}
+
+// Сохранение конфигурации сервера.
+bool MainWindow::SaveEnvConfig()
+{
+	XMLError eResult;
+	tinyxml2::XMLDocument xmlEnvConf;
+	XMLNode* p_NodeRoot;
+	XMLNode* p_NodeName;
+	//
+	xmlEnvConf.InsertEndChild(xmlEnvConf.NewDeclaration());
+	p_NodeRoot = xmlEnvConf.InsertEndChild(xmlEnvConf.NewElement("Root"));
+	p_NodeName = p_NodeRoot->InsertEndChild(xmlEnvConf.NewElement("Name"));
+	p_NodeName->ToElement()->SetText(m_chEnvName);
+	eResult = xmlEnvConf.SaveFile(E_CONF_PATH);
+	if (eResult != XML_SUCCESS)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogCantSave << "environment configuration.");
 		return false;
 	}
 	return true;
@@ -527,7 +574,16 @@ void MainWindow::on_action_StartOnLaunchServer_triggered(bool checked)
 // При нажатии кнопки 'Имя среды'.
 void MainWindow::on_action_EnvName_triggered()
 {
-	//LCHECK_BOOL(SaveEnvConfig());
+	Set_Proposed_String_Dialog* p_Set_Proposed_String_Dialog;
+	//
+	p_Set_Proposed_String_Dialog = new Set_Proposed_String_Dialog((char*)"Имя среды", m_chEnvName, ENV_NAME_LEN);
+	if(p_Set_Proposed_String_Dialog->exec() == DIALOGS_ACCEPT)
+	{
+		LCHECK_BOOL(SaveServerConfig());
+		LOG_P_0(LOG_CAT_I, m_chLogEnvUpdated);
+		LOG_P_1(LOG_CAT_I, "Environment name: " << m_chEnvName);
+	}
+	LCHECK_BOOL(SaveEnvConfig());
 }
 
 // При нажатии кнопки 'Сохранение при выходе из приложения'.

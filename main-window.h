@@ -74,6 +74,13 @@ private:
 	/// Сохранение конфигурации сервера.
 	static bool SaveServerConfig();
 							///< \return true, при удаче.
+	/// Загрузка конфигурации среды.
+	static bool LoadEnvConfig(char* p_chName);
+							///< \param[out] p_chName Ссылка на строку для заполнения именем среды.
+							///< \return true, при удаче.
+	/// Сохранение конфигурации сервера.
+	static bool SaveEnvConfig();
+							///< \return true, при удаче.
 	/// Процедуры остановки сервера.
 	static bool ServerStopProcedures();
 							///< \return true, при удаче.
@@ -120,6 +127,7 @@ private:
 	static char m_chIP[IP_STR_LEN]; ///< Буфер под строку адреса.
 	static char m_chPort[PORT_STR_LEN]; ///< Буфер под строку порта.
 	static char m_chPassword[AUTH_PASSWORD_STR_LEN]; ///< Буфер под строку пароля.
+	static char m_chEnvName[ENV_NAME_LEN]; ///< Буфер под строку имени среды.
 };
 
 #endif // MAINWINDOW_H

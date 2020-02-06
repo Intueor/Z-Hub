@@ -496,9 +496,9 @@ gBA:if(iTPos != NO_CONNECTION)
 	else
 	{
 #ifndef WIN32
-		LOG_P_1(LOG_CAT_W, "Waiting for connection on reserved thread: " << pthread_self());
+		LOG_P_1(LOG_CAT_I, "Waiting for connection on reserved thread: " << pthread_self());
 #else
-		LOG_P_1(LOG_CAT_W, "Waiting connection on reserved thread: " << pthread_self().p);
+		LOG_P_1(LOG_CAT_I, "Waiting connection on reserved thread: " << pthread_self().p);
 #endif
 gAG:	iTempListener = (int)accept(iListener, nullptr, nullptr); // Ждём перегруженных входящих.
 		FillConnectionData(iTempListener, oConnectionDataInt);
@@ -886,7 +886,7 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 	iCurrPos = FindFreeThrDadaPos();
 	if(iCurrPos == NO_CONNECTION)
 	{
-		LOG_P_0(LOG_CAT_W, "Server is full.");
+		LOG_P_0(LOG_CAT_I, "Server is full.");
 		pthread_create(&p_ThreadOverrunned, NULL,
 					   ConversationThread, &iCurrPos);
 	}
