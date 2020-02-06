@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	oApplication.setAttribute(Qt::AA_DisableWindowContextHelpButton);
 	MainWindow wMainWindow;
 	//
-	if(wMainWindow.iInitRes == RETVAL_OK)
+	if(wMainWindow.uchInitRes == RETVAL_OK)
 	{
 		setlocale(LC_NUMERIC, "en_US.UTF-8");
 		wMainWindow.show();

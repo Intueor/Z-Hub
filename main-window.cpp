@@ -14,7 +14,7 @@
 // Основное.
 LOGDECL_INIT_INCLASS(MainWindow)
 LOGDECL_INIT_PTHRD_INCLASS_OWN_ADD(MainWindow)
-int MainWindow::iInitRes;
+unsigned char MainWindow::uchInitRes = RETVAL_OK;
 const char* MainWindow::cp_chUISettingsName = H_MAINWINDOW_UI_CONF_PATH;
 Ui::MainWindow* MainWindow::p_ui = new Ui::MainWindow;
 QSettings* MainWindow::p_UISettings = nullptr;
@@ -27,6 +27,7 @@ char MainWindow::m_chIP[IP_STR_LEN];
 char MainWindow::m_chPort[PORT_STR_LEN];
 char MainWindow::m_chPassword[AUTH_PASSWORD_STR_LEN];
 char MainWindow::m_chEnvName[ENV_NAME_LEN];
+Environment* MainWindow::p_Environment = nullptr;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс главного окна.
@@ -39,7 +40,6 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	//
 	LOG_CTRL_INIT;
 	LOG_P_0(LOG_CAT_I, m_chLogStart);
-	iInitRes = RETVAL_OK;
 	p_UISettings = new QSettings(cp_chUISettingsName, QSettings::IniFormat);
 	p_ui->setupUi(this);
 	p_QLabelStatusBarText = new QLabel(this);
@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	if(!LoadBansCatalogue(vec_IPBanUnits)) goto gEI;
 	if(!LoadServerConfig(oIPPortPassword, m_chServerName))
 	{
-gEI:	iInitRes = RETVAL_ERR;
+gEI:	uchInitRes = RETVAL_ERR;
 		RETVAL_SET(RETVAL_ERR);
 		return;
 	}
@@ -78,6 +78,7 @@ gEI:	iInitRes = RETVAL_ERR;
 	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
 	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
 	p_Server->SetClientRequestArrivedCB(ClientRequestArrivedCallback);
+	p_Environment = new Environment(LOG_MUTEX, m_chEnvName);
 	if(p_UISettings->value("AutostartServer").toBool())
 	{
 		p_ui->action_StartOnLaunchApp->setChecked(true);
@@ -92,7 +93,7 @@ gEI:	iInitRes = RETVAL_ERR;
 	{
 		p_ui->action_StartOnLaunchServer->setChecked(true);
 		p_ui->action_StartStopEnv->setChecked(true);
-		//LCHECK_BOOL(EnvStartProcedures(blabla...));
+		LCHECK_BOOL(EnvStartProcedures());
 	}
 	p_ui->action_Autosave->setChecked(p_UISettings->value("Autosave").toBool());
 }
@@ -116,8 +117,11 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	SetStatusBarText(m_chStatusShutdown);
-	//EnvStopProcedures();
-	//SaveEnv();
+	if(p_Environment)
+	{
+		LCHECK_BOOL(EnvStopProcedures(p_ui->action_Autosave->isChecked()));
+		delete p_Environment;
+	}
 	if(p_Server)
 	{
 		LCHECK_BOOL(ServerStopProcedures());
@@ -482,6 +486,27 @@ bool MainWindow::ServerStopProcedures()
 	else return true;
 }
 
+// Процедуры запуска среды.
+bool MainWindow::EnvStartProcedures()
+{
+	if(!p_Environment->LoadEnv()) return false;
+	p_Environment->Start();
+	p_ui->action_EnvName->setDisabled(true);
+	return true;
+}
+
+// Процедуры остановки среды.
+bool MainWindow::EnvStopProcedures(bool bSave)
+{
+	p_Environment->Stop();
+	if(bSave)
+	{
+		LCHECK_BOOL(p_Environment->SaveEnv());
+	}
+	p_ui->action_EnvName->setDisabled(false);
+	return true;
+}
+
 // Установка текста строки статуса.
 void MainWindow::SetStatusBarText(QString strMsg)
 {
@@ -557,11 +582,11 @@ void MainWindow::on_action_StartStopEnv_triggered(bool checked)
 {
 	if(checked)
 	{
-		//LCHECK_BOOL(EnvStartProcedures(blabla...));
+		LCHECK_BOOL(EnvStartProcedures());
 	}
 	else
 	{
-		//LCHECK_BOOL(EnvStopProcedures());
+		LCHECK_BOOL(EnvStopProcedures(p_ui->action_Autosave->isChecked()));
 	}
 }
 
@@ -586,7 +611,7 @@ void MainWindow::on_action_EnvName_triggered()
 	LCHECK_BOOL(SaveEnvConfig());
 }
 
-// При нажатии кнопки 'Сохранение при выходе из приложения'.
+// При нажатии кнопки 'Сохранение при остановке среды'.
 void MainWindow::on_action_Autosave_triggered(bool checked)
 {
 	p_UISettings->setValue("Autosave", checked);

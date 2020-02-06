@@ -6,6 +6,7 @@
 #define S_BANS_CAT_PATH					"../Z-Hub/settings/bans.xml"
 #define S_CONF_PATH                     "../Z-Hub/settings/server.xml"
 #define E_CONF_PATH                     "../Z-Hub/settings/environment.xml"
+#define ENVS_DIR						"../Z-Hub/environments/"
 #define SERVER_WAITING_ATTEMPTS			128
 #define ENV_NAME_LEN					64
 

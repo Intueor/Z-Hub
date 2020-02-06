@@ -14,6 +14,8 @@
 #include "parser-ext.h"
 #include "main-hub.h"
 #include "z-hub-defs.h"
+#include "environment.h"
+#include "p_buffer.h"
 
 //== ПРОСТРАНСТВА ИМЁН.
 namespace Ui {
@@ -65,6 +67,16 @@ private:
 	static bool ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword);
 							///< \param[in] o_IPPortPassword Ссылка на структуру с описанием IP, порта и пароля сервера.
 							///< \return true, при удаче.
+	/// Процедуры остановки сервера.
+	static bool ServerStopProcedures();
+							///< \return true, при удаче.
+	/// Процедуры запуска среды.
+	static bool EnvStartProcedures();
+							///< \return true, при удаче.
+	/// Процедуры остановки среды.
+	static bool EnvStopProcedures(bool bSave);
+							///< \param[in] bSave true для сохранения среды при осуществлении остановки.
+							///< \return true, при удаче.
 	/// Загрузка конфигурации сервера.
 	static bool LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char* p_chServerName);
 							///< \param[out] o_IPPortPassword Ссылка на структуру для заполнения полей IP, порта и пароля сервера.
@@ -80,12 +92,10 @@ private:
 	/// Сохранение конфигурации сервера.
 	static bool SaveEnvConfig();
 							///< \return true, при удаче.
-	/// Процедуры остановки сервера.
-	static bool ServerStopProcedures();
-							///< \return true, при удаче.
 	/// Установка текста строки статуса.
 	static void SetStatusBarText(QString strMsg);
 							///< \param[in] strMsg Строка с сообщением.
+
 private slots:
 	// При переключении кнопки 'Запуск \ остановка сервера'.
 	void on_action_StartStopServer_triggered(bool checked);
@@ -105,21 +115,21 @@ private slots:
 							///< \param[in] checked Позиция переключателя.
 	/// При нажатии кнопки 'Имя среды'.
 	void on_action_EnvName_triggered();
-	// При нажатии кнопки 'Сохранение при выходе из приложения'.
+	// При нажатии кнопки 'Сохранение при остановке среды'.
 	void on_action_Autosave_triggered(bool checked);
 							///< \param[in] checked Позиция переключателя.
 
 public:
-	static int iInitRes; ///< Результат инициализации.
+	static unsigned char uchInitRes; ///< Результат инициализации.
 
 private:
 	LOGDECL
 	LOGDECL_PTHRD_INCLASS_ADD
-	static Ui::MainWindow *p_ui; ///< Указатель на UI.
+	static Ui::MainWindow* p_ui; ///< Указатель на UI.
 	static const char* cp_chUISettingsName; ///< Указатель на имя файла с установками UI.
 	static QSettings* p_UISettings; ///< Указатель на строку установок UI.
 	static QLabel* p_QLabelStatusBarText; ///< Указатель на объект метки статуса.
-	static Server* p_Server; ///< Ссылка на объект сервера.
+	static Server* p_Server; ///< Указатель на объект сервера.
 	static vector<Server::IPBanUnit> vec_IPBanUnits; ///< Список банов по адресам.
 	static NetHub::IPPortPassword oIPPortPassword; ///< Структура со указателями на строки с установками сервера.
 	static char m_chServerName[SERVER_NAME_STR_LEN]; ///< Буфер под строку с именем сервера.
@@ -127,6 +137,7 @@ private:
 	static char m_chPort[PORT_STR_LEN]; ///< Буфер под строку порта.
 	static char m_chPassword[AUTH_PASSWORD_STR_LEN]; ///< Буфер под строку пароля.
 	static char m_chEnvName[ENV_NAME_LEN]; ///< Буфер под строку имени среды.
+	static Environment* p_Environment; ///< Указатель на объект среды.
 };
 
 #endif // MAINWINDOW_H
