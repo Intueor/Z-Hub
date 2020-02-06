@@ -62,9 +62,8 @@ private:
 							///< \param[in] o_vec_IPBanUnits Ссылка на заполняемый вектор.
 							///< \return true, при удаче.
 	/// Процедуры запуска сервера.
-	static bool ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword, char* p_chServerName);
+	static bool ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword);
 							///< \param[in] o_IPPortPassword Ссылка на структуру с описанием IP, порта и пароля сервера.
-							///< \param[in] p_chServerName Указатель на буфер с именем сервера.
 							///< \return true, при удаче.
 	/// Загрузка конфигурации сервера.
 	static bool LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char* p_chServerName);

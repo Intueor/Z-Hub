@@ -74,7 +74,6 @@ gEI:	iInitRes = RETVAL_ERR;
 		return;
 	}
 	if(!LoadEnvConfig(m_chEnvName)) goto gEI;
-	p_ui->action_Autosave->setChecked(p_UISettings->value("Autosave").toBool());
 	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
 	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
 	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
@@ -83,12 +82,19 @@ gEI:	iInitRes = RETVAL_ERR;
 	{
 		p_ui->action_StartOnLaunchApp->setChecked(true);
 		p_ui->action_StartStopServer->setChecked(true);
-		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword, m_chServerName));
+		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword));
 	}
 	else
 	{
 		SetStatusBarText(m_chStatusReady);
 	}
+	if(p_UISettings->value("AutostartEnv").toBool())
+	{
+		p_ui->action_StartOnLaunchServer->setChecked(true);
+		p_ui->action_StartStopEnv->setChecked(true);
+		//LCHECK_BOOL(EnvStartProcedures(blabla...));
+	}
+	p_ui->action_Autosave->setChecked(p_UISettings->value("Autosave").toBool());
 }
 
 // Деструктор.
@@ -410,14 +416,14 @@ void MainWindow::ClientRequestArrivedCallback(int iConnection, unsigned short us
 }
 
 // Процедуры запуска сервера.
-bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword, char* p_chServerName)
+bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword)
 {
 	Message_Dialog* p_Message_Dialog;
 	//
 	p_ui->action_ServerName->setDisabled(true);
 	p_ui->action_ServerSettings->setDisabled(true);
 	SetStatusBarText("Запуск сервера...");
-	if(!p_Server->Start(&o_IPPortPassword, p_chServerName))
+	if(!p_Server->Start(&o_IPPortPassword, m_chServerName))
 	{
 		goto gSS;
 	}
@@ -427,12 +433,6 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword,
 		{
 			SetStatusBarText(m_chStatusWorking);
 			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
-			if(p_UISettings->value("AutostartEnv").toBool())
-			{
-				p_ui->action_StartOnLaunchServer->setChecked(true);
-				p_ui->action_StartStopEnv->setChecked(true);
-				//LCHECK_BOOL(EnvStartProcedures(blabla...));
-			}
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
@@ -494,7 +494,7 @@ void MainWindow::on_action_StartStopServer_triggered(bool checked)
 {
 	if(checked)
 	{
-		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword, m_chServerName));
+		LCHECK_BOOL(ServerStartProcedures(oIPPortPassword));
 	}
 	else
 	{
