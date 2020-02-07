@@ -14,6 +14,7 @@ StaticPBSourceInit(Element,, Environment, MAX_ELEMENTS)
 StaticPBSourceInit(Link,, Environment, MAX_LINKS)
 //
 char* Environment::p_chEnvNameInt = nullptr;
+bool Environment::bEnvLoaded = false;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс среды.
@@ -23,6 +24,7 @@ Environment::Environment(pthread_mutex_t ptLogMutex, char* p_chEnvName)
 	LOG_CTRL_BIND_EXT_MUTEX(ptLogMutex);
 	LOG_CTRL_INIT;
 	p_chEnvNameInt = p_chEnvName;
+	bEnvLoaded = false;
 }
 
 // Деструктор.
@@ -37,6 +39,7 @@ Environment::~Environment()
 bool Environment::LoadEnv()
 {
 	LOG_P_0(LOG_CAT_I, "Loading environment from " << p_chEnvNameInt << ".xml");
+	bEnvLoaded = true;
 	return true;
 }
 
@@ -48,9 +51,14 @@ bool Environment::SaveEnv()
 }
 
 // Запуск среды.
-void Environment::Start()
+bool Environment::Start()
 {
+	if(!bEnvLoaded)
+	{
+		if(!LoadEnv()) return false;
+	}
 	LOG_P_0(LOG_CAT_I, "Start environment.");
+	return true;
 }
 
 // Остановка среды.

@@ -47,7 +47,7 @@ bool Server::Start(NetHub::IPPortPassword* p_IPPortPassword, char* p_chServerNam
 	if(!bServerAlive) // Предупреждение повторного запуска.
 	{
 		memcpy(&oPServerName.m_chServerName, p_chServerName, SERVER_NAME_STR_LEN);
-		LOG_P_2(LOG_CAT_I, "Starting server thread.");
+		LOG_P_1(LOG_CAT_I, "Starting server thread.");
 		p_IPPortPasswordInt = p_IPPortPassword;
 		pthread_create(&ServerThr, nullptr, ServerThread, nullptr); // Запуск потока сервера.
 		return true;
@@ -201,7 +201,7 @@ gUE:if(bRes == false) // При невозможности отправки из
 		{
 			if(mThreadDadas[iConnection].bSecured == false) // При неавторизованном клиенте отправка засчитывается.
 			{
-				LOG_P_2(LOG_CAT_W, "Sending rejected due to not secured for: " << iConnection);
+				LOG_P_1(LOG_CAT_W, "Sending rejected due to not secured for: " << iConnection);
 				bRes = true;
 			}
 			else
@@ -237,7 +237,7 @@ gUE:if(bRes == false)  // При невозможности отправки и�
 		{
 			if(mThreadDadas[iConnection].bSecured == false) // При неавторизованном клиенте отправка засчитывается.
 			{
-				LOG_P_2(LOG_CAT_W, "Sending rejected due to not secured for: " << iConnection);
+				LOG_P_1(LOG_CAT_W, "Sending rejected due to not secured for: " << iConnection);
 				bRes = true;
 			}
 			else
@@ -295,10 +295,10 @@ int Server::ReleaseDataInPosition(int iConnection, uint uiPos, bool bTryLock)
 			SendToConnectionImmediately(iConnection, PROTO_A_BUFFER_READY); // При освоб. позиции в буфере на сервере в данном хабе.
 		}
 		iRes = mThreadDadas[iConnection].oLocalNetHub.ReleaseDataInPosition(mThreadDadas[iConnection].mReceivedPockets, uiPos);
-//        if(iRes == RETVAL_OK)
-//        {
-//            LOG_P_2(LOG_CAT_I, "Position has been released.");
-//        }
+//		if(iRes == RETVAL_OK)
+//		{
+//			LOG_P_2(LOG_CAT_I, "Position has been released.");
+//		}
 	}
 	else
 	{
@@ -488,9 +488,9 @@ gBA:if(iTPos != NO_CONNECTION)
 		mThreadDadas[iTPos].bKick = false;
 		mThreadDadas[iTPos].p_Thread = pthread_self(); // Задали ссылку на текущий поток.
 #ifndef WIN32
-		LOG_P_2(LOG_CAT_I, "Waiting for connection on thread: " << mThreadDadas[iTPos].p_Thread);
+		LOG_P_1(LOG_CAT_I, "Waiting for connection on thread: " << mThreadDadas[iTPos].p_Thread);
 #else
-		LOG_P_2(LOG_CAT_I, "Waiting connection on thread: " << mThreadDadas[iTPos].p_Thread.p);
+		LOG_P_1(LOG_CAT_I, "Waiting connection on thread: " << mThreadDadas[iTPos].p_Thread.p);
 #endif
 	}
 	else
@@ -514,11 +514,11 @@ gAG:	iTempListener = (int)accept(iListener, nullptr, nullptr); // Ждём пе�
 #endif
 			if(NetHub::CheckIPv4(m_chIPNameBuffer))
 			{
-				LOG_P_2(LOG_CAT_W, "Connection is rejected for: " << m_chIPNameBuffer);
+				LOG_P_1(LOG_CAT_W, "Connection is rejected for: " << m_chIPNameBuffer);
 			}
 			else
 			{
-				LOG_P_2(LOG_CAT_W, "Connection is rejected for: [" << m_chIPNameBuffer << "]");
+				LOG_P_1(LOG_CAT_W, "Connection is rejected for: [" << m_chIPNameBuffer << "]");
 			}
 			if(bExitSignal) goto gOE;
 			goto gAG;
@@ -611,12 +611,12 @@ gOE:		pthread_mutex_lock(&ptConnMutex);
 		pthread_mutex_lock(&ptConnMutex);
 		if (bExitSignal == true) // Если по выходу из приёмки обнаружен общий сигнал на выход...
 		{
-			LOG_P_2(LOG_CAT_I, "Exiting reading from ID: " << iTPos);
+			LOG_P_1(LOG_CAT_I, "Exiting reading from ID: " << iTPos);
 			goto ecd;
 		}
 		if (mThreadDadas[iTPos].oConnectionData.iStatus <= 0) // Если статус приёмки - отказ (вместо принятых байт)...
 		{
-			LOG_P_2(LOG_CAT_I, "Reading socket stopped for ID: " << iTPos);
+			LOG_P_1(LOG_CAT_I, "Reading socket stopped for ID: " << iTPos);
 			goto ecd;
 		}
 		p_chData = mThreadDadas[iTPos].m_chData;
@@ -635,8 +635,8 @@ gDp:	mThreadDadas[iTPos].iCurrentFreePocket =
 			{
 				if(oParsingResult.bStored == true)
 				{
-//                    LOG_P_2(LOG_CAT_I, "Received pocket: " <<
-//                        (mThreadDadas[iTPos].iCurrentFreePocket + 1) << " for ID: " << iTPos);
+//					LOG_P_2(LOG_CAT_I, "Received pocket: " <<
+//							(mThreadDadas[iTPos].iCurrentFreePocket + 1) << " for ID: " << iTPos);
 					mThreadDadas[iTPos].mReceivedPockets[mThreadDadas[iTPos].iCurrentFreePocket].bBusy = true;
 				}
 				else
@@ -723,7 +723,7 @@ gI:				switch(oParsingResult.ushTypeCode)
 				if((mThreadDadas[iTPos].bSecured == false) && (oParsingResult.bStored == true) &&
 				   (oParsingResult.ushTypeCode != PROTO_C_SEND_PASSW))
 				{
-					LOG_P_2(LOG_CAT_W, "Position is cleared.");
+					LOG_P_1(LOG_CAT_W, "Position is cleared.");
 					p_CurrentData->oProtocolStorage.Release();
 					p_CurrentData->bBusy = false;
 				}
@@ -750,7 +750,7 @@ gI:				switch(oParsingResult.ushTypeCode)
 		}
 		if(oParsingResult.p_chExtraData != nullptr)
 		{
-//            LOG_P_2(LOG_CAT_I, "Have got merged pocket.");
+			LOG_P_2(LOG_CAT_I, (char*)m_chLogMerged);
 			p_chData = oParsingResult.p_chExtraData;
 			iLength = oParsingResult.iExtraDataLength;
 			goto gDp;
@@ -782,14 +782,14 @@ ec: if(bLocalExitSignal == false) // Если не было локального
 #else
 		closesocket(mThreadDadas[iTPos].oConnectionData.iSocket);
 #endif
-		LOG_P_2(LOG_CAT_I, "Closed ordinary: " << m_chIPNameBuffer << ":" << m_chPortNameBuffer << " ID: " << iTPos);
+		LOG_P_1(LOG_CAT_I, "Closed ordinary: " << m_chIPNameBuffer << ":" << m_chPortNameBuffer << " ID: " << iTPos);
 	}
 enc:if(iTPos != NO_CONNECTION)
 	{
 #ifndef WIN32
-	LOG_P_2(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread);
+	LOG_P_1(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread);
 #else
-	LOG_P_2(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread.p);
+	LOG_P_12(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread.p);
 #endif
 	}
 	else
@@ -902,9 +902,9 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 			goto nc;
 		MSleep(USER_RESPONSE_MS);
 	}
-	LOG_P_2(LOG_CAT_I, "Terminated by admin.");
+	LOG_P_1(LOG_CAT_I, "Terminated by admin.");
 	// Закрытие приёмника.
-	LOG_P_2(LOG_CAT_I, "Closing listener...");
+	LOG_P_1(LOG_CAT_I, "Closing listener...");
 #ifndef WIN32
 	shutdown(iListener, SHUT_RDWR);
 	close(iListener);
@@ -915,9 +915,9 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 	{
 		MSleep(USER_RESPONSE_MS);
 	}
-	LOG_P_2(LOG_CAT_I, "Listener is closed.");
+	LOG_P_1(LOG_CAT_I, "Listener is closed.");
 	// Закрытие сокетов клиентов.
-	LOG_P_2(LOG_CAT_I, "Disconnecting clients...");
+	LOG_P_1(LOG_CAT_I, "Disconnecting clients...");
 	for(iCurrPos = 0; iCurrPos != MAX_CONN; iCurrPos++) // Закрываем все клиентские сокеты.
 	{
 		if(mThreadDadas[iCurrPos].bInUse == true)
@@ -951,7 +951,7 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 		}
 	}
 	pthread_mutex_unlock(&ptConnMutex);
-	LOG_P_2(LOG_CAT_I, "All clients are disconnected.");
+	LOG_P_1(LOG_CAT_I, "All clients are disconnected.");
 ex:
 #ifdef WIN32
 	WSACleanup();

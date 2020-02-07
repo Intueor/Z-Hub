@@ -17,5 +17,6 @@ const char m_chClientLabelWaiting[] = "Ожидается";
 const char m_chLogServerUpdated[] = "Server configuration is updated.";
 const char m_chLogBansCorrupt[] = "Bans catalogue file is corrupt. ";
 const char m_chLogEnvUpdated[] = "Environment configuration is updated.";
+const char m_chLogCurrentEnv[] = "Current environment: ";
 
 #endif // ZHUBDEFS_H

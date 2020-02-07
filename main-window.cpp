@@ -117,10 +117,28 @@ MainWindow::~MainWindow()
 // Процедуры при закрытии окна приложения.
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+	Set_Proposed_Bool_Dialog* p_Set_Proposed_Bool_Dialog;
+	//
 	SetStatusBarText(m_chStatusShutdown);
 	if(p_Environment)
 	{
-		LCHECK_BOOL(EnvStopProcedures(p_ui->action_Autosave->isChecked()));
+		if(p_ui->action_StartStopEnv->isChecked())
+		{
+			LCHECK_BOOL(EnvStopProcedures());
+		}
+		if(!p_ui->action_Autosave->isChecked())
+		{
+			p_Set_Proposed_Bool_Dialog = new Set_Proposed_Bool_Dialog((char*)m_chMsgWarning,
+																	  (char*)"Все несохранённые данные среды будут утеряны. Сохранить?");
+			if(p_Set_Proposed_Bool_Dialog->exec() == DIALOGS_ACCEPT)
+			{
+				goto gS;
+			}
+		}
+		else
+		{
+gS:			LCHECK_BOOL(p_Environment->SaveEnv());
+		}
 		delete p_Environment;
 	}
 	if(p_Server)
@@ -283,7 +301,7 @@ bool MainWindow::LoadEnvConfig(char* p_chName)
 		return false;
 	}
 	CopyStrArray((char*)l_pName.front()->FirstChild()->Value(), p_chName, ENV_NAME_LEN);
-	LOG_P_1(LOG_CAT_I, "Environment name: " << p_chName);
+	LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << p_chName);
 	return true;
 }
 
@@ -334,7 +352,7 @@ bool MainWindow::SaveEnvConfig()
 	eResult = xmlEnvConf.SaveFile(E_CONF_PATH);
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogCantSave << "environment configuration.");
+		LOG_P_1(LOG_CAT_E, m_chLogCantSave << "environment configuration.");
 		return false;
 	}
 	return true;
@@ -347,18 +365,18 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 	char m_chPortNameBuffer[PORT_STR_LEN];
 	NetHub::ConnectionData oConnectionDataInt;
 	//
-	LOG_P_0(LOG_CAT_I, "ID: " << iConnection << " have status: " << bConnected);
+	LOG_P_1(LOG_CAT_I, "ID: " << iConnection << " have status: " << bConnected);
 	oConnectionDataInt = p_Server->GetConnectionData(iConnection, false);
 	if(oConnectionDataInt.iStatus != NO_CONNECTION)
 	{
 		p_Server->FillIPAndPortNames(oConnectionDataInt, m_chIPNameBuffer, m_chPortNameBuffer, false);
 		if(NetHub::CheckIPv4(m_chIPNameBuffer))
 		{
-			LOG_P_0(LOG_CAT_I, "IP: " << m_chIPNameBuffer << " Port: " << m_chPortNameBuffer);
+			LOG_P_1(LOG_CAT_I, "IP: " << m_chIPNameBuffer << " Port: " << m_chPortNameBuffer);
 		}
 		else
 		{
-			LOG_P_0(LOG_CAT_I, "IP: [" << m_chIPNameBuffer << "] Port: " << m_chPortNameBuffer);
+			LOG_P_1(LOG_CAT_I, "IP: [" << m_chIPNameBuffer << "] Port: " << m_chPortNameBuffer);
 		}
 		if(bConnected)
 		{
@@ -490,21 +508,18 @@ bool MainWindow::ServerStopProcedures()
 // Процедуры запуска среды.
 bool MainWindow::EnvStartProcedures()
 {
-	if(!p_Environment->LoadEnv()) return false;
-	p_Environment->Start();
-	p_ui->action_EnvName->setDisabled(true);
+	if(!p_Environment->Start()) return false;
+	p_ui->action_ChangeEnv->setDisabled(true);
+	p_ui->action_SaveCurrent->setDisabled(true);
 	return true;
 }
 
 // Процедуры остановки среды.
-bool MainWindow::EnvStopProcedures(bool bSave)
+bool MainWindow::EnvStopProcedures()
 {
 	p_Environment->Stop();
-	if(bSave)
-	{
-		LCHECK_BOOL(p_Environment->SaveEnv());
-	}
-	p_ui->action_EnvName->setDisabled(false);
+	p_ui->action_ChangeEnv->setDisabled(false);
+	p_ui->action_SaveCurrent->setDisabled(false);
 	return true;
 }
 
@@ -581,26 +596,13 @@ gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
 // При нажатии кнопки 'Старт \ стоп среды'.
 void MainWindow::on_action_StartStopEnv_triggered(bool checked)
 {
-	Set_Proposed_Bool_Dialog* p_Set_Proposed_Bool_Dialog;
-	bool bAutosave = p_ui->action_Autosave->isChecked();
-	//
 	if(checked)
 	{
 		LCHECK_BOOL(EnvStartProcedures());
 	}
 	else
 	{
-		if(!bAutosave)
-		{
-			p_Set_Proposed_Bool_Dialog = new Set_Proposed_Bool_Dialog(
-						(char*)m_chMsgWarning, (char*)"Опция сохранения среды при остановке не выбрана. Остановить без записи?");
-			if(p_Set_Proposed_Bool_Dialog->exec() == DIALOGS_REJECT)
-			{
-				p_ui->action_StartStopEnv->setChecked(true);
-				return;
-			}
-		}
-		LCHECK_BOOL(EnvStopProcedures(bAutosave));
+		LCHECK_BOOL(EnvStopProcedures());
 	}
 }
 
@@ -610,23 +612,42 @@ void MainWindow::on_action_StartOnLaunchServer_triggered(bool checked)
 	p_UISettings->setValue("AutostartEnv", checked);
 }
 
-// При нажатии кнопки 'Имя среды'.
-void MainWindow::on_action_EnvName_triggered()
+// При нажатии кнопки 'Сменить среду'.
+void MainWindow::on_action_ChangeEnv_triggered()
 {
 	Set_Proposed_String_Dialog* p_Set_Proposed_String_Dialog;
+	Set_Proposed_Bool_Dialog* p_Set_Proposed_Bool_Dialog;
+	char m_chEnvNameOld[ENV_NAME_LEN];
 	//
-	p_Set_Proposed_String_Dialog = new Set_Proposed_String_Dialog((char*)"Имя среды", m_chEnvName, ENV_NAME_LEN);
+	CopyStrArray(m_chEnvName, m_chEnvNameOld, ENV_NAME_LEN);
+	p_Set_Proposed_String_Dialog = new Set_Proposed_String_Dialog((char*)"Смена среды", m_chEnvName, ENV_NAME_LEN);
 	if(p_Set_Proposed_String_Dialog->exec() == DIALOGS_ACCEPT)
 	{
-		LCHECK_BOOL(SaveServerConfig());
-		LOG_P_0(LOG_CAT_I, m_chLogEnvUpdated);
-		LOG_P_1(LOG_CAT_I, "Environment name: " << m_chEnvName);
+		p_Set_Proposed_Bool_Dialog = new Set_Proposed_Bool_Dialog((char*)m_chMsgWarning,
+																  (char*)"Все несохранённые данные среды будут утеряны. Продолжить?");
+		if(p_Set_Proposed_Bool_Dialog->exec() == DIALOGS_ACCEPT)
+		{
+			LCHECK_BOOL(SaveEnvConfig());
+			LOG_P_0(LOG_CAT_I, m_chLogEnvUpdated);
+			LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << m_chEnvName);
+			delete p_Environment;
+			p_Environment = new Environment(LOG_MUTEX, m_chEnvName);
+		}
+		else
+		{
+			CopyStrArray(m_chEnvNameOld, m_chEnvName, ENV_NAME_LEN);
+		}
 	}
-	LCHECK_BOOL(SaveEnvConfig());
 }
 
-// При нажатии кнопки 'Сохранение при остановке среды'.
+// При нажатии кнопки 'Сохранение при выходе из приложения'.
 void MainWindow::on_action_Autosave_triggered(bool checked)
 {
 	p_UISettings->setValue("Autosave", checked);
+}
+
+// При нажатии кнопки 'Сохранение текущей среды'
+void MainWindow::on_action_SaveCurrent_triggered()
+{
+	LCHECK_BOOL(p_Environment->SaveEnv());
 }

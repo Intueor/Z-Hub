@@ -33,7 +33,8 @@ public:
 	static bool SaveEnv();
 										///< \return true, при удаче.
 	/// Запуск среды.
-	static void Start();
+	static bool Start();
+										///< \return true, при удаче.
 	/// Остановка среды.
 	static void Stop();
 
@@ -43,6 +44,7 @@ private:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	static char* p_chEnvNameInt; ///< Указатель на внутреннюю строку с именем среды.
+	static bool bEnvLoaded; ///< Флаг загруженной среды.
 };
 
 #endif // ENVIRONMENT_H

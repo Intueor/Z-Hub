@@ -119,7 +119,8 @@
     </property>
     <addaction name="action_StartStopEnv"/>
     <addaction name="action_StartOnLaunchServer"/>
-    <addaction name="action_EnvName"/>
+    <addaction name="action_ChangeEnv"/>
+    <addaction name="action_SaveCurrent"/>
     <addaction name="action_Autosave"/>
    </widget>
    <addaction name="menu_Net"/>
@@ -165,12 +166,15 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Старт при запуске сервера</string>
+    <string>Старт при запуске приложения</string>
    </property>
   </action>
-  <action name="action_EnvName">
+  <action name="action_ChangeEnv">
    <property name="text">
-    <string>Имя среды</string>
+    <string>Сменить среду</string>
+   </property>
+   <property name="toolTip">
+    <string>Сменить среду</string>
    </property>
   </action>
   <action name="action_Autosave">
@@ -178,7 +182,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Сохранение при остановке среды</string>
+    <string>Сохранение при выходе из приложения</string>
+   </property>
+  </action>
+  <action name="action_SaveCurrent">
+   <property name="text">
+    <string>Сохранить текущую среду</string>
    </property>
   </action>
  </widget>

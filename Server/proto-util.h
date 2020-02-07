@@ -4,6 +4,10 @@
 //== ВКЛЮЧЕНИЯ.
 #include "net-hub-defs.h"
 
+//== КОНСТАНТЫ.
+// Многократно используемые строки.
+const char m_chLogMerged[] = "Have got merged pocket.";
+
 // Утиль.
 #define _PPControlSize(name)			iSizeOfStructure = (int)sizeof(name);													\
 										if(iSizeOfStructure < iCurrentLength)                                                   \

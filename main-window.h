@@ -74,8 +74,7 @@ private:
 	static bool EnvStartProcedures();
 							///< \return true, при удаче.
 	/// Процедуры остановки среды.
-	static bool EnvStopProcedures(bool bSave);
-							///< \param[in] bSave true для сохранения среды при осуществлении остановки.
+	static bool EnvStopProcedures();
 							///< \return true, при удаче.
 	/// Загрузка конфигурации сервера.
 	static bool LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char* p_chServerName);
@@ -114,10 +113,12 @@ private slots:
 	void on_action_StartOnLaunchServer_triggered(bool checked);
 							///< \param[in] checked Позиция переключателя.
 	/// При нажатии кнопки 'Имя среды'.
-	void on_action_EnvName_triggered();
-	// При нажатии кнопки 'Сохранение при остановке среды'.
+	void on_action_ChangeEnv_triggered();
+	// При нажатии кнопки 'Сохранение при выходе из приложения'.
 	void on_action_Autosave_triggered(bool checked);
 							///< \param[in] checked Позиция переключателя.
+	// При нажатии кнопки 'Сохранение текущей среды'
+	void on_action_SaveCurrent_triggered();
 
 public:
 	static unsigned char uchInitRes; ///< Результат инициализации.
