@@ -6,5 +6,5 @@
 // Конструктор.
 Link::Link(PSchLinkBase& a_PSchLinkBase)
 {
-
+	oPSchLinkBase = a_PSchLinkBase;
 }

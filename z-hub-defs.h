@@ -42,5 +42,24 @@ const char m_chLogSrcPortPos[] = "'SrcPortPos'";
 const char m_chLogDstPortID[] = "'DstPortID'";
 const char m_chLogDstPortPos[] = "'DstPortPos'";
 const char m_chXML[] = ".xml";
+const char m_chGroups[] = "Groups";
+const char m_chGroup[] = "Group";
+const char m_chID[] = "ID";
+const char m_chName[] = "Name";
+const char m_chBkgColor[] = "BkgColor";
+const char m_chFrame[] = "Frame";
+const char m_chElements[] = "Elements";
+const char m_chZ[] = "Z";
+const char m_chElement[] = "Element";
+const char m_chPos[] = "Pos";
+const char m_chGroupID[] = "GroupID";
+const char m_chLinks[] = "Links";
+const char m_chLink[] = "Link";
+const char m_chSrcID[] = "SrcID";
+const char m_chSrcPortID[] = "SrcPortID";
+const char m_chSrcPortPos[] = "SrcPortPos";
+const char m_chDstID[] = "DstID";
+const char m_chDstPortID[] = "DstPortID";
+const char m_chDstPortPos[] = "DstPortPos";
 
 #endif // ZHUBDEFS_H

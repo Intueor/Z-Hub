@@ -6,5 +6,5 @@
 // Конструктор.
 Element::Element(PSchElementBase& a_PSchElementBase)
 {
-
+	oPSchElementBase = a_PSchElementBase;
 }

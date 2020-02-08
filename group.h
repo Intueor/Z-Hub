@@ -12,6 +12,8 @@ public:
 	/// Конструктор
 	Group(PSchGroupBase& a_PSchGroupBase);
 									///< \param[in] a_PSchGroupBase Ссылка на структуру с данными по группе.
+public:
+	PSchGroupBase oPSchGroupBase; ///< Структура с данными по группе.
 };
 
 #endif // GROUP_H

@@ -6,5 +6,5 @@
 // Конструктор.
 Group::Group(PSchGroupBase& a_PSchGroupBase)
 {
-
+	oPSchGroupBase = a_PSchGroupBase;
 }

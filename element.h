@@ -12,6 +12,8 @@ public:
 	/// Конструктор
 	Element(PSchElementBase& a_PSchElementBase);
 									///< \param[in] a_PSchElementBase Ссылка на структуру с данными по элементу.
+public:
+	PSchElementBase oPSchElementBase; ///< Структура с данными по элементу.
 };
 
 #endif // ELEMENT_H

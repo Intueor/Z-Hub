@@ -12,6 +12,8 @@ public:
 	/// Конструктор
 	Link(PSchLinkBase& a_PSchLinkBase);
 									///< \param[in] a_PSchLinkBase Ссылка на структуру с данными по линку.
+public:
+	PSchLinkBase oPSchLinkBase; ///< Структура с данными по линку.
 };
 
 #endif // LINK_H
