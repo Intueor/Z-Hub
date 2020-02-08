@@ -4,7 +4,7 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс группы.
 // Конструктор.
-Group::Group()
+Group::Group(PSchGroupBase& a_PSchGroupBase)
 {
 
 }

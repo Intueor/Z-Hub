@@ -2,6 +2,7 @@
 #define ELEMENT_H
 
 //== ВКЛЮЧЕНИЯ.
+#include "Server/protocol.h"
 
 //== КЛАССЫ.
 /// Класс элемента.
@@ -9,7 +10,8 @@ class Element
 {
 public:
 	/// Конструктор
-	Element();
+	Element(PSchElementBase& a_PSchElementBase);
+									///< \param[in] a_PSchElementBase Ссылка на структуру с данными по элементу.
 };
 
 #endif // ELEMENT_H

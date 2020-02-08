@@ -4,7 +4,7 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс линка.
 // Конструктор.
-Link::Link()
+Link::Link(PSchLinkBase& a_PSchLinkBase)
 {
 
 }

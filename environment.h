@@ -2,6 +2,7 @@
 #define ENVIRONMENT_H
 
 //== ВКЛЮЧЕНИЯ.
+#include <QString>
 #include "logger.h"
 #include "Server/server.h"
 #include "parser-ext.h"
@@ -30,15 +31,18 @@ public:
 	~Environment();
 	/// Загрузка среды.
 	static bool LoadEnv();
-										///< \return true, при удаче.
+										///< \return true при удаче.
 	/// Сохранение среды.
 	static bool SaveEnv();
-										///< \return true, при удаче.
+										///< \return true при удаче.
 	/// Запуск среды.
 	static bool Start();
-										///< \return true, при удаче.
+										///< \return true при удаче.
 	/// Остановка среды.
 	static void Stop();
+	/// Проверка инициализированности среды.
+	static bool CheckInitialized();
+										///< \return true при инициализированной среде.
 
 private:
 	LOGDECL
@@ -48,8 +52,8 @@ private:
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
 	static char* p_chEnvNameInt; ///< Указатель на внутреннюю строку с именем среды.
 	static bool bEnvLoaded; ///< Флаг загруженной среды.
-	static string stEnvPath; ///< Строка для пути среды.
-	static string stEnvFilename; ///< Строка для имени файла среды.
+	static QString strEnvPath; ///< Строка для пути среды.
+	static QString strEnvFilename; ///< Строка для имени файла среды.
 	//
 };
 

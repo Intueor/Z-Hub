@@ -4,7 +4,7 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс элемента.
 // Конструктор.
-Element::Element()
+Element::Element(PSchElementBase& a_PSchElementBase)
 {
 
 }

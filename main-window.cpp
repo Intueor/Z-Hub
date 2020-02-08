@@ -128,6 +128,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		}
 		if(!p_ui->action_Autosave->isChecked())
 		{
+			if(!p_Environment->CheckInitialized()) goto gNI;
 			p_Set_Proposed_Bool_Dialog = new Set_Proposed_Bool_Dialog((char*)m_chMsgWarning,
 																	  (char*)"Все несохранённые данные среды будут утеряны. Сохранить?");
 			if(p_Set_Proposed_Bool_Dialog->exec() == DIALOGS_ACCEPT)
@@ -139,7 +140,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		{
 gS:			LCHECK_BOOL(p_Environment->SaveEnv());
 		}
-		delete p_Environment;
+gNI:	delete p_Environment;
 	}
 	if(p_Server)
 	{
@@ -508,7 +509,11 @@ bool MainWindow::ServerStopProcedures()
 // Процедуры запуска среды.
 bool MainWindow::EnvStartProcedures()
 {
-	if(!p_Environment->Start()) return false;
+	if(!p_Environment->Start())
+	{
+		p_ui->action_StartStopEnv->setChecked(false);
+		return false;
+	}
 	p_ui->action_ChangeEnv->setDisabled(true);
 	p_ui->action_SaveCurrent->setDisabled(true);
 	return true;
@@ -623,11 +628,12 @@ void MainWindow::on_action_ChangeEnv_triggered()
 	p_Set_Proposed_String_Dialog = new Set_Proposed_String_Dialog((char*)"Смена среды", m_chEnvName, ENV_NAME_LEN);
 	if(p_Set_Proposed_String_Dialog->exec() == DIALOGS_ACCEPT)
 	{
+		if(!p_Environment->CheckInitialized()) goto gN;
 		p_Set_Proposed_Bool_Dialog = new Set_Proposed_Bool_Dialog((char*)m_chMsgWarning,
 																  (char*)"Все несохранённые данные среды будут утеряны. Продолжить?");
 		if(p_Set_Proposed_Bool_Dialog->exec() == DIALOGS_ACCEPT)
 		{
-			LCHECK_BOOL(SaveEnvConfig());
+gN:			LCHECK_BOOL(SaveEnvConfig());
 			LOG_P_0(LOG_CAT_I, m_chLogEnvUpdated);
 			LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << m_chEnvName);
 			delete p_Environment;

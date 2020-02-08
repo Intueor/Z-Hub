@@ -9,6 +9,8 @@
 #define ENVS_DIR						"../Z-Hub/environments/"
 #define SERVER_WAITING_ATTEMPTS			128
 #define ENV_NAME_LEN					64
+#define SCH_NEXT_Z_SHIFT				1.0
+#define SCH_LINK_Z_SHIFT				0.01
 
 //== КОНСТАНТЫ.
 // Многократно используемые строки.
@@ -18,6 +20,8 @@ const char m_chLogServerUpdated[] = "Server configuration is updated.";
 const char m_chLogBansCorrupt[] = "Bans catalogue file is corrupt. ";
 const char m_chLogEnvUpdated[] = "Environment configuration is updated.";
 const char m_chLogCurrentEnv[] = "Current environment: ";
+const char m_chLogEnvFileCorrupt[] = "Environment file is corrupt. ";
+const char m_chLogEnvNodeAbsend[] = " node is absend.";
 const char m_chXML[] = ".xml";
 
 #endif // ZHUBDEFS_H
