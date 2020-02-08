@@ -2,6 +2,7 @@
 #include <QMap>
 #include <QColor>
 #include "environment.h"
+#include "main-window.h"
 
 //== МАКРОСЫ.
 #define LOG_NAME				"environment"
@@ -23,6 +24,8 @@ QString Environment::strEnvFilename;
 bool Environment::bEnvThreadAlive = false;
 bool Environment::bStopEnvUpdate = false;
 pthread_t Environment::thrEnv;
+bool Environment::bRequested = false;
+PSchReadyFrame Environment::oPSchReadyFrame;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс среды.
@@ -158,7 +161,8 @@ bool Environment::LoadEnv()
 		} FIND_IN_CHILDLIST_END(p_ListNames);
 		if(!bPresent)
 		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvGroup << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvGroup <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
 			return false;
 		}
 		bPresent = false;
@@ -364,7 +368,8 @@ bool Environment::LoadEnv()
 		} FIND_IN_CHILDLIST_END(p_ListZs);
 		if(!bPresent)
 		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogZ << m_chLogNode);
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogZ << m_chLogNode);
 			return false;
 		}
 		bPresent = false;
@@ -430,7 +435,8 @@ bool Environment::LoadEnv()
 		} FIND_IN_CHILDLIST_END(p_ListSrcIDs);
 		if(!bPresent)
 		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvLink << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogSrcID << m_chLogNode);
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvLink <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogSrcID << m_chLogNode);
 			return false;
 		}
 		bPresent = false;
@@ -497,7 +503,8 @@ bool Environment::LoadEnv()
 		} FIND_IN_CHILDLIST_END(p_ListDstIDs);
 		if(!bPresent)
 		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvLink << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogDstID << m_chLogNode);
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvLink <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogDstID << m_chLogNode);
 			return false;
 		}
 		bPresent = false;
@@ -528,14 +535,16 @@ bool Environment::LoadEnv()
 			if(strHelper.isEmpty())
 			{
 				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogDstPortPos << m_chLogNode);
+						m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+						m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogDstPortPos << m_chLogNode);
 				return false;
 			}
 			lstrHelper = strHelper.split(',');
 			if(lstrHelper.count() != 2)
 			{
 				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogDstPortPos << m_chLogNode);
+						m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+						m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogDstPortPos << m_chLogNode);
 				return false;
 			}
 			oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos.dbX = lstrHelper.at(0).toDouble();
@@ -704,6 +713,8 @@ bool Environment::Start()
 		if(!LoadEnv()) return false;
 	}
 	LOG_P_1(LOG_CAT_I, "Start environment.");
+	bRequested = false;
+	memset(&oPSchReadyFrame, 0, sizeof(PSchReadyFrame));
 	pthread_create(&thrEnv, nullptr, EnvThread, nullptr);
 	return true;
 }
@@ -733,10 +744,420 @@ void* Environment::EnvThread(void *p_vPlug)
 	LOG_P_1(LOG_CAT_I, "Environment thread alive.");
 	while(!bStopEnvUpdate)
 	{
-
+		if(MainWindow::p_Server)
+		{
+			if(MainWindow::p_Server->CheckServerAlive())
+			{
+				NetOperations();
+			}
+		}
+		MSleep(ENV_STEP_WAITING);
 	}
 	bEnvThreadAlive = false;
 	LOG_P_1(LOG_CAT_I, "Environment thread terminated.");
 	bStopEnvUpdate = false;
 	RETURN_THREAD
+}
+
+// Работа с сетью.
+void Environment::NetOperations()
+{
+	Element* p_Element;
+	Link* p_Link;
+	Group* p_Group;
+	PSchElementVars oPSchElementVars;
+	PSchElementName oPSchElementName;
+	PSchGroupName oPSchGroupName;
+	PSchLinkVars oPSchLinkVars;
+	PSchGroupVars oPSchGroupVars;
+	QList<Element*> lp_NewElements;
+	QList<Element*> lp_ChangedElements;
+	QList<Element*> lp_RenamedElements;
+	QList<Link*> lp_NewLinks;
+	QList<Link*> lp_ChangedLinks;
+	QList<Group*> lp_NewGroups;
+	QList<Group*> lp_ChangedGroups;
+	QList<Group*> lp_RenamedGroups;
+	//
+	memset(&oPSchElementVars, 0, sizeof(oPSchElementVars));
+	memset(&oPSchLinkVars, 0, sizeof(oPSchLinkVars));
+	bool bPresent;
+	int iEC, iECM;
+	int iLC, iLCM;
+	unsigned short ushNewsQantity = 1;
+	//
+	if(MainWindow::p_Server->GetConnectionData(0).iStatus != NO_CONNECTION)
+	{
+		if(MainWindow::p_Server->IsConnectionSecured(0))
+		{
+			iEC = PBCount(Element);
+			iLC = PBCount(Link);
+			if(bRequested) // Если был запрос от клиента...
+			{
+				//==================== Раздел элементов.
+				for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+				{
+					DbPoint dbRealPos;
+					//
+					p_Element = PBAccess(Element, iE);
+					if(ushNewsQantity)
+					{
+						if(p_Element->bNew) // Проверка признака нового элемента для клиента.
+						{
+							lp_NewElements.push_back(p_Element);
+							p_Element->bNew = false; // Уже не новый для клиента.
+							bRequested = false;
+							ushNewsQantity--;
+						}
+					}
+					dbRealPos.dbX = p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos.dbX +
+							p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbX;
+					dbRealPos.dbY = p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos.dbY +
+							p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbY;
+					if(p_Element->chTouchedBits & TOUCHED_GEOMETRY)
+						// Если была затронута геометрия...
+					{
+						for(int iL = 0; iL < p_Element->vp_LinkedElements.count(); iL++)
+						{
+							Element* p_DstElement = p_Element->vp_LinkedElements.at(iL);
+							// Проверка признака затронутого эл. для клиента.
+							if(p_DstElement->chTouchedBits & TOUCHED_GEOMETRY)
+							{
+								lp_ChangedElements.push_back(p_DstElement);
+								p_DstElement->chTouchedBits ^= TOUCHED_GEOMETRY;
+							}
+						}
+						lp_ChangedElements.push_back(p_Element);
+						p_Element->chTouchedBits ^= TOUCHED_GEOMETRY;
+						bRequested = false;
+					} // else if - так как геометрия в приоритете.
+					else if(((p_Element->chTouchedBits & TOUCHED_CONTENT) ||
+							 (p_Element->chTouchedBits & TOUCHED_NAME)) &&
+							(dbRealPos.dbX >
+							 oPSchReadyFrame.oDbFrame.dbX) &
+							(dbRealPos.dbY >
+							 oPSchReadyFrame.oDbFrame.dbY) &
+							(dbRealPos.dbX <
+							 (oPSchReadyFrame.oDbFrame.dbX +
+							  oPSchReadyFrame.oDbFrame.dbW)) &
+							(dbRealPos.dbY <
+							 (oPSchReadyFrame.oDbFrame.dbY +
+							  oPSchReadyFrame.oDbFrame.dbH)))
+						// Если был затронут контент или имя и входит в окно...
+					{
+						if(p_Element->chTouchedBits & TOUCHED_CONTENT)
+						{
+							lp_ChangedElements.push_back(p_Element);
+							p_Element->chTouchedBits ^= TOUCHED_CONTENT;
+						}
+						if(p_Element->chTouchedBits & TOUCHED_NAME)
+						{
+							lp_RenamedElements.push_back(p_Element);
+							p_Element->chTouchedBits ^= TOUCHED_NAME;
+						}
+						bRequested = false;
+					}
+				}
+				bPresent = false;
+				// По новым.
+				iEC = lp_NewElements.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Element = lp_NewElements.at(iEP);
+					if(iEP != iECM)
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.bLastInQueue = true; // Последний в цепочке.
+					}
+					if(p_Element->chTouchedBits & TOUCHED_GROUP)
+					{
+						p_Element->oPSchElementBase.bRequestGroupUpdate = true;
+						p_Element->chTouchedBits ^= TOUCHED_GROUP;
+					}
+					else
+					{
+						p_Element->oPSchElementBase.bRequestGroupUpdate = false;
+					}
+					// Отправка полных данных на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																  PROTO_O_SCH_ELEMENT_BASE,
+																  (char*)&p_Element->oPSchElementBase,
+																  sizeof(PSchElementBase)));
+					LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				// По изменённым.
+				iEC = lp_ChangedElements.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Element = lp_ChangedElements.at(iEP);
+					memcpy(&oPSchElementVars, &p_Element->oPSchElementBase.oPSchElementVars, sizeof(PSchElementVars));
+					if(iEP != iECM)
+					{
+						oPSchElementVars.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchElementVars.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_ELEMENT_VARS,
+																  (char*)&oPSchElementVars, sizeof(PSchElementVars)));
+					p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.uchChangesBits = 0;
+					LOG_P_2(LOG_CAT_I, "{Out} Changed element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				// По переименованным.
+				iEC = lp_RenamedElements.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Element = lp_RenamedElements.at(iEP);
+					memcpy(&oPSchElementName.m_chName, &p_Element->oPSchElementBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+					oPSchElementName.ullIDInt = p_Element->oPSchElementBase.oPSchElementVars.ullIDInt;
+					if(iEP != iECM)
+					{
+						oPSchElementName.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchElementName.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_ELEMENT_NAME,
+																  (char*)&oPSchElementName, sizeof(oPSchElementName)));
+					LOG_P_2(LOG_CAT_I, "{Out} Changed element`s name [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				lp_NewElements.clear();
+				lp_ChangedElements.clear();
+				lp_RenamedElements.clear();
+				//==================== Раздел линков.
+				for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+				{
+					p_Link = PBAccess(Link, iL);
+					if(ushNewsQantity)
+					{
+						if(p_Link->bNew) // Проверка признака нового линка для клиента.
+						{
+							if(CheckLinkForAct(p_Link)) // Проверка на догруженность элементов линка на клиент.
+							{
+								lp_NewLinks.push_back(p_Link);
+								p_Link->bNew = false; // Уже не новый для клиента.
+								bRequested = false;
+								ushNewsQantity--;
+							}
+						}
+					}
+					if(p_Link->chTouchedBits & TOUCHED_GEOMETRY) // Проверка признака затр/ линка для клиента.
+					{
+						if(CheckLinkForAct(p_Link)) // Проверка на догруженность элементов линка на клиент.
+						{
+							lp_ChangedLinks.push_back(p_Link);
+							p_Link->chTouchedBits = 0; // Уже не затронутый для клиента.
+							bRequested = false;
+						}
+					}
+				}
+				// По новым.
+				iLC = lp_NewLinks.count();
+				iLCM = iLC - 1;
+				for(int iLP = 0; iLP < iLC; iLP++)
+				{
+					p_Link = lp_NewLinks.at(iLP);
+					if(iLP != iLCM)
+					{
+						p_Link->oPSchLinkBase.oPSchLinkVars.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						p_Link->oPSchLinkBase.oPSchLinkVars.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка полных данных на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_LINK_BASE,
+																  (char*)&p_Link->oPSchLinkBase, sizeof(PSchLinkBase)));
+					LOG_P_2(LOG_CAT_I, "{Out} New link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString()
+							<< "<>" << QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				// По изменённым.
+				iLC = lp_ChangedLinks.count();
+				iLCM = iLC - 1;
+				for(int iLP = 0; iLP < iLC; iLP++)
+				{
+					p_Link = lp_ChangedLinks.at(iLP);
+					memcpy(&oPSchLinkVars, &p_Link->oPSchLinkBase.oPSchLinkVars, sizeof(oPSchLinkVars));
+					if(iLP != iLCM)
+					{
+						oPSchLinkVars.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchLinkVars.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_LINK_VARS,
+																  (char*)&oPSchLinkVars, sizeof(PSchLinkVars)));
+					p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits = 0;
+					LOG_P_2(LOG_CAT_I, "{Out} Changed link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString()
+							<< "<>" << QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				lp_NewLinks.clear();
+				lp_ChangedLinks.clear();
+				//==================== Раздел групп.
+				for(uint uiE = 0; uiE < PBCount(Group); uiE++) // По всем группам...
+				{
+					p_Group = PBAccess(Group, uiE);
+					if(ushNewsQantity)
+					{
+						if(p_Group->bNew) // Проверка признака новой группы для клиента.
+						{
+							lp_NewGroups.push_back(p_Group);
+							p_Group->bNew = false; // Уже не новая для клиента.
+							bRequested = false;
+							ushNewsQantity--;
+						}
+					}
+					if(p_Group->chTouchedBits & TOUCHED_GEOMETRY)
+						// Если была затронута геометрия...
+					{
+						lp_ChangedGroups.push_back(p_Group);
+						p_Group->chTouchedBits = 0; // Уже не затронутая для клиента.
+						bRequested = false;
+					} // else if - так как геометрия в приоритете.
+					else if(((p_Group->chTouchedBits & TOUCHED_CONTENT) ||
+							 (p_Group->chTouchedBits & TOUCHED_NAME)) &&
+							(p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbX >
+							 oPSchReadyFrame.oDbFrame.dbX) &
+							(p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbY >
+							 oPSchReadyFrame.oDbFrame.dbY) &
+							(p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbX <
+							 (oPSchReadyFrame.oDbFrame.dbX +
+							  oPSchReadyFrame.oDbFrame.dbW)) &
+							(p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbY <
+							 (oPSchReadyFrame.oDbFrame.dbY +
+							  oPSchReadyFrame.oDbFrame.dbH)))
+						// Если был затронут контент или имя и входит в окно...
+					{
+						if(p_Group->chTouchedBits & TOUCHED_CONTENT)
+						{
+							lp_ChangedGroups.push_back(p_Group);
+						}
+						if(p_Group->chTouchedBits & TOUCHED_NAME)
+						{
+							lp_RenamedGroups.push_back(p_Group);
+						}
+						bRequested = false;
+						p_Group->chTouchedBits = 0; // Уже не затронутая для клиента.
+					}
+				}
+				// По новым.
+				iEC = lp_NewGroups.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Group = lp_NewGroups.at(iEP);
+					if(iEP != iECM)
+					{
+						p_Group->oPSchGroupBase.oPSchGroupVars.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						p_Group->oPSchGroupBase.oPSchGroupVars.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка полных данных на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_BASE,
+																  (char*)&p_Group->oPSchGroupBase, sizeof(PSchGroupBase)));
+					LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				// По изменённым.
+				iEC = lp_ChangedGroups.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Group = lp_ChangedGroups.at(iEP);
+					memcpy(&oPSchGroupVars, &p_Group->oPSchGroupBase.oPSchGroupVars, sizeof(PSchGroupVars));
+					if(iEP != iECM)
+					{
+						oPSchGroupVars.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchGroupVars.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_VARS,
+																  (char*)&oPSchGroupVars, sizeof(PSchGroupVars)));
+					p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uchChangesBits = 0;
+					LOG_P_2(LOG_CAT_I, "{Out} Changed group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				// По переименованным.
+				iEC = lp_RenamedGroups.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Group = lp_RenamedGroups.at(iEP);
+					memcpy(&oPSchGroupName.m_chName, &p_Group->oPSchGroupBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+					oPSchGroupName.ullIDInt = p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt;
+					if(iEP != iECM)
+					{
+						oPSchGroupName.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchGroupName.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_NAME,
+																  (char*)&oPSchGroupName, sizeof(oPSchGroupName)));
+					LOG_P_2(LOG_CAT_I, "{Out} Changed group`s name [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+							<< "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				lp_NewGroups.clear();
+				lp_ChangedGroups.clear();
+				lp_RenamedGroups.clear();
+				//
+				if(bPresent)
+				{
+					LCHECK_BOOL(MainWindow::p_Server->SendBufferToClient(0, true));
+				}
+			}
+		}
+	}
+}
+
+// Проверка линка на актуальность по представленным элементам.
+bool Environment::CheckLinkForAct(Link* p_Link)
+{
+	Element* p_Element;
+	//
+	for(uint uiE = 0; uiE < PBCount(Element); uiE++)
+	{
+		p_Element = PBAccess(Element, uiE);
+		if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc)
+		{
+			if(p_Element->bNew) return false;
+		}
+		if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst)
+		{
+			if(p_Element->bNew) return false;
+		}
+	}
+	return true;
 }

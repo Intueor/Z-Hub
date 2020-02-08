@@ -43,10 +43,17 @@ public:
 	/// Проверка инициализированности среды.
 	static bool CheckInitialized();
 										///< \return true при инициализированной среде.
+private:
 	/// Поток шагов среды.
 	static void* EnvThread(void *p_vPlug);
 										///< \param[in] p_vPlug Заглушка.
 										///< \return Заглушка.
+	/// Работа с сетью.
+	static void NetOperations();
+	/// Проверка линка на актуальность по представленным элементам.
+	static bool CheckLinkForAct(Link* p_Link);
+										///< \param[in] p_Link Указатель на линк.
+										///< \return true - при актуальном линке.
 
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
@@ -63,6 +70,8 @@ private:
 	static QString strEnvPath; ///< Строка для пути среды.
 	static QString strEnvFilename; ///< Строка для имени файла среды.
 	static pthread_t thrEnv; ///< Идентификатор потока шагов среды.
+	static bool bRequested; ///< Наличие запроса от клиента.
+	static PSchReadyFrame oPSchReadyFrame; ///< Данные по запросу.
 };
 
 #endif // ENVIRONMENT_H

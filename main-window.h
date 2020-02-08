@@ -122,6 +122,7 @@ private slots:
 
 public:
 	static unsigned char uchInitRes; ///< Результат инициализации.
+	static Server* p_Server; ///< Указатель на объект сервера.
 
 private:
 	LOGDECL
@@ -130,7 +131,6 @@ private:
 	static const char* cp_chUISettingsName; ///< Указатель на имя файла с установками UI.
 	static QSettings* p_UISettings; ///< Указатель на строку установок UI.
 	static QLabel* p_QLabelStatusBarText; ///< Указатель на объект метки статуса.
-	static Server* p_Server; ///< Указатель на объект сервера.
 	static vector<Server::IPBanUnit> vec_IPBanUnits; ///< Список банов по адресам.
 	static NetHub::IPPortPassword oIPPortPassword; ///< Структура со указателями на строки с установками сервера.
 	static char m_chServerName[SERVER_NAME_STR_LEN]; ///< Буфер под строку с именем сервера.
