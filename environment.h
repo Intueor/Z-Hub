@@ -44,12 +44,14 @@ public:
 	static bool CheckInitialized();
 										///< \return true при инициализированной среде.
 
-private:
-	LOGDECL
-	LOGDECL_PTHRD_INCLASS_ADD
+public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
+
+private:
+	LOGDECL
+	LOGDECL_PTHRD_INCLASS_ADD
 	static char* p_chEnvNameInt; ///< Указатель на внутреннюю строку с именем среды.
 	static bool bEnvLoaded; ///< Флаг загруженной среды.
 	static QString strEnvPath; ///< Строка для пути среды.

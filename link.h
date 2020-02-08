@@ -3,6 +3,7 @@
 
 //== ВКЛЮЧЕНИЯ.
 #include "Server/protocol.h"
+#include "element.h"
 
 //== КЛАССЫ.
 /// Класс линка.
@@ -13,7 +14,10 @@ public:
 	Link(PSchLinkBase& a_PSchLinkBase);
 									///< \param[in] a_PSchLinkBase Ссылка на структуру с данными по линку.
 public:
+	bool bNew; ///< Признак созданного за цикл элемента.
 	PSchLinkBase oPSchLinkBase; ///< Структура с данными по линку.
+	Element* p_SrcElement; ///< Указатель на элемент-источник.
+	Element* p_DstElement; ///< Указатель на элемент-приёмник.
 };
 
 #endif // LINK_H
