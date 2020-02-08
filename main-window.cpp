@@ -398,38 +398,258 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 // Кэлбэк обработки приходящих пакетов данных.
 void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushType, void* p_ReceivedData, int iPocket)
 {
+	PSchElementEraser* p_PSchElementEraser;
+	PSchGroupEraser* p_PSchGroupEraser;
+	PSchElementName* p_PSchElementName;
+	PSchElementBase* p_PSchElementBase;
+	PSchLinkVars* p_PSchLinkVars;
+	PSchGroupName* p_PSchGroupName;
+	PSchElementVars* p_PSchElementVars;
+	PSchGroupVars* p_PSchGroupVars;
 	//
-//	switch(ushType)
-//	{
-//		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
-//		case PROTO_O_SCH_ELEMENT_BASE:
-//		{
-//			Element* p_Element;
-//			//
-//			if(!CheckAuthority(iConnection))
-//			{
-//				goto gLEx;
-//			}
-//			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
-//			LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
-//					<< "] base from ID: " << QString::number(iConnection).toStdString());
-//			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), S_World);
-//			p_Element->m_bNew[iConnection] = false;
-//			for(int iF = 0; iF < MAX_CONN; iF++)
-//			{
-//				p_Element->m_chTouchedBits[iF] = 0;
-//				if(iF != iConnection)
-//				{
-//					//p_Element->m_chTouchedBits[iF] = TOUCHED_GEOMETRY;
-//					if(p_PSchElementBase->oPSchElementVars.ullIDGroup != 0)
-//					{
-//						p_Element->m_chTouchedBits[iF] |= TOUCHED_GROUP;
-//					}
-//				}
-//			}
-//		}
-//			//======== Следующий раздел... ========
-//	}
+	switch(ushType)
+	{
+		//======== Раздел PROTO_C_SCH_READY. ========
+		case PROTO_C_SCH_READY:
+		{
+			Environment::bRequested = true;
+			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
+gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
+			{
+				RETVAL_SET(RETVAL_ERR);
+			}
+			break;
+		}
+		//======== Раздел PROTO_O_SCH_GROUP_ERASE. ========
+		case PROTO_O_SCH_GROUP_ERASE:
+		{
+			int iGC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
+			iGC = PBCountExternal(Group, Environment);
+			p_PSchGroupEraser = ((PSchGroupEraser*)p_ReceivedData);
+			for(int iG = 0; iG < iGC; iG++) // По всем группам...
+			{
+				Group* p_Group;
+				//
+				p_Group = PBAccessExternal(Group, iG, Environment);
+				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
+				{
+					//Environment::EraseGroupAt(iG);
+					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erased.");
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_ELEMENT_ERASE. ========
+		case PROTO_O_SCH_ELEMENT_ERASE:
+		{
+			int iEC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
+			iEC = PBCountExternal(Element, Environment);
+			p_PSchElementEraser = ((PSchElementEraser*)p_ReceivedData);
+			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+			{
+				Element* p_Element;
+				//
+				p_Element = PBAccessExternal(Element, iE, Environment);
+				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
+				{
+					//Environment::EraseElementAt(iE);
+					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erased.");
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_ELEMENT_VARS. ========
+		case PROTO_O_SCH_ELEMENT_VARS:
+		{
+			int iEC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
+			iEC = PBCountExternal(Element, Environment);
+			p_PSchElementVars = ((PSchElementVars*)p_ReceivedData);
+			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+			{
+				Element* p_Element;
+				//
+				p_Element = PBAccessExternal(Element, iE, Environment);
+				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementVars->ullIDInt) // При совп. с запрошенным...
+				{
+					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_ZPOS)
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos = p_PSchElementVars->oSchElementGraph.dbObjectZPos;
+						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+								<< "] z-pos is: " << QString::number((int)p_PSchElementVars->oSchElementGraph.dbObjectZPos).toStdString());
+					}
+					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_BUSY)
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.bBusy =
+								p_PSchElementVars->oSchElementGraph.bBusy;
+						if(p_PSchElementVars->oSchElementGraph.bBusy)
+						{
+							LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+									<< "] is busy by client.");
+						}
+						else
+						{
+							LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+									<< "] is free.");
+						}
+					}
+					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_POS)
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos =
+								p_PSchElementVars->oSchElementGraph.oDbObjectPos;
+						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+								<< "] position.");
+					}
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_ELEMENT_NAME. ========
+		case PROTO_O_SCH_ELEMENT_NAME:
+		{
+			int iEC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
+			iEC = PBCountExternal(Element, Environment);
+			p_PSchElementName = ((PSchElementName*)p_ReceivedData);
+			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+			{
+				Element* p_Element;
+				//
+				p_Element = PBAccessExternal(Element, iE, Environment);
+				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementName->ullIDInt) // При совп. с запрошенным...
+				{
+					CopyStrArray(p_PSchElementName->m_chName, p_Element->oPSchElementBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_LINK_VARS. ========
+		case PROTO_O_SCH_LINK_VARS:
+		{
+			int iLC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
+			iLC = PBCountExternal(Link, Environment);
+			p_PSchLinkVars = ((PSchLinkVars*)p_ReceivedData);
+			for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+			{
+				Link* p_Link;
+				//
+				p_Link = PBAccessExternal(Link, iL, Environment);
+				if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkVars->ullIDSrc) &&
+						(p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkVars->ullIDDst) &&
+						(p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkVars->ushiSrcPort) &&
+						(p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
+					// При совпадении с запрошенным...
+				{
+					p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits |= p_PSchLinkVars->oSchLinkGraph.uchChangesBits;
+					if(p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
+					{
+						p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos =
+								p_PSchLinkVars->oSchLinkGraph.oDbSrcPortGraphPos;
+						LOG_P_2(LOG_CAT_I, "Link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString() << "<>" <<
+								QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
+								<< "] vars - src port position.");
+					}
+					if(p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
+					{
+						p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos =
+								p_PSchLinkVars->oSchLinkGraph.oDbDstPortGraphPos;
+						LOG_P_2(LOG_CAT_I, "Link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString() << "<>" <<
+								QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
+								<< "] vars - dst port position.");
+					}
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong link number from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_GROUP_VARS. ========
+		case PROTO_O_SCH_GROUP_VARS:
+		{
+			int iGC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
+			iGC = PBCountExternal(Group, Environment);
+			p_PSchGroupVars = ((PSchGroupVars*)p_ReceivedData);
+			for(int iE = 0; iE < iGC; iE++) // По всем группам...
+			{
+				Group* p_Group;
+				//
+				p_Group = PBAccessExternal(Group, iE, Environment);
+				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDInt) // При совп. с запрошенным...
+				{
+					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_FRAME)
+					{
+						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame =
+								p_PSchGroupVars->oSchGroupGraph.oDbObjectFrame;
+						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+								<< "] frame.");
+					}
+					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_ZPOS)
+					{
+						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.dbObjectZPos =
+								p_PSchGroupVars->oSchGroupGraph.dbObjectZPos;
+						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+								<< "] z-pos is: " << QString::number((int)p_PSchGroupVars->oSchGroupGraph.dbObjectZPos).toStdString());
+					}
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_GROUP_NAME. ========
+		case PROTO_O_SCH_GROUP_NAME:
+		{
+			int iEC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
+			iEC = PBCountExternal(Group, Environment);
+			p_PSchGroupName = ((PSchGroupName*)p_ReceivedData);
+			for(int iE = 0; iE < iEC; iE++) // По всем группам...
+			{
+				Group* p_Group;
+				//
+				p_Group = PBAccessExternal(Group, iE, Environment);
+				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupName->ullIDInt) // При совп. с запрошенным...
+				{
+					CopyStrArray(p_PSchGroupName->m_chName, p_Group->oPSchGroupBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
+		case PROTO_O_SCH_ELEMENT_BASE:
+		{
+			Element* p_Element;
+			//
+			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
+			LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
+					<< "] base from client.");
+			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), Environment);
+			p_Element->bNew = false;
+			p_Element->chTouchedBits = 0;
+		}
+		//======== Следующий раздел... ========
+	}
 }
 
 // Кэлбэк обработки приходящих запросов.

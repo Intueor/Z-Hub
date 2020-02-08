@@ -61,6 +61,8 @@ public:
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
 	static bool bEnvThreadAlive; ///< Флаг живого потока среды.
 	static bool bStopEnvUpdate; ///< Сигнал на остановку потока среды.
+	static bool bRequested; ///< Наличие запроса от клиента.
+	static PSchReadyFrame oPSchReadyFrame; ///< Данные по запросу.
 
 private:
 	LOGDECL
@@ -70,8 +72,6 @@ private:
 	static QString strEnvPath; ///< Строка для пути среды.
 	static QString strEnvFilename; ///< Строка для имени файла среды.
 	static pthread_t thrEnv; ///< Идентификатор потока шагов среды.
-	static bool bRequested; ///< Наличие запроса от клиента.
-	static PSchReadyFrame oPSchReadyFrame; ///< Данные по запросу.
 };
 
 #endif // ENVIRONMENT_H

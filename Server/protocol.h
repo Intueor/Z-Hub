@@ -5,6 +5,7 @@
 #include "proto-util.h"
 #include "net-hub-defs.h"
 
+//== МАКРОСЫ.
 // ============================ ПОЛЬЗОВАТЕЛЬСКИЕ КОДЫ ПАКЕТОВ ==================================
 #define PROTO_C_SCH_READY               1
 #define PROTO_O_SCH_ELEMENT_BASE        2
