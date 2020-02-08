@@ -22,6 +22,25 @@ const char m_chLogEnvUpdated[] = "Environment configuration is updated.";
 const char m_chLogCurrentEnv[] = "Current environment: ";
 const char m_chLogEnvFileCorrupt[] = "Environment file is corrupt. ";
 const char m_chLogEnvNodeAbsend[] = " node is absend.";
+const char m_chLogEnvNodeFormatIncorrect[] = " node format incorrect - " ;
+const char m_chLogEnvGroup[] = "'Group'";
+const char m_chLogEnvElement[] = "'Element'";
+const char m_chLogEnvLink[] = "'Link'";
+const char m_chLogMissing[] = "missing ";
+const char m_chLogWrong[] = "wrong ";
+const char m_chLogNode[] = " node.";
+const char m_chLogID[] = "'ID'";
+const char m_chLogName[] = "'Name'";
+const char m_chLogBkgColor[] = "'BkgColor'";
+const char m_chLogFrame[] = "'Frame'";
+const char m_chLogZ[] = "'Z'";
+const char m_chLogPos[] = "'Pos'";
+const char m_chLogSrcID[] = "'SrcID'";
+const char m_chLogDstID[] = "'DstID'";
+const char m_chLogSrcPortID[] = "'SrcPortID'";
+const char m_chLogSrcPortPos[] = "'SrcPortPos'";
+const char m_chLogDstPortID[] = "'DstPortID'";
+const char m_chLogDstPortPos[] = "'DstPortPos'";
 const char m_chXML[] = ".xml";
 
 #endif // ZHUBDEFS_H

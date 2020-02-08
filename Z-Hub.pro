@@ -3,7 +3,7 @@ QMAKE_RPATHDIR += /usr/games/Z-Editor/lib
 }
 QT += core gui widgets
 
-TARGET = Z-Editor
+TARGET = Z-Hub
 TEMPLATE = app
 
 unix {
