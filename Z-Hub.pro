@@ -30,6 +30,7 @@ SOURCES += \
     Dialogs/set_proposed_string_dialog.cpp \
     element.cpp \
     environment.cpp \
+    group.cpp \
     link.cpp \
     main.cpp \
     main-window.cpp \
@@ -50,6 +51,7 @@ HEADERS += \
     Dialogs/set_proposed_string_dialog.h \
     element.h \
     environment.h \
+    group.h \
     link.h \
     main-window.h \
     logger.h \

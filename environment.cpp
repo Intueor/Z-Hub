@@ -12,9 +12,12 @@ LOGDECL_INIT_PTHRD_INCLASS_EXT_ADD(Environment)
 // Буферы.
 StaticPBSourceInit(Element,, Environment, MAX_ELEMENTS)
 StaticPBSourceInit(Link,, Environment, MAX_LINKS)
+StaticPBSourceInit(Group,, Environment, MAX_GROUPS)
 //
 char* Environment::p_chEnvNameInt = nullptr;
 bool Environment::bEnvLoaded = false;
+string Environment::stEnvPath;
+string Environment::stEnvFilename;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс среды.
@@ -30,6 +33,7 @@ Environment::Environment(pthread_mutex_t ptLogMutex, char* p_chEnvName)
 // Деструктор.
 Environment::~Environment()
 {
+	ReleasePB(Group);
 	ReleasePB(Link);
 	ReleasePB(Element);
 	LOG_CLOSE;
@@ -38,7 +42,14 @@ Environment::~Environment()
 // Загрузка среды.
 bool Environment::LoadEnv()
 {
-	LOG_P_0(LOG_CAT_I, "Loading environment from " << p_chEnvNameInt << ".xml");
+	stEnvPath.clear();
+	stEnvFilename.clear();
+	stEnvFilename.assign(p_chEnvNameInt);
+	stEnvFilename.append(m_chXML);
+	stEnvPath.assign(ENVS_DIR);
+	stEnvPath.append(stEnvFilename);
+	LOG_P_0(LOG_CAT_I, "Loading environment from: " << stEnvFilename);
+
 	bEnvLoaded = true;
 	return true;
 }
@@ -46,7 +57,7 @@ bool Environment::LoadEnv()
 // Сохранение среды.
 bool Environment::SaveEnv()
 {
-	LOG_P_0(LOG_CAT_I, "Saving environment to " << p_chEnvNameInt << ".xml");
+	LOG_P_0(LOG_CAT_I, "Saving environment to: " << stEnvFilename);
 	return true;
 }
 

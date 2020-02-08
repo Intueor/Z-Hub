@@ -9,11 +9,13 @@
 #include "z-hub-defs.h"
 #include "element.h"
 #include "link.h"
+#include "group.h"
 #include "p_buffer.h"
 
 //== МАКРОСЫ.
 #define MAX_ELEMENTS			1024
 #define MAX_LINKS				4096
+#define MAX_GROUPS				512
 
 //== КЛАССЫ.
 /// Класс среды.
@@ -43,8 +45,12 @@ private:
 	LOGDECL_PTHRD_INCLASS_ADD
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
+	StaticPBHeaderInit(Group,, MAX_GROUPS)
 	static char* p_chEnvNameInt; ///< Указатель на внутреннюю строку с именем среды.
 	static bool bEnvLoaded; ///< Флаг загруженной среды.
+	static string stEnvPath; ///< Строка для пути среды.
+	static string stEnvFilename; ///< Строка для имени файла среды.
+	//
 };
 
 #endif // ENVIRONMENT_H

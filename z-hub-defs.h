@@ -18,5 +18,6 @@ const char m_chLogServerUpdated[] = "Server configuration is updated.";
 const char m_chLogBansCorrupt[] = "Bans catalogue file is corrupt. ";
 const char m_chLogEnvUpdated[] = "Environment configuration is updated.";
 const char m_chLogCurrentEnv[] = "Current environment: ";
+const char m_chXML[] = ".xml";
 
 #endif // ZHUBDEFS_H
