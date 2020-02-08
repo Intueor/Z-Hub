@@ -20,6 +20,9 @@ char* Environment::p_chEnvNameInt = nullptr;
 bool Environment::bEnvLoaded = false;
 QString Environment::strEnvPath;
 QString Environment::strEnvFilename;
+bool Environment::bEnvThreadAlive = false;
+bool Environment::bStopEnvUpdate = false;
+pthread_t Environment::thrEnv;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс среды.
@@ -30,6 +33,8 @@ Environment::Environment(pthread_mutex_t ptLogMutex, char* p_chEnvName)
 	LOG_CTRL_INIT;
 	p_chEnvNameInt = p_chEnvName;
 	bEnvLoaded = false;
+	bEnvThreadAlive = false;
+	bStopEnvUpdate = false;
 }
 
 // Деструктор.
@@ -67,7 +72,7 @@ bool Environment::LoadEnv()
 	strEnvFilename += m_chXML;
 	strEnvPath = ENVS_DIR;
 	strEnvPath += strEnvFilename;
-	LOG_P_0(LOG_CAT_I, "Loading environment from: " << strEnvFilename.toStdString());
+	LOG_P_1(LOG_CAT_I, "Loading environment from: " << strEnvFilename.toStdString());
 	eResult = xmlDocEnv.LoadFile(strEnvPath.toStdString().c_str());
 	if (eResult != XML_SUCCESS)
 	{
@@ -580,7 +585,7 @@ bool Environment::SaveEnv()
 	XMLNode* p_NodeDstPortID;
 	XMLNode* p_NodeDstPortPos;
 	//
-	LOG_P_0(LOG_CAT_I, "Saving environment to: " << strEnvFilename.toStdString());
+	LOG_P_1(LOG_CAT_I, "Saving environment to: " << strEnvFilename.toStdString());
 	xmlEnv.InsertEndChild(xmlEnv.NewDeclaration());
 	p_NodeRoot = xmlEnv.InsertEndChild(xmlEnv.NewElement("Root"));
 	p_NodeGroups = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chGroups));
@@ -698,18 +703,40 @@ bool Environment::Start()
 	{
 		if(!LoadEnv()) return false;
 	}
-	LOG_P_0(LOG_CAT_I, "Start environment.");
+	LOG_P_1(LOG_CAT_I, "Start environment.");
+	pthread_create(&thrEnv, nullptr, EnvThread, nullptr);
 	return true;
 }
 
 // Остановка среды.
 void Environment::Stop()
 {
-	LOG_P_0(LOG_CAT_I, "Stop environment.");
+	LOG_P_1(LOG_CAT_I, "Stop environment.");
+	bStopEnvUpdate = true;
+	while(bStopEnvUpdate)
+	{
+		MSleep(USER_RESPONSE_MS);
+	}
 }
 
 // Проверка инициализированности среды.
 bool Environment::CheckInitialized()
 {
 	return bEnvLoaded;
+}
+
+// Поток шагов среды.
+void* Environment::EnvThread(void *p_vPlug)
+{
+	p_vPlug = p_vPlug;
+	bEnvThreadAlive = true;
+	LOG_P_1(LOG_CAT_I, "Environment thread alive.");
+	while(!bStopEnvUpdate)
+	{
+
+	}
+	bEnvThreadAlive = false;
+	LOG_P_1(LOG_CAT_I, "Environment thread terminated.");
+	bStopEnvUpdate = false;
+	RETURN_THREAD
 }

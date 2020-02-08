@@ -43,11 +43,17 @@ public:
 	/// Проверка инициализированности среды.
 	static bool CheckInitialized();
 										///< \return true при инициализированной среде.
+	/// Поток шагов среды.
+	static void* EnvThread(void *p_vPlug);
+										///< \param[in] p_vPlug Заглушка.
+										///< \return Заглушка.
 
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
+	static bool bEnvThreadAlive; ///< Флаг живого потока среды.
+	static bool bStopEnvUpdate; ///< Сигнал на остановку потока среды.
 
 private:
 	LOGDECL
@@ -56,7 +62,7 @@ private:
 	static bool bEnvLoaded; ///< Флаг загруженной среды.
 	static QString strEnvPath; ///< Строка для пути среды.
 	static QString strEnvFilename; ///< Строка для имени файла среды.
-	//
+	static pthread_t thrEnv; ///< Идентификатор потока шагов среды.
 };
 
 #endif // ENVIRONMENT_H
