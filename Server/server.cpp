@@ -789,7 +789,7 @@ enc:if(iTPos != NO_CONNECTION)
 #ifndef WIN32
 	LOG_P_1(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread);
 #else
-	LOG_P_12(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread.p);
+	LOG_P_1(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread.p);
 #endif
 	}
 	else

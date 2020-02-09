@@ -9,8 +9,8 @@
 #include <QSettings>
 #include <QLabel>
 #include <QVector>
-#include "logger.h"
 #include "Server/server.h"
+#include "logger.h"
 #include "parser-ext.h"
 #include "main-hub.h"
 #include "z-hub-defs.h"
