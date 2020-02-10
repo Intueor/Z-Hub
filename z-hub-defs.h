@@ -12,10 +12,11 @@
 #define SCH_NEXT_Z_SHIFT				1.0
 #define SCH_LINK_Z_SHIFT				0.01
 #define ENV_STEP_WAITING				500
-#define TOUCHED_GEOMETRY		0b0001
-#define TOUCHED_CONTENT			0b0010
-#define TOUCHED_NAME			0b0100
-#define TOUCHED_GROUP			0b1000
+#define TOUCHED_GEOMETRY				0b0001
+#define TOUCHED_CONTENT					0b0010
+#define TOUCHED_NAME					0b0100
+#define TOUCHED_GROUP					0b1000
+#define NO_CLIENT						-1
 // Коды изменяемых полей.
 #define SCH_ELEMENT_BIT_BUSY            0b00000001
 #define SCH_ELEMENT_BIT_BKG_COLOR       0b00000010

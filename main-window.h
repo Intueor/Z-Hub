@@ -57,6 +57,8 @@ public:
 	static void ClientRequestArrivedCallback(int iConnection, unsigned short ushRequest);
 							///< \param[in] iConnection Номер соединения.
 							///< \param[in] ushRequest Запрос клиента.
+	/// Для внешнего переключения чекбокса кнопки 'Схема'.
+	static void UncheckSchemaCheckbox();
 
 private:
 	/// Загрузка каталога банов.
@@ -139,6 +141,7 @@ private:
 	static char m_chPassword[AUTH_PASSWORD_STR_LEN]; ///< Буфер под строку пароля.
 	static char m_chEnvName[ENV_NAME_LEN]; ///< Буфер под строку имени среды.
 	static Environment* p_Environment; ///< Указатель на объект среды.
+	static int iCurrentClientConnection; ///< Текущий подключённый клиент или NO_CLIENT.
 };
 
 #endif // MAINWINDOW_H

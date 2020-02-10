@@ -29,6 +29,7 @@ char MainWindow::m_chPort[PORT_STR_LEN];
 char MainWindow::m_chPassword[AUTH_PASSWORD_STR_LEN];
 char MainWindow::m_chEnvName[ENV_NAME_LEN];
 Environment* MainWindow::p_Environment = nullptr;
+int MainWindow::iCurrentClientConnection;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс главного окна.
@@ -46,6 +47,7 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	p_QLabelStatusBarText = new QLabel(this);
 	p_QLabelStatusBarText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 	p_ui->statusBar->addWidget(p_QLabelStatusBarText);
+	iCurrentClientConnection = NO_CLIENT;
 	if(IsFileExists((char*)cp_chUISettingsName))
 	{
 		LOG_P_2(LOG_CAT_I, m_chLogRestoreUI);
@@ -382,10 +384,12 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 		if(bConnected)
 		{
 			p_ui->label_ConnectedClient->setText(QString(m_chIPNameBuffer) + ":" + QString(m_chPortNameBuffer));
+			iCurrentClientConnection = iConnection;
 		}
 		else
 		{
 			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
+			iCurrentClientConnection = NO_CLIENT;
 		}
 	}
 	else
@@ -409,6 +413,27 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 	//
 	switch(ushType)
 	{
+		//======== Раздел PROTO_C_SCH_READY. ========
+		case PROTO_O_SCH_STATUS:
+		{
+			PSchStatusInfo oPSchStatusInfo;
+			//
+			oPSchStatusInfo = *((PSchStatusInfo*)p_ReceivedData);
+			if(oPSchStatusInfo.bReady)
+			{
+				if(p_ui->action_ChangeEnv->isEnabled())
+				{
+					oPSchStatusInfo.bReady = false;
+				}
+				else
+				{
+					oPSchStatusInfo.bReady = true;
+				}
+				p_Server->SendToClientImmediately(iCurrentClientConnection,
+												  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
+			}
+			goto gLEx;
+		}
 		//======== Раздел PROTO_C_SCH_READY. ========
 		case PROTO_C_SCH_READY:
 		{
@@ -729,6 +754,8 @@ bool MainWindow::ServerStopProcedures()
 // Процедуры запуска среды.
 bool MainWindow::EnvStartProcedures()
 {
+	PSchStatusInfo oPSchStatusInfo;
+	//
 	if(!p_Environment->Start())
 	{
 		p_ui->action_StartStopEnv->setChecked(false);
@@ -736,12 +763,30 @@ bool MainWindow::EnvStartProcedures()
 	}
 	p_ui->action_ChangeEnv->setDisabled(true);
 	p_ui->action_SaveCurrent->setDisabled(true);
+	if(iCurrentClientConnection != NO_CLIENT)
+	{
+		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
+		{
+			oPSchStatusInfo.bReady = true;
+			p_Server->SendToClientImmediately(iCurrentClientConnection, PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo));
+		}
+	}
 	return true;
 }
 
 // Процедуры остановки среды.
 bool MainWindow::EnvStopProcedures()
 {
+	PSchStatusInfo oPSchStatusInfo;
+	//
+	if(iCurrentClientConnection != NO_CLIENT)
+	{
+		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
+		{
+			oPSchStatusInfo.bReady = false;
+			p_Server->SendToClientImmediately(iCurrentClientConnection, PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo));
+		}
+	}
 	p_Environment->Stop();
 	p_ui->action_ChangeEnv->setDisabled(false);
 	p_ui->action_SaveCurrent->setDisabled(false);

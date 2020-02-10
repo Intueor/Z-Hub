@@ -19,6 +19,7 @@
 #define PROTO_O_SCH_ELEMENT_ERASE		10
 #define PROTO_O_SCH_LINK_ERASE			11
 #define PROTO_O_SCH_GROUP_ERASE			12
+#define PROTO_O_SCH_STATUS               13
 
 //========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ =========================
 #define PocketTypesHub												\
@@ -34,6 +35,7 @@ CasePocket(PROTO_O_SCH_ELEMENT_NAME, PSchElementName);				\
 CasePocket(PROTO_O_SCH_ELEMENT_VARS, PSchElementVars);				\
 CasePocket(PROTO_O_SCH_ELEMENT_BASE, PSchElementBase);				\
 CasePocket(PROTO_C_SCH_READY, PSchReadyFrame);						\
+CasePocket(PROTO_O_SCH_STATUS, PSchStatusInfo);						\
 
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
 //========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
@@ -78,6 +80,11 @@ struct SchGroupGraph
 	double dbObjectZPos; ///< Z-позиция в схеме.
 };
 //========================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================
+/// Структура готовности Хаба к работе с клиентом.
+struct PSchStatusInfo
+{
+	bool bReady; ///< Признак готовности.
+};
 /// Структура команды удаления группы.
 struct PSchGroupEraser
 {
