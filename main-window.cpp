@@ -413,8 +413,8 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 	//
 	switch(ushType)
 	{
-		//======== Раздел PROTO_C_SCH_READY. ========
-		case PROTO_O_SCH_STATUS:
+		//======== Раздел PROTO_O_SCH_STATUS. ========
+		case PROTO_O_SCH_STATUS: // Отправка ответа о статусе среды при запросе клеинта.
 		{
 			PSchStatusInfo oPSchStatusInfo;
 			//
@@ -763,7 +763,7 @@ bool MainWindow::EnvStartProcedures()
 	}
 	p_ui->action_ChangeEnv->setDisabled(true);
 	p_ui->action_SaveCurrent->setDisabled(true);
-	if(iCurrentClientConnection != NO_CLIENT)
+	if(iCurrentClientConnection != NO_CLIENT) // Если есть клиент, отправка ответа о работающей среде.
 	{
 		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
 		{
@@ -779,7 +779,7 @@ bool MainWindow::EnvStopProcedures()
 {
 	PSchStatusInfo oPSchStatusInfo;
 	//
-	if(iCurrentClientConnection != NO_CLIENT)
+	if(iCurrentClientConnection != NO_CLIENT) // Если есть клиент, отправка ответа о неактивной среде.
 	{
 		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
 		{

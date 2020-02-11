@@ -728,6 +728,18 @@ void Environment::Stop()
 	{
 		MSleep(USER_RESPONSE_MS);
 	}
+	for(unsigned int uiF = 0; uiF < PBCount(Element); uiF++)
+	{
+		PBAccess(Element, uiF)->bNew = true;
+	}
+	for(unsigned int uiF = 0; uiF < PBCount(Group); uiF++)
+	{
+		PBAccess(Group, uiF)->bNew = true;
+	}
+	for(unsigned int uiF = 0; uiF < PBCount(Link); uiF++)
+	{
+		PBAccess(Link, uiF)->bNew = true;
+	}
 }
 
 // Проверка инициализированности среды.
