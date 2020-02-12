@@ -501,6 +501,7 @@ gBA:if(iTPos != NO_CONNECTION)
 		LOG_P_1(LOG_CAT_I, "Waiting connection on reserved thread: " << pthread_self().p);
 #endif
 gAG:	iTempListener = (int)accept(iListener, nullptr, nullptr); // Ждём перегруженных входящих.
+		if(bExitSignal) goto gOE; // Если вместо приёма пакета от перегруженного произошёл срыв по рассоединению - на выход.
 		FillConnectionData(iTempListener, oConnectionDataInt);
 		FillIPAndPortNames(oConnectionDataInt, m_chIPNameBuffer, m_chPortNameBuffer);
 		iTempTPos = FindFreeThrDadaPos();
@@ -514,13 +515,12 @@ gAG:	iTempListener = (int)accept(iListener, nullptr, nullptr); // Ждём пе�
 #endif
 			if(NetHub::CheckIPv4(m_chIPNameBuffer))
 			{
-				LOG_P_1(LOG_CAT_W, "Connection is rejected for: " << m_chIPNameBuffer);
+				LOG_P_1(LOG_CAT_W, "Connection rejected for: " << m_chIPNameBuffer);
 			}
 			else
 			{
-				LOG_P_1(LOG_CAT_W, "Connection is rejected for: [" << m_chIPNameBuffer << "]");
+				LOG_P_1(LOG_CAT_W, "Connection rejected for: [" << m_chIPNameBuffer << "]");
 			}
-			if(bExitSignal) goto gOE;
 			goto gAG;
 		}
 		iTPos = iTempTPos;
@@ -795,7 +795,7 @@ enc:if(iTPos != NO_CONNECTION)
 	else
 	{
 #ifndef WIN32
-		LOG_P_1(LOG_CAT_W, "Exiting reserved thread: " << pthread_self());
+		LOG_P_1(LOG_CAT_I, "Exiting reserved thread: " << pthread_self());
 #else
 		LOG_P_1(LOG_CAT_W, "Exiting reserved thread: " << pthread_self().p);
 #endif
@@ -949,6 +949,10 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 				LOG_P_1(LOG_CAT_I, "Socket has been closed internally: [" << m_chIPNameBuffer << "]:" << m_chPortNameBuffer);
 			}
 		}
+	}
+	for(int iF = 0; iF != MAX_CONN; iF++)
+	{
+		mThreadDadas[iF].bInUse = false;
 	}
 	pthread_mutex_unlock(&ptConnMutex);
 	LOG_P_1(LOG_CAT_I, "All clients are disconnected.");
