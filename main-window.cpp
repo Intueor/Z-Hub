@@ -428,6 +428,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 				else
 				{
 					oPSchStatusInfo.bReady = true;
+					Environment::SetAllNew();
 				}
 				p_Server->SendToClientImmediately(iCurrentClientConnection,
 												  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
@@ -439,6 +440,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 		{
 			Environment::bRequested = true;
 			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
+			LOG_P_2(LOG_CAT_I, "{In} Client ready for data.");
 gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
 			{
 				RETVAL_SET(RETVAL_ERR);
@@ -702,7 +704,6 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword)
 		{
 			SetStatusBarText(m_chStatusWorking);
 			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
-			Environment::SetAllNew();
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
