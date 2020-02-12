@@ -43,6 +43,9 @@ public:
 	/// Проверка инициализированности среды.
 	static bool CheckInitialized();
 										///< \return true при инициализированной среде.
+	/// Установка всех флагов всех объектов сцены на новые для клиента.
+	static void SetAllNew();
+
 private:
 	/// Поток шагов среды.
 	static void* EnvThread(void *p_vPlug);
@@ -54,7 +57,6 @@ private:
 	static bool CheckLinkForAct(Link* p_Link);
 										///< \param[in] p_Link Указатель на линк.
 										///< \return true - при актуальном линке.
-
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)

@@ -719,15 +719,9 @@ bool Environment::Start()
 	return true;
 }
 
-// Остановка среды.
-void Environment::Stop()
+// Установка всех флагов всех объектов сцены на новые для клиента.
+void Environment::SetAllNew()
 {
-	LOG_P_1(LOG_CAT_I, "Stop environment.");
-	bStopEnvUpdate = true;
-	while(bStopEnvUpdate)
-	{
-		MSleep(USER_RESPONSE_MS);
-	}
 	for(unsigned int uiF = 0; uiF < PBCount(Element); uiF++)
 	{
 		PBAccess(Element, uiF)->bNew = true;
@@ -740,6 +734,18 @@ void Environment::Stop()
 	{
 		PBAccess(Link, uiF)->bNew = true;
 	}
+}
+
+// Остановка среды.
+void Environment::Stop()
+{
+	LOG_P_1(LOG_CAT_I, "Stop environment.");
+	bStopEnvUpdate = true;
+	while(bStopEnvUpdate)
+	{
+		MSleep(USER_RESPONSE_MS);
+	}
+	SetAllNew();
 }
 
 // Проверка инициализированности среды.

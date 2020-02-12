@@ -702,6 +702,7 @@ bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword)
 		{
 			SetStatusBarText(m_chStatusWorking);
 			p_ui->label_ConnectedClient->setText(m_chClientLabelWaiting);
+			Environment::SetAllNew();
 			return true;
 		}
 		MSleep(USER_RESPONSE_MS);
