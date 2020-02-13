@@ -5,6 +5,7 @@
 #endif
 #include <cstring>
 
+//== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 char NetHub::m_chDec[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 char NetHub::m_chHex[] = {'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -21,6 +22,12 @@ NetHub::NetHub()
 void NetHub::ResetPocketsBufferPositionPointer()
 {
 	p_chPocketsBufferPositionPointer = m_chPocketsBuffer;
+}
+
+// Проверка 'пустого' буфера пакетов.
+bool NetHub::CheckIsBufferFree()
+{
+	return p_chPocketsBufferPositionPointer == m_chPocketsBuffer;
 }
 
 // Добавление пакета в буфер отправки.

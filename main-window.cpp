@@ -440,7 +440,6 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 		{
 			Environment::bRequested = true;
 			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
-			LOG_P_2(LOG_CAT_I, "{In} Client ready for data.");
 gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
 			{
 				RETVAL_SET(RETVAL_ERR);
@@ -634,6 +633,21 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 								p_PSchGroupVars->oSchGroupGraph.dbObjectZPos;
 						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 								<< "] z-pos is: " << QString::number((int)p_PSchGroupVars->oSchGroupGraph.dbObjectZPos).toStdString());
+					}
+					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_BUSY)
+					{
+						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bBusy =
+								p_PSchGroupVars->oSchGroupGraph.bBusy;
+						if(p_PSchGroupVars->oSchGroupGraph.bBusy)
+						{
+							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+									<< "] is busy");
+						}
+						else
+						{
+							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+									<< "] is free");
+						}
 					}
 					goto gLEx;
 				}

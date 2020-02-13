@@ -78,17 +78,20 @@ public:
 	NetHub();
 	/// Сброс указателя позиции в буфере пакетов.
 	void ResetPocketsBufferPositionPointer();
+	/// Проверка 'пустого' буфера пакетов.
+	bool CheckIsBufferFree();
+													///< \return true при указателе на начале буфера.
 	/// Добавление пакета в буфер отправки.
 	bool AddPocketToOutputBuffer(unsigned short ushCommand, char *p_chBuffer = nullptr, int iLength = 0);
 													///< \param[in] ushCommand Команда, которая будет задана в начале пакета.
 													///< \param[in] p_chBuffer Указатель на буффер с данными.
 													///< \param[in] iLength Длина пакета в байтах.
-													///< \return true, при удаче.
+													///< \return true при удаче.
 	/// Отправка пакета адресату.
 	bool SendToAddress(ConnectionData &oConnectionData, bool bResetPointer = true);
 													///< \param[in,out] oConnectionData Ссылка на структуру описания соединения.
 													///< \param[in] bResetPointer Сбрасывать ли указатель на начало буфера.
-													///< \return true, при удаче.
+													///< \return true при удаче.
 	/// Поиск свободного элемента хранилища пакетов.
 	int FindFreeReceivedPocketsPos(ReceivedData* p_mReceivedPockets);
 													///< \param[in] p_mReceivedPockets Указатель на массив с пакетами хабов.
@@ -107,7 +110,7 @@ public:
 	/// Проверка на тип протокола IPv4 в буфере.
 	static bool CheckIPv4(char* p_chIPNameBuffer);
 													///< \param[in] p_chIPNameBuffer Указатель на буфер строки со значением адреса.
-													///< \return true - при протоколе IPv4.
+													///< \return true при протоколе IPv4.
 
 private:
 	char m_chPocketsBuffer[MAX_DATA]; ///< Рабочий буфер пакетов.
