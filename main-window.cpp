@@ -641,12 +641,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 						if(p_PSchGroupVars->oSchGroupGraph.bBusy)
 						{
 							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-									<< "] is busy");
+									<< "] is busy by client.");
 						}
 						else
 						{
 							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-									<< "] is free");
+									<< "] is free.");
 						}
 					}
 					goto gLEx;
