@@ -45,8 +45,22 @@ public:
 										///< \return true при инициализированной среде.
 	/// Установка всех флагов всех объектов сцены на новые для клиента.
 	static void SetAllNew();
-
+	/// Удаление линков для элемента.
+	static void EraseLinksForElement(Element* p_Element);
+										///< \param[in] p_Element Указатель на элемент.
+	/// Удаление элемента в позиции и обнуление указателя на него.
+	static void EraseElementAt(int iPos);
+										///< \param[in] uiPos Позиция в массиве.
+	/// Удаление группы в позиции и обнуление указателя на неё.
+	static void EraseGroupAt(int iPos);
+										///< \param[in] uiPos Позиция в массиве.
+	/// Удаление группы по указателю.
+	static void EraseGroup(Group* p_Group);
+										///< \param[in] p_Group Указатель на группу.
 private:
+	/// Удаление элементов из группы.
+	static void EraseElementsFromGroup(Group* p_Group);
+								///< \param[in] p_Group Указатель на группу.
 	/// Поток шагов среды.
 	static void* EnvThread(void *p_vPlug);
 										///< \param[in] p_vPlug Заглушка.

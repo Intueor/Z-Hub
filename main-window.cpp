@@ -461,7 +461,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				p_Group = PBAccessExternal(Group, iG, Environment);
 				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
 				{
-					//Environment::EraseGroupAt(iG);
+					Environment::EraseGroupAt(iG);
 					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erased.");
 					goto gLEx;
 				}
@@ -484,7 +484,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				p_Element = PBAccessExternal(Element, iE, Environment);
 				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
 				{
-					//Environment::EraseElementAt(iE);
+					Environment::EraseElementAt(iE);
 					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erased.");
 					goto gLEx;
 				}

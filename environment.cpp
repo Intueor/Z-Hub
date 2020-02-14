@@ -1179,3 +1179,82 @@ bool Environment::CheckLinkForAct(Link* p_Link)
 	}
 	return true;
 }
+
+// Удаление линков для элемента.
+void Environment::EraseLinksForElement(Element* p_Element)
+{
+	for(int iL = 0; iL < (int)PBCount(Link); iL++)
+	{
+		bool bPresent = false;
+		//
+		if(PBAccess(Link, iL)->p_DstElement == p_Element)
+		{
+			PBAccess(Link, iL)->p_SrcElement->vp_LinkedElements.removeOne(p_Element);
+			bPresent = true;
+		}
+		else if(PBAccess(Link, iL)->p_SrcElement == p_Element)
+		{
+			PBAccess(Link, iL)->p_DstElement->vp_LinkedElements.removeOne(p_Element);
+			bPresent = true;
+		}
+		if(bPresent)
+		{
+			RemoveObjectFromPBByPos(Link, iL);
+			iL--;
+		}
+	}
+}
+
+// Удаление элемента в позиции и обнуление указателя на него.
+void Environment::EraseElementAt(int iPos)
+{
+	Element* p_Element = PBAccess(Element, iPos);
+	// Работа с группой.
+	if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup != 0)
+	{
+		Group* p_Group = p_Element->p_Group;
+		//
+		if(p_Group != nullptr)
+		{
+			if(!p_Group->vp_ConnectedElements.isEmpty())
+			{
+				p_Group->vp_ConnectedElements.removeOne(p_Element);
+				if(p_Group->vp_ConnectedElements.isEmpty())
+				{
+					RemoveObjectFromPBByPointer(Group, p_Group);
+				}
+			}
+		}
+	}
+	EraseLinksForElement(p_Element);
+	RemoveObjectFromPBByPos(Element, iPos);
+}
+
+// Удаление элементов из группы.
+void Environment::EraseElementsFromGroup(Group* p_Group)
+{
+	while(!p_Group->vp_ConnectedElements.isEmpty())
+	{
+		Element* p_Element = p_Group->vp_ConnectedElements.at(0);
+		p_Group->vp_ConnectedElements.removeOne(p_Element);
+		EraseLinksForElement(p_Element);
+		RemoveObjectFromPBByPointer(Element, p_Element);
+	}
+}
+
+// Удаление группы в позиции и обнуление указателя на неё.
+void Environment::EraseGroupAt(int iPos)
+{
+	Group* p_Group = PBAccess(Group, iPos);
+	EraseElementsFromGroup(p_Group);
+	// Удаление группы.
+	RemoveObjectFromPBByPos(Group, iPos);
+}
+
+// Удаление группы по указателю.
+void Environment::EraseGroup(Group* p_Group)
+{
+	EraseElementsFromGroup(p_Group);
+	// Удаление группы.
+	RemoveObjectFromPBByPointer(Group, p_Group);
+}
