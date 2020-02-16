@@ -535,6 +535,49 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 								<< "] position.");
 					}
+					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_BKG_COLOR)
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor =
+								p_PSchElementVars->oSchElementGraph.uiObjectBkgColor;
+						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+										   << "] color.");
+					}
+					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_FRAME)
+					{
+						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame =
+								p_PSchElementVars->oSchElementGraph.oDbObjectFrame;
+						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+										   << "] frame.");
+					}
+					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_GROUP)
+					{
+						if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
+						{
+							p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
+							LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+									<< "] group - detach.");
+							if(p_Element->p_Group->vp_ConnectedElements.isEmpty())
+							{
+								LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+								Environment::EraseGroup(p_Element->p_Group);
+							}
+							p_Element->p_Group = nullptr;
+							p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
+							goto gLEx;
+						}
+						for(int iG = 0; iG < (int)PBCountExternal(Group, Environment); iG++) // Обработка включения в группу.
+						{
+							if(PBAccessExternal(Group, iG, Environment)->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
+							{
+								p_Element->p_Group = PBAccessExternal(Group, iG, Environment);
+								p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = p_PSchElementVars->ullIDGroup;
+								LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+										<< "] group - attach.");
+								goto gLEx;
+							}
+						}
+						LOG_P_0(LOG_CAT_W, "Wrong group number for element from ID." << QString::number(iConnection).toStdString());
+					}
 					goto gLEx;
 				}
 			}
@@ -648,6 +691,13 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 									<< "] is free.");
 						}
+					}
+					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_BKG_COLOR)
+					{
+						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor =
+								p_PSchGroupVars->oSchGroupGraph.uiObjectBkgColor;
+						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+										   << "] color.");
 					}
 					goto gLEx;
 				}
