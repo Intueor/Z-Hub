@@ -570,9 +570,17 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 							if(PBAccessExternal(Group, iG, Environment)->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
 							{
 								p_Element->p_Group = PBAccessExternal(Group, iG, Environment);
-								p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = p_PSchElementVars->ullIDGroup;
-								LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-										<< "] group - attach.");
+								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup != p_PSchElementVars->ullIDGroup)
+								{
+									p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = p_PSchElementVars->ullIDGroup;
+									LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+											<< "] group - attach.");
+								}
+								else
+								{
+									LOG_P_0(LOG_CAT_W, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+											<< "] is already assigned to received group number.");
+								}
 								goto gLEx;
 							}
 						}
