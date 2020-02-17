@@ -588,6 +588,7 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 									p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = p_PSchElementVars->ullIDGroup;
 									LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 											<< "] group - attach.");
+									p_Element->p_Group->vp_ConnectedElements.append(p_Element);
 								}
 								else
 								{
@@ -759,6 +760,7 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), Environment);
 			p_Element->bNew = false;
 			p_Element->chTouchedBits = 0;
+			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_BASE. ========
 		case PROTO_O_SCH_GROUP_BASE:
@@ -771,6 +773,7 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 			AppendToPBExternal(Group, p_Group = new Group(*p_PSchGroupBase), Environment);
 			p_Group->bNew = false;
 			p_Group->chTouchedBits = 0;
+			goto gLEx;
 		}
 		//======== Следующий раздел... ========
 	}
