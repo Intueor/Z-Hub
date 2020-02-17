@@ -406,6 +406,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 	PSchGroupEraser* p_PSchGroupEraser;
 	PSchElementName* p_PSchElementName;
 	PSchElementBase* p_PSchElementBase;
+	PSchGroupBase* p_PSchGroupBase;
 	PSchLinkVars* p_PSchLinkVars;
 	PSchGroupName* p_PSchGroupName;
 	PSchElementVars* p_PSchElementVars;
@@ -758,6 +759,18 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), Environment);
 			p_Element->bNew = false;
 			p_Element->chTouchedBits = 0;
+		}
+		//======== Раздел PROTO_O_SCH_GROUP_BASE. ========
+		case PROTO_O_SCH_GROUP_BASE:
+		{
+			Group* p_Group;
+			//
+			p_PSchGroupBase = ((PSchGroupBase*)p_ReceivedData);
+			LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
+					<< "] base from client.");
+			AppendToPBExternal(Group, p_Group = new Group(*p_PSchGroupBase), Environment);
+			p_Group->bNew = false;
+			p_Group->chTouchedBits = 0;
 		}
 		//======== Следующий раздел... ========
 	}
