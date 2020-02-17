@@ -553,17 +553,29 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 					{
 						if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
 						{
-							p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
-							LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-									<< "] group - detach.");
-							if(p_Element->p_Group->vp_ConnectedElements.isEmpty())
+							if(p_Element->p_Group != nullptr)
 							{
-								LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
-								Environment::EraseGroup(p_Element->p_Group);
+								if(p_Element->p_Group->vp_ConnectedElements.contains(p_Element))
+								{
+									p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
+									LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+											<< "] group - detach.");
+									if(p_Element->p_Group->vp_ConnectedElements.isEmpty())
+									{
+										LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+										Environment::EraseGroup(p_Element->p_Group);
+									}
+									p_Element->p_Group = nullptr;
+									p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
+									goto gLEx;
+								}
+								else
+								{
+gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
+									goto gLEx;
+								}
 							}
-							p_Element->p_Group = nullptr;
-							p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
-							goto gLEx;
+							else goto gGEx;
 						}
 						for(int iG = 0; iG < (int)PBCountExternal(Group, Environment); iG++) // Обработка включения в группу.
 						{
