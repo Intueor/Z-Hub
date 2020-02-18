@@ -750,7 +750,6 @@ gI:				switch(oParsingResult.ushTypeCode)
 		}
 		if(oParsingResult.p_chExtraData != nullptr)
 		{
-			LOG_P_2(LOG_CAT_I, (char*)m_chLogMerged);
 			p_chData = oParsingResult.p_chExtraData;
 			iLength = oParsingResult.iExtraDataLength;
 			goto gDp;
