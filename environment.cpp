@@ -927,7 +927,6 @@ void Environment::NetOperations()
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_ELEMENT_VARS,
 																  (char*)&oPSchElementVars, sizeof(PSchElementVars)));
-					p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.uchChangesBits = 0;
 					LOG_P_2(LOG_CAT_I, "{Out} Changed element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
@@ -1025,7 +1024,6 @@ void Environment::NetOperations()
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_LINK_VARS,
 																  (char*)&oPSchLinkVars, sizeof(PSchLinkVars)));
-					p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits = 0;
 					LOG_P_2(LOG_CAT_I, "{Out} Changed link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString()
 							<< "<>" << QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
@@ -1119,7 +1117,6 @@ void Environment::NetOperations()
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_VARS,
 																  (char*)&oPSchGroupVars, sizeof(PSchGroupVars)));
-					p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uchChangesBits = 0;
 					LOG_P_2(LOG_CAT_I, "{Out} Changed group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.

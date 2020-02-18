@@ -647,8 +647,7 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 						(p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
 					// При совпадении с запрошенным...
 				{
-					p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits |= p_PSchLinkVars->oSchLinkGraph.uchChangesBits;
-					if(p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
+					if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
 					{
 						p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos =
 								p_PSchLinkVars->oSchLinkGraph.oDbSrcPortGraphPos;
@@ -656,7 +655,7 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 								QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
 								<< "] vars - src port position.");
 					}
-					if(p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
+					if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
 					{
 						p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos =
 								p_PSchLinkVars->oSchLinkGraph.oDbDstPortGraphPos;
