@@ -41,8 +41,8 @@ public:
 	/// Деструктор.
 	~MainWindow();
 	/// Процедуры при закрытии окна приложения.
-	void closeEvent(QCloseEvent* event);
-							///< \param[in] event Указатель на событие.
+	void closeEvent(QCloseEvent* p_Event);
+							///< \param[in] p_Event Указатель на событие.
 	/// Кэлбэк обработки отслеживания статута клиентов.
 	static void ClientStatusChangedCallback(int iConnection, bool bConnected);
 							///< \param[in] iConnection Номер соединения.

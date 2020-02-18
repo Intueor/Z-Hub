@@ -117,7 +117,7 @@ MainWindow::~MainWindow()
 }
 
 // Процедуры при закрытии окна приложения.
-void MainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent *p_Event)
 {
 	Set_Proposed_Bool_Dialog* p_Set_Proposed_Bool_Dialog;
 	//
@@ -153,7 +153,7 @@ gNI:	delete p_Environment;
 	p_UISettings->setValue("Geometry", saveGeometry());
 	p_UISettings->setValue("WindowState", saveState());
 	// Splitters.
-	QMainWindow::closeEvent(event);
+	QMainWindow::closeEvent(p_Event);
 }
 
 // Загрузка каталога банов.
