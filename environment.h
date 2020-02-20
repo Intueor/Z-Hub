@@ -45,6 +45,9 @@ public:
 										///< \return true при инициализированной среде.
 	/// Установка всех флагов всех объектов сцены на новые для клиента.
 	static void SetAllNew();
+	/// Удаление линка в позиции и обнуление указателя на него.
+	static void EraseLinkAt(int iPos);
+										///< \param[in] uiPos Позиция в массиве.
 	/// Удаление линков для элемента.
 	static void EraseLinksForElement(Element* p_Element);
 										///< \param[in] p_Element Указатель на элемент.

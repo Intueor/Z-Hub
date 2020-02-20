@@ -402,10 +402,12 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 // Кэлбэк обработки приходящих пакетов данных.
 void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushType, void* p_ReceivedData, int iPocket)
 {
+	PSchLinkEraser* p_PSchLinkEraser;
 	PSchElementEraser* p_PSchElementEraser;
 	PSchGroupEraser* p_PSchGroupEraser;
 	PSchElementName* p_PSchElementName;
 	PSchElementBase* p_PSchElementBase;
+	PSchLinkBase* p_PSchLinkBase;
 	PSchGroupBase* p_PSchGroupBase;
 	PSchLinkVars* p_PSchLinkVars;
 	PSchGroupName* p_PSchGroupName;
@@ -462,8 +464,8 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				p_Group = PBAccessExternal(Group, iG, Environment);
 				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
 				{
+					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erase.");
 					Environment::EraseGroupAt(iG);
-					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erased.");
 					goto gLEx;
 				}
 			}
@@ -485,8 +487,33 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				p_Element = PBAccessExternal(Element, iE, Environment);
 				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
 				{
+					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erase.");
 					Environment::EraseElementAt(iE);
-					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erased.");
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_ELEMENT_ERASE. ========
+		case PROTO_O_SCH_LINK_ERASE:
+		{
+			int iLC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
+			iLC = PBCountExternal(Link, Environment);
+			p_PSchLinkEraser = ((PSchLinkEraser*)p_ReceivedData);
+			for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+			{
+				Link* p_Link;
+				//
+				p_Link = PBAccessExternal(Link, iL, Environment);
+				if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkEraser->ullIDDst) &
+						(p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc)) // При совп. с запрошенным...
+				{
+					LOG_P_2(LOG_CAT_I, "Link [" << p_Link->p_SrcElement->oPSchElementBase.m_chName << "<>" <<
+							p_Link->p_DstElement->oPSchElementBase.m_chName << "] erase.");
+					Environment::EraseLinkAt(iL);
 					goto gLEx;
 				}
 			}
@@ -772,6 +799,36 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 			AppendToPBExternal(Group, p_Group = new Group(*p_PSchGroupBase), Environment);
 			p_Group->bNew = false;
 			p_Group->chTouchedBits = 0;
+			goto gLEx;
+		}
+		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
+		case PROTO_O_SCH_LINK_BASE:
+		{
+			Link* p_Link;
+			char* p_chSrc = nullptr;
+			char* p_chDst = nullptr;
+			//
+			p_PSchLinkBase = ((PSchLinkBase*)p_ReceivedData);
+			for(unsigned int uiF = 0; uiF != PBCountExternal(Element, Environment); uiF++)
+			{
+				Element* p_Element = PBAccessExternal(Element, uiF, Environment);
+				//
+				if(p_PSchLinkBase->oPSchLinkVars.ullIDSrc == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
+				{
+					p_chSrc = p_Element->oPSchElementBase.m_chName;
+				}
+				if(p_PSchLinkBase->oPSchLinkVars.ullIDDst == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
+				{
+					p_chDst = p_Element->oPSchElementBase.m_chName;
+				}
+				if((p_chDst != nullptr) & (p_chDst != nullptr)) goto gLO;
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
+			goto gLEx;
+gLO:		LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
+			AppendToPBExternal(Link, p_Link = new Link(*p_PSchLinkBase), Environment);
+			p_Link->bNew = false;
+			p_Link->chTouchedBits = 0;
 			goto gLEx;
 		}
 		//======== Следующий раздел... ========

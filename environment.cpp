@@ -1177,6 +1177,15 @@ bool Environment::CheckLinkForAct(Link* p_Link)
 	return true;
 }
 
+// Удаление линка в позиции и обнуление указателя на него.
+void Environment::EraseLinkAt(int iPos)
+{
+	Link* p_Link = PBAccess(Link, iPos);
+	p_Link->p_SrcElement->vp_LinkedElements.removeOne(p_Link->p_DstElement);
+	p_Link->p_DstElement->vp_LinkedElements.removeOne(p_Link->p_SrcElement);
+	RemoveObjectFromPBByPos(Link, iPos);
+}
+
 // Удаление линков для элемента.
 void Environment::EraseLinksForElement(Element* p_Element)
 {
