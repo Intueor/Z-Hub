@@ -821,7 +821,7 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 				{
 					p_chDst = p_Element->oPSchElementBase.m_chName;
 				}
-				if((p_chDst != nullptr) & (p_chDst != nullptr)) goto gLO;
+				if((p_chSrc != nullptr) & (p_chDst != nullptr)) goto gLO;
 			}
 			LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
 			goto gLEx;
