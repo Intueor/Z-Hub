@@ -509,7 +509,9 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				//
 				p_Link = PBAccessExternal(Link, iL, Environment);
 				if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkEraser->ullIDDst) &
-						(p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc)) // При совп. с запрошенным...
+				   (p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc) &
+				   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkEraser->ushiDstPort) &
+				   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkEraser->ushiSrcPort)) // При совп. с запрошенным...
 				{
 					LOG_P_2(LOG_CAT_I, "Link [" << p_Link->p_SrcElement->oPSchElementBase.m_chName << "<>" <<
 							p_Link->p_DstElement->oPSchElementBase.m_chName << "] erase.");
@@ -517,7 +519,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 					goto gLEx;
 				}
 			}
-			LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
+			LOG_P_0(LOG_CAT_W, "Wrong link for erase from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_VARS. ========

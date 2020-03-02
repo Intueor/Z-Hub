@@ -96,6 +96,8 @@ struct PSchLinkEraser
 {
 	unsigned long long ullIDSrc; ///< Номер элемента источника.
 	unsigned long long ullIDDst; ///< Номер элемента приёмника.
+	unsigned short int ushiSrcPort; ///< Порт на источнике.
+	unsigned short int ushiDstPort; ///< Порт на приёмнике.
 	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
 };
 /// Структура команды удаления элемента.
