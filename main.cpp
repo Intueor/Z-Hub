@@ -1,5 +1,6 @@
 //== ВКЛЮЧЕНИЯ.
 #include <QApplication>
+#include <QStyleFactory>
 #include "main-window.h"
 
 //== ФУНКЦИИ.
@@ -12,6 +13,7 @@ int main(int argc, char *argv[])
 	int iExecResult;
 	QApplication oApplication(argc, argv);
 	oApplication.setAttribute(Qt::AA_DisableWindowContextHelpButton);
+	oApplication.setStyle(QStyleFactory::create("Fusion"));
 	MainWindow wMainWindow;
 	//
 	if(wMainWindow.uchInitRes == RETVAL_OK)
