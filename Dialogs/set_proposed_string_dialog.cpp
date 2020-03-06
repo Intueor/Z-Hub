@@ -19,6 +19,7 @@ Set_Proposed_String_Dialog::Set_Proposed_String_Dialog(char* p_chDialogCaption, 
 	p_ui->buttonBox->button(QDialogButtonBox::StandardButton::Cancel)->setText("Отмена");
 	this->setWindowTitle(p_chDialogCaption);
 	p_ui->lineEdit->setText(p_chText);
+	p_ui->lineEdit->selectAll();
 	p_chTextInt = p_chText;
 	uchMaxLengthInt = uchMaxLength;
 }

@@ -17,6 +17,8 @@ Set_Server_Dialog::Set_Server_Dialog(char* p_chIP, char* p_Port, char* p_chPassw
 	p_ui->Accept_buttonBox->button(QDialogButtonBox::StandardButton::Ok)->setText("Принять");
 	p_ui->Accept_buttonBox->button(QDialogButtonBox::StandardButton::Cancel)->setText("Отмена");
 	p_ui->IP_lineEdit->setText(p_chIP);
+	p_ui->IP_lineEdit->selectAll();
+	p_ui->IP_lineEdit->setFocus();
 	p_ui->Port_lineEdit->setText(p_Port);
 	p_ui->Password_lineEdit->setText(p_chPassword);
 }
