@@ -15,7 +15,7 @@ char NetHub::m_chHex[] = {'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E',
 NetHub::NetHub()
 {
 	ResetPocketsBufferPositionPointer();
-	memset(this->m_chPocketsBuffer, 0, sizeof(this->m_chPocketsBuffer));
+	memset(m_chPocketsBuffer, 0, sizeof(m_chPocketsBuffer));
 }
 
 // Сброс указателя позиции в буфере пакетов.

@@ -558,13 +558,6 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 									<< "] is free.");
 						}
 					}
-					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_POS)
-					{
-						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos =
-								p_PSchElementVars->oSchElementGraph.oDbObjectPos;
-						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-								<< "] position.");
-					}
 					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_BKG_COLOR)
 					{
 						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor =

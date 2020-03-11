@@ -11,7 +11,7 @@ Message_Dialog::Message_Dialog(const char* p_chCaption, const char* p_chMessage,
 	p_ui(new Ui::Message_Dialog)
 {
 	p_ui->setupUi(this);
-	this->setWindowTitle(QString(p_chCaption));
+	setWindowTitle(QString(p_chCaption));
 	p_ui->label->setText(QString(p_chMessage));
 	p_ui->buttonBox->button(QDialogButtonBox::StandardButton::Close)->setText("Закрыть");
 }

@@ -372,34 +372,6 @@ bool Environment::LoadEnv()
 					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogZ << m_chLogNode);
 			return false;
 		}
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListPoss,
-						  m_chPos, FCN_ONE_LEVEL, p_NodePos)
-		{
-			strHelper = QString(p_NodePos->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogPos << m_chLogNode);
-				return false;
-			}
-			lstrHelper = strHelper.split(',');
-			if(lstrHelper.count() != 2)
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogPos << m_chLogNode);
-				return false;
-			}
-			oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos.dbX = lstrHelper.at(0).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos.dbY = lstrHelper.at(1).toDouble();
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListPoss);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
-					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogPos << m_chLogNode);
-			return false;
-		}
 		FIND_IN_CHILDLIST(p_NodeElement, p_ListGroupIDs,
 						  m_chGroupID, FCN_ONE_LEVEL, p_NodeGroupID)
 		{
@@ -585,7 +557,6 @@ bool Environment::SaveEnv()
 	XMLNode* p_NodeBkgColor;
 	XMLNode* p_NodeFrame;
 	XMLNode* p_NodeZ;
-	XMLNode* p_NodePos;
 	XMLNode* p_NodeGroupID;
 	XMLNode* p_NodeSrcID;
 	XMLNode* p_NodeSrcPortID;
@@ -653,13 +624,6 @@ bool Environment::SaveEnv()
 		p_NodeZ = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos).
-						toStdString().c_str());
-		p_NodePos = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chPos));
-		p_NodePos->ToElement()->
-				SetText((strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
-										oSchElementGraph.oDbObjectPos.dbX) + "," +
-						 strHTwo.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
-										oSchElementGraph.oDbObjectPos.dbY)).
 						toStdString().c_str());
 		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.ullIDGroup != 0)
 		{
@@ -815,8 +779,6 @@ void Environment::NetOperations()
 				//==================== Раздел элементов.
 				for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 				{
-					DbPoint dbRealPos;
-					//
 					p_Element = PBAccess(Element, iE);
 					if(ushNewsQantity)
 					{
@@ -828,10 +790,6 @@ void Environment::NetOperations()
 							ushNewsQantity--;
 						}
 					}
-					dbRealPos.dbX = p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos.dbX +
-							p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbX;
-					dbRealPos.dbY = p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectPos.dbY +
-							p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbY;
 					if(p_Element->chTouchedBits & TOUCHED_GEOMETRY)
 						// Если была затронута геометрия...
 					{
@@ -851,14 +809,14 @@ void Environment::NetOperations()
 					} // else if - так как геометрия в приоритете.
 					else if(((p_Element->chTouchedBits & TOUCHED_CONTENT) ||
 							 (p_Element->chTouchedBits & TOUCHED_NAME)) &&
-							(dbRealPos.dbX >
+							(p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbX >
 							 oPSchReadyFrame.oDbFrame.dbX) &
-							(dbRealPos.dbY >
+							(p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbY >
 							 oPSchReadyFrame.oDbFrame.dbY) &
-							(dbRealPos.dbX <
+							(p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbX <
 							 (oPSchReadyFrame.oDbFrame.dbX +
 							  oPSchReadyFrame.oDbFrame.dbW)) &
-							(dbRealPos.dbY <
+							(p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame.dbY <
 							 (oPSchReadyFrame.oDbFrame.dbY +
 							  oPSchReadyFrame.oDbFrame.dbH)))
 						// Если был затронут контент или имя и входит в окно...

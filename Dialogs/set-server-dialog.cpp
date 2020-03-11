@@ -35,11 +35,11 @@ void Set_Server_Dialog::accept()
 	oIPPortPasswordStrings.strIP = p_ui->IP_lineEdit->text();
 	oIPPortPasswordStrings.strPort = p_ui->Port_lineEdit->text();
 	oIPPortPasswordStrings.strPassword = p_ui->Password_lineEdit->text();
-	this->done(DIALOGS_ACCEPT);
+	done(DIALOGS_ACCEPT);
 }
 
 // Отменено.
 void Set_Server_Dialog::reject()
 {
-	this->done(DIALOGS_REJECT);
+	done(DIALOGS_REJECT);
 }

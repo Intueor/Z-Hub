@@ -14,7 +14,7 @@ Set_Proposed_Bool_Dialog::Set_Proposed_Bool_Dialog(char* p_chDialogCaption, char
 	p_ui->setupUi(this);
 	p_ui->buttonBox->button(QDialogButtonBox::StandardButton::Ok)->setText("Принять");
 	p_ui->buttonBox->button(QDialogButtonBox::StandardButton::Cancel)->setText("Отмена");
-	this->setWindowTitle(p_chDialogCaption);
+	setWindowTitle(p_chDialogCaption);
 	p_ui->label->setText(p_chText);
 }
 
@@ -27,11 +27,11 @@ Set_Proposed_Bool_Dialog::~Set_Proposed_Bool_Dialog()
 // Принято.
 void Set_Proposed_Bool_Dialog::accept()
 {
-	this->done(DIALOGS_ACCEPT);
+	done(DIALOGS_ACCEPT);
 }
 
 // Отменено.
 void Set_Proposed_Bool_Dialog::reject()
 {
-	this->done(DIALOGS_REJECT);
+	done(DIALOGS_REJECT);
 }

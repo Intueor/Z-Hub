@@ -21,9 +21,8 @@
 #define SCH_ELEMENT_BIT_BUSY            0b00000001
 #define SCH_ELEMENT_BIT_BKG_COLOR       0b00000010
 #define SCH_ELEMENT_BIT_FRAME           0b00000100
-#define SCH_ELEMENT_BIT_POS             0b00001000
-#define SCH_ELEMENT_BIT_GROUP           0b00010000
-#define SCH_ELEMENT_BIT_ZPOS            0b00100000
+#define SCH_ELEMENT_BIT_GROUP           0b00001000
+#define SCH_ELEMENT_BIT_ZPOS            0b00010000
 //
 #define SCH_LINK_BIT_SCR_PORT_POS       0b00000001
 #define SCH_LINK_BIT_DST_PORT_POS       0b00000010
@@ -74,7 +73,6 @@ const char m_chFrame[] = "Frame";
 const char m_chElements[] = "Elements";
 const char m_chZ[] = "Z";
 const char m_chElement[] = "Element";
-const char m_chPos[] = "Pos";
 const char m_chGroupID[] = "GroupID";
 const char m_chLinks[] = "Links";
 const char m_chLink[] = "Link";

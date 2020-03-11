@@ -58,7 +58,6 @@ struct SchElementGraph
 {
 	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
-	DbPoint oDbObjectPos; ///< Позиция в схеме.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
 	bool bBusy; ///< Признак занятого объекта.
 	double dbObjectZPos; ///< Z-позиция в схеме.
