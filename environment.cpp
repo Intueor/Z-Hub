@@ -177,7 +177,7 @@ bool Environment::LoadEnv()
 				return false;
 			}
 			lstrHelper = strHelper.split(',');
-			if(lstrHelper.count() != 3)
+			if(lstrHelper.count() != 4)
 			{
 				LOG_P_0(LOG_CAT_E,
 						m_chLogEnvFileCorrupt << m_chLogEnvGroup << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogBkgColor << m_chLogNode);
@@ -186,7 +186,8 @@ bool Environment::LoadEnv()
 			oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor =
 					QColor(lstrHelper.at(0).toUInt(),
 						   lstrHelper.at(1).toUInt(),
-						   lstrHelper.at(2).toUInt()).rgb();
+						   lstrHelper.at(2).toUInt(),
+						   lstrHelper.at(3).toUInt()).rgba();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListBkgColors);
 		if(!bPresent)
@@ -304,7 +305,7 @@ bool Environment::LoadEnv()
 				return false;
 			}
 			lstrHelper = strHelper.split(',');
-			if(lstrHelper.count() != 3)
+			if(lstrHelper.count() != 4)
 			{
 				LOG_P_0(LOG_CAT_E,
 						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogBkgColor << m_chLogNode);
@@ -313,7 +314,8 @@ bool Environment::LoadEnv()
 			oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor =
 					QColor(lstrHelper.at(0).toUInt(),
 						   lstrHelper.at(1).toUInt(),
-						   lstrHelper.at(2).toUInt()).rgb();
+						   lstrHelper.at(2).toUInt(),
+						   lstrHelper.at(3).toUInt()).rgba();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListBkgColors);
 		if(!bPresent)
@@ -543,7 +545,7 @@ bool Environment::SaveEnv()
 	XMLError eResult;
 	tinyxml2::XMLDocument xmlEnv;
 	QString strHOne, strHTwo, strHThree, strHFour;
-	int iR, iG, iB;
+	int iR, iG, iB, iA;
 	QColor oQColor;
 	XMLNode* p_NodeRoot;
 	XMLNode* p_NodeGroups;
@@ -580,9 +582,9 @@ bool Environment::SaveEnv()
 				SetText(PBAccess(Group,iF)->oPSchGroupBase.m_chName);
 		p_NodeBkgColor = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chBkgColor));
 		oQColor = QColor(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor);
-		oQColor.getRgb(&iR, &iG, &iB);
+		oQColor.getRgb(&iR, &iG, &iB, &iA);
 		p_NodeBkgColor->ToElement()->
-				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB)).toStdString().c_str());
+				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," + strHThree.setNum(iA)).toStdString().c_str());
 		p_NodeFrame = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chFrame));
 		p_NodeFrame->ToElement()->
 				SetText((strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbX) + "," +
@@ -607,9 +609,9 @@ bool Environment::SaveEnv()
 				SetText(PBAccess(Element,iF)->oPSchElementBase.m_chName);
 		p_NodeBkgColor = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chBkgColor));
 		oQColor = QColor(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor);
-		oQColor.getRgb(&iR, &iG, &iB);
+		oQColor.getRgb(&iR, &iG, &iB, &iA);
 		p_NodeBkgColor->ToElement()->
-				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB)).toStdString().c_str());
+				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," + strHThree.setNum(iA)).toStdString().c_str());
 		p_NodeFrame = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chFrame));
 		p_NodeFrame->ToElement()->
 				SetText((strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
