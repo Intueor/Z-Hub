@@ -245,6 +245,18 @@ bool Environment::LoadEnv()
 			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvGroup << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogZ << m_chLogNode);
 			return false;
 		}
+		FIND_IN_CHILDLIST(p_NodeGroup, p_ListGroupIDs,
+						  m_chGroupID, FCN_ONE_LEVEL, p_NodeGroupID)
+		{
+			strHelper = QString(p_NodeGroupID->FirstChild()->Value());
+			if(strHelper.isEmpty())
+			{
+				LOG_P_0(LOG_CAT_E,
+						m_chLogEnvFileCorrupt << m_chLogEnvGroup << m_chLogEnvNodeFormatIncorrect << m_chLogWrong << "'GroupID'" << m_chLogNode);
+				return false;
+			}
+			oPSchGroupBase.oPSchGroupVars.ullIDGroup = strHelper.toULongLong();
+		} FIND_IN_CHILDLIST_END(p_ListGroupIDs);
 		AppendToPB(Group, new Group(oPSchGroupBase));
 	} PARSE_CHILDLIST_END(p_ListGroups);
 	// ЭЛЕМЕНТЫ.
@@ -597,6 +609,12 @@ bool Environment::SaveEnv()
 		p_NodeZ->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.dbObjectZPos).
 						toStdString().c_str());
+		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
+		{
+			p_NodeGroupID = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chGroupID));
+			p_NodeGroupID->ToElement()->
+					SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.ullIDGroup).toStdString().c_str());
+		}
 	}
 	p_NodeElements = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chElements));
 	for(unsigned int iF = 0; iF != PBCount(Element); iF++)

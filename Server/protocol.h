@@ -116,6 +116,7 @@ struct PSchGroupName
 struct PSchGroupVars
 {
 	unsigned long long ullIDInt; ///< Уникальный номер группы.
+	unsigned long long ullIDGroup; ///< Номер группы группы или 0.
 	SchGroupGraph oSchGroupGraph; ///< Объект структуры определения графических качеств группы.
 	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
 };
