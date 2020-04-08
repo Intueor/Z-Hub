@@ -31,8 +31,9 @@
 #define SCH_GROUP_BIT_BUSY              0b00000001
 #define SCH_GROUP_BIT_BKG_COLOR         0b00000010
 #define SCH_GROUP_BIT_FRAME             0b00000100
-#define SCH_GROUP_BIT_ZPOS              0b00001000
-#define SCH_GROUP_BIT_ELEMENTS_SHIFT    0b00010000
+#define SCH_GROUP_BIT_GROUP				0b00001000
+#define SCH_GROUP_BIT_ZPOS              0b00010000
+#define SCH_GROUP_BIT_ELEMENTS_SHIFT    0b00100000
 
 //== КОНСТАНТЫ.
 // Многократно используемые строки.
