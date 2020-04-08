@@ -1222,25 +1222,36 @@ void Environment::EraseElementsFromGroup(Group* p_Group)
 	while(!p_Group->vp_ConnectedElements.isEmpty())
 	{
 		Element* p_Element = p_Group->vp_ConnectedElements.at(0);
+		//
 		p_Group->vp_ConnectedElements.removeOne(p_Element);
 		EraseLinksForElement(p_Element);
 		RemoveObjectFromPBByPointer(Element, p_Element);
 	}
 }
 
+// Удаление групп из группы.
+void Environment::EraseGroupsFromGroup(Group* p_Group)
+{
+	while(!p_Group->vp_ConnectedGroups.isEmpty())
+	{
+		Group* p_GroupInt = p_Group->vp_ConnectedGroups.at(0);
+		//
+		p_Group->vp_ConnectedGroups.removeOne(p_GroupInt);
+		EraseGroup(p_GroupInt); // Рекурсия.
+	}
+}
+
 // Удаление группы в позиции и обнуление указателя на неё.
 void Environment::EraseGroupAt(int iPos)
 {
-	Group* p_Group = PBAccess(Group, iPos);
-	EraseElementsFromGroup(p_Group);
-	// Удаление группы.
-	RemoveObjectFromPBByPos(Group, iPos);
+	EraseGroup(PBAccess(Group, iPos));
 }
 
 // Удаление группы по указателю.
 void Environment::EraseGroup(Group* p_Group)
 {
 	EraseElementsFromGroup(p_Group);
+	EraseGroupsFromGroup(p_Group);
 	// Удаление группы.
 	RemoveObjectFromPBByPointer(Group, p_Group);
 }

@@ -64,6 +64,9 @@ private:
 	/// Удаление элементов из группы.
 	static void EraseElementsFromGroup(Group* p_Group);
 								///< \param[in] p_Group Указатель на группу.
+	/// Удаление групп из группы.
+	static void EraseGroupsFromGroup(Group* p_Group);
+								///< \param[in] p_Group Указатель на группу.
 	/// Поток шагов среды.
 	static void* EnvThread(void *p_vPlug);
 										///< \param[in] p_vPlug Заглушка.

@@ -583,7 +583,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 									p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
 									LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 											<< "] group - detach.");
-									if(p_Element->p_Group->vp_ConnectedElements.isEmpty())
+									if(p_Element->p_Group->vp_ConnectedElements.isEmpty() & p_Element->p_Group->vp_ConnectedGroups.isEmpty())
 									{
 										LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
 										Environment::EraseGroup(p_Element->p_Group);
@@ -594,7 +594,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 								}
 								else
 								{
-gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
+gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 									goto gLEx;
 								}
 							}
@@ -741,6 +741,56 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error detaching from group.");
 								p_PSchGroupVars->oSchGroupGraph.uiObjectBkgColor;
 						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 										   << "] color.");
+					}
+					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_GROUP)
+					{
+						if(p_PSchGroupVars->ullIDGroup == 0) // Обработка отсоединения от группы.
+						{
+							if(p_Group->p_GroupAbove != nullptr)
+							{
+								if(p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group))
+								{
+									p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
+									LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+											<< "] group - detach.");
+									if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() & p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
+									{
+										LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+										Environment::EraseGroup(p_Group->p_GroupAbove);
+									}
+									p_Group->p_GroupAbove = nullptr;
+									p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = 0;
+									goto gLEx;
+								}
+								else
+								{
+gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
+									goto gLEx;
+								}
+							}
+							else goto gGGEx;
+						}
+						for(int iG = 0; iG < (int)PBCountExternal(Group, Environment); iG++) // Обработка включения в группу.
+						{
+							if(PBAccessExternal(Group, iG, Environment)->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDGroup)
+							{
+								p_Group->p_GroupAbove = PBAccessExternal(Group, iG, Environment);
+								if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup != p_PSchGroupVars->ullIDGroup)
+								{
+									p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = p_PSchGroupVars->ullIDGroup;
+									LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+											<< "] group - attach.");
+									p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
+								}
+								else
+								{
+									LOG_P_0(LOG_CAT_W, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+											<< "] is already assigned to received group number.");
+								}
+								goto gLEx;
+							}
+						}
+						LOG_P_0(LOG_CAT_W, "Wrong group number for group from ID." << QString::number(iConnection).toStdString());
 					}
 					goto gLEx;
 				}

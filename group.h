@@ -22,6 +22,8 @@ public:
 	char chTouchedBits; ///< Признаки затронутой группы за цикл.
 	PSchGroupBase oPSchGroupBase; ///< Структура с данными по группе.
 	QVector<Element*> vp_ConnectedElements; ///< Вектор указателей на элементы, включённые в группу.
+	QVector<Group*> vp_ConnectedGroups; ///< Вектор указателей на группы, включённые в группу.
+	Group* p_GroupAbove; ///< Указатель на группу или nullptr.
 };
 
 #endif // GROUP_H
