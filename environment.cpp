@@ -581,10 +581,11 @@ bool Environment::SaveEnv()
 		p_NodeName->ToElement()->
 				SetText(PBAccess(Group,iF)->oPSchGroupBase.m_chName);
 		p_NodeBkgColor = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chBkgColor));
-		oQColor = QColor(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor);
+		oQColor = QColor();
+		oQColor.setRgba(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor);
 		oQColor.getRgb(&iR, &iG, &iB, &iA);
 		p_NodeBkgColor->ToElement()->
-				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," + strHThree.setNum(iA)).toStdString().c_str());
+				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," + strHFour.setNum(iA)).toStdString().c_str());
 		p_NodeFrame = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chFrame));
 		p_NodeFrame->ToElement()->
 				SetText((strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbX) + "," +
@@ -608,10 +609,11 @@ bool Environment::SaveEnv()
 		p_NodeName->ToElement()->
 				SetText(PBAccess(Element,iF)->oPSchElementBase.m_chName);
 		p_NodeBkgColor = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chBkgColor));
-		oQColor = QColor(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor);
+		oQColor = QColor();
+		oQColor.setRgba(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor);
 		oQColor.getRgb(&iR, &iG, &iB, &iA);
 		p_NodeBkgColor->ToElement()->
-				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," + strHThree.setNum(iA)).toStdString().c_str());
+				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," + strHFour.setNum(iA)).toStdString().c_str());
 		p_NodeFrame = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chFrame));
 		p_NodeFrame->ToElement()->
 				SetText((strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
