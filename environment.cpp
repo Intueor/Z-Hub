@@ -1072,6 +1072,15 @@ void Environment::NetOperations()
 					{
 						p_Group->oPSchGroupBase.oPSchGroupVars.bLastInQueue = true; // Последний в цепочке.
 					}
+					if(p_Group->chTouchedBits & TOUCHED_GROUP)
+					{
+						p_Group->oPSchGroupBase.bRequestGroupUpdate = true;
+						p_Group->chTouchedBits ^= TOUCHED_GROUP;
+					}
+					else
+					{
+						p_Group->oPSchGroupBase.bRequestGroupUpdate = false;
+					}
 					// Отправка полных данных на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_BASE,
 																  (char*)&p_Group->oPSchGroupBase, sizeof(PSchGroupBase)));

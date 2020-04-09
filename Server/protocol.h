@@ -125,6 +125,7 @@ struct PSchGroupBase
 {
 	PSchGroupVars oPSchGroupVars; ///< Структура для передачи качеств группы.
 	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	bool bRequestGroupUpdate; ///< Флаг запроса обновления геометрии соответствующей группы после принятия новой группы.
 };
 /// Структура для передачи качеств линка схемы с указанием актуальных для изменения полей.
 struct PSchLinkVars
