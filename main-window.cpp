@@ -612,11 +612,6 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 											<< "] group - attach.");
 									p_Element->p_Group->vp_ConnectedElements.append(p_Element);
 								}
-								else
-								{
-									LOG_P_0(LOG_CAT_W, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-											<< "] is already assigned to received group number.");
-								}
 								goto gLEx;
 							}
 						}
