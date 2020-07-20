@@ -427,7 +427,7 @@ private:
 	you will get called with a VisitEnter/VisitExit pair. Nodes that are always leafs
 	are simply called with Visit().
 
-	If you return 'true' from a Visit method, recursive parsing will continue. If you return
+	If you return 'true' from a Visit method, Recursively parsing will continue. If you return
 	false, <b>no children of this node or its siblings</b> will be visited.
 
 	All flavors of Visit methods have a default implementation that returns 'true' (continue

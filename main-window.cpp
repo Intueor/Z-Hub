@@ -782,11 +782,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 											<< "] group - attach.");
 									p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
 								}
-								else
-								{
-									LOG_P_0(LOG_CAT_W, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-											<< "] is already assigned to received group number.");
-								}
 								goto gLEx;
 							}
 						}

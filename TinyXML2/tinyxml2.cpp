@@ -927,7 +927,7 @@ const XMLElement* XMLNode::PreviousSiblingElement( const char* name ) const
 
 char* XMLNode::ParseDeep( char* p, StrPair* parentEnd )
 {
-    // This is a recursive method, but thinking about it "at the current level"
+    // This is a Recursively method, but thinking about it "at the current level"
     // it is a pretty simple flat list:
     //		<foo/>
     //		<!-- comment -->
