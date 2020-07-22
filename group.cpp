@@ -17,20 +17,4 @@ Group::Group(PSchGroupBase& a_PSchGroupBase)
 	oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bBusy = false;
 	bNew = true;
 	chTouchedBits = 0;
-	p_GroupAbove = nullptr;
-	// Если не была вписана в группу, а надо...
-	if(oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
-	{
-		for(uint uiG = 0; uiG < PBCountExternal(Group, Environment); uiG++)
-		{
-			Group* p_GroupInt = PBAccessExternal(Group, uiG, Environment);
-			//
-			if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == oPSchGroupBase.oPSchGroupVars.ullIDGroup)
-			{
-				p_GroupAbove = p_GroupInt;
-				p_GroupAbove->vp_ConnectedGroups.append(this);
-				break;
-			}
-		}
-	}
 }

@@ -259,6 +259,28 @@ bool Environment::LoadEnv()
 		} FIND_IN_CHILDLIST_END(p_ListGroupIDs);
 		AppendToPB(Group, new Group(oPSchGroupBase));
 	} PARSE_CHILDLIST_END(p_ListGroups);
+	// Заполнение вложенностей групп.
+	for(uint  uiF = 0; uiF != PBCount(Group); uiF++)
+	{
+		Group* p_Group = PBAccess(Group, uiF);
+		//
+		p_Group->p_GroupAbove = nullptr;
+		// Если не была вписана в группу, а надо...
+		if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
+		{
+			for(uint uiG = 0; uiG != PBCount(Group); uiG++)
+			{
+				Group* p_GroupInt = PBAccess(Group, uiG);
+				//
+				if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup)
+				{
+					p_Group->p_GroupAbove = p_GroupInt;
+					p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
+					break;
+				}
+			}
+		}
+	}
 	// ЭЛЕМЕНТЫ.
 	PARSE_CHILDLIST(l_pElements.front(), p_ListElements, m_chElement,
 					FCN_ONE_LEVEL, p_NodeElement)
@@ -1261,6 +1283,10 @@ void Environment::EraseGroup(Group* p_Group)
 {
 	EraseElementsFromGroup(p_Group);
 	EraseGroupsFromGroup(p_Group);
+	if(p_Group->p_GroupAbove != nullptr)
+	{
+		p_Group->p_GroupAbove->vp_ConnectedGroups.removeOne(p_Group);
+	}
 	// Удаление группы.
 	RemoveObjectFromPBByPointer(Group, p_Group);
 }
