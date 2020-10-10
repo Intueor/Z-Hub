@@ -298,7 +298,7 @@ enum {
 #  define ENOTRECOVERABLE 44
 #endif
 
-#include <../Z-Server/pthread/include/sched.h>
+#include <../Z-Hub/pthread/include/sched.h>
 
 /*
  * To avoid including windows.h we define only those things that we
