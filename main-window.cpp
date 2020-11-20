@@ -539,7 +539,8 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				{
 					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_ZPOS)
 					{
-						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos = p_PSchElementVars->oSchElementGraph.dbObjectZPos;
+						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos =
+								p_PSchElementVars->oSchElementGraph.dbObjectZPos;
 						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 								<< "] z-pos is: " << QString::number((int)p_PSchElementVars->oSchElementGraph.dbObjectZPos).toStdString());
 					}
@@ -602,7 +603,8 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 						}
 						for(int iG = 0; iG < (int)PBCountExternal(Group, Environment); iG++) // Обработка включения в группу.
 						{
-							if(PBAccessExternal(Group, iG, Environment)->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
+							if(PBAccessExternal(Group, iG, Environment)->
+							   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
 							{
 								p_Element->p_Group = PBAccessExternal(Group, iG, Environment);
 								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup != p_PSchElementVars->ullIDGroup)
@@ -748,7 +750,8 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 									p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
 									LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 											<< "] group - detach.");
-									if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() & p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
+									if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() &
+									   p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
 									{
 										LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
 										Environment::EraseGroup(p_Group->p_GroupAbove);
