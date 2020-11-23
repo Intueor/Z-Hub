@@ -72,6 +72,7 @@ const char m_chName[] = "Name";
 const char m_chBkgColor[] = "BkgColor";
 const char m_chFrame[] = "Frame";
 const char m_chElements[] = "Elements";
+const char m_chMinimize[] = "Minimized";
 const char m_chZ[] = "Z";
 const char m_chElement[] = "Element";
 const char m_chGroupID[] = "GroupID";

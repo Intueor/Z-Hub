@@ -232,6 +232,12 @@ bool Environment::LoadEnv()
 					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogFrame << m_chLogNode);
 			return false;
 		}
+		FIND_IN_CHILDLIST(p_NodeGroup, p_ListMinimizes,
+						  m_chMinimize, FCN_ONE_LEVEL, p_NodeMinimize)
+		{
+			p_NodeMinimize = p_NodeMinimize; // Заглушка.
+			oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bMinimized = true;
+		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListZs,
 						  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -403,6 +409,12 @@ bool Environment::LoadEnv()
 					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogFrame << m_chLogNode);
 			return false;
 		}
+		FIND_IN_CHILDLIST(p_NodeElement, p_ListMinimizes,
+						  m_chMinimize, FCN_ONE_LEVEL, p_NodeMinimize)
+		{
+			p_NodeMinimize = p_NodeMinimize; // Заглушка.
+			oPSchElementBase.oPSchElementVars.oSchElementGraph.bMinimized = true;
+		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
 						  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -651,6 +663,10 @@ bool Environment::SaveEnv()
 						 strHThree.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbW) + "," +
 						 strHFour.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame.dbH)).
 						toStdString().c_str());
+		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bMinimized)
+		{
+			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chMinimize));
+		}
 		p_NodeZ = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.dbObjectZPos).
@@ -690,6 +706,10 @@ bool Environment::SaveEnv()
 						 strHFour.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
 										 oSchElementGraph.oDbObjectFrame.dbH)).
 						toStdString().c_str());
+		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.bMinimized)
+		{
+			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chMinimize));
+		}
 		p_NodeZ = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos).

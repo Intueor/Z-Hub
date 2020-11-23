@@ -57,6 +57,7 @@ struct DbFrame
 struct SchElementGraph
 {
 	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bMinimized; ///< Признак свёрнутоого объекта.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
 	bool bBusy; ///< Признак занятого объекта.
@@ -73,6 +74,7 @@ struct SchLinkGraph
 struct SchGroupGraph
 {
 	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bMinimized; ///< Признак свёрнутой группы.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
 	bool bBusy; ///< Признак занятого объекта.
