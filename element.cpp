@@ -13,8 +13,6 @@ Element::Element(PSchElementBase& a_PSchElementBase)
 		oPSchElementBase.oPSchElementVars.ullIDInt = GenerateID();
 	}
 	oPSchElementBase.oPSchElementVars.oSchElementGraph.bBusy = false;
-	bNew = true;
-	chTouchedBits = 0;
 	p_Group = nullptr;
 	// Если не был вписан в группу, а надо...
 	if(oPSchElementBase.oPSchElementVars.ullIDGroup != 0)

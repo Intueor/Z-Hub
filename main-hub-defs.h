@@ -23,6 +23,7 @@ const char m_chLogCantSave[] = "Can`t save ";
 const char m_chLogCantStart[] = "Can`t start ";
 const char m_chLogCantStop[] = "Can`t stop ";
 const char m_chLogCantOpen[] = "Can`t open ";
+const char m_chLogSentToClient[] = "] has been sent to client.";
 
 //== МАКРОСЫ.
 // Общее.

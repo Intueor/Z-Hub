@@ -15,6 +15,4 @@ Group::Group(PSchGroupBase& a_PSchGroupBase)
 		oPSchGroupBase.oPSchGroupVars.ullIDInt = GenerateID();
 	}
 	oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bBusy = false;
-	bNew = true;
-	chTouchedBits = 0;
 }

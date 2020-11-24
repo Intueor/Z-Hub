@@ -14,14 +14,90 @@
 #include "p_buffer.h"
 
 //== МАКРОСЫ.
-#define MAX_ELEMENTS			1024
-#define MAX_LINKS				4096
-#define MAX_GROUPS				512
+#define MAX_ELEMENTS				1024
+#define MAX_LINKS					4096
+#define MAX_GROUPS					512
+#define QUEUE_NEW_ELEMENT			1
+#define QUEUE_CHANGED_ELEMENT		2
+#define QUEUE_RENAMED_ELEMENT		3
+#define QUEUE_MINCHANGED_ELEMENT	4
+#define QUEUE_ERASED_ELEMENT		5
+#define QUEUE_NEW_LINK				6
+#define QUEUE_CHANGED_LINK			7
+#define QUEUE_NEW_GROUP				8
+#define QUEUE_CHANGED_GROUP			9
+#define QUEUE_RENAMED_GROUP			10
+#define QUEUE_MINCHANGED_GROUP		11
+#define QUEUE_ERASED_GROUP			12
 
 //== КЛАССЫ.
 /// Класс среды.
 class Environment
 {
+public:
+	/// Класс очереди отправки.
+	class SendingQueue
+	{
+	public:
+		/// Структура сегмента очереди отправки.
+		struct QueueSegment
+		{
+			unsigned char uchType; ///< Тип юнита.
+			void* p_vUnitObject; ///< Указатель на объект юнита.
+		};
+	public:
+		/// Деструктор.
+		~SendingQueue();
+		/// Добавление нового элемента.
+		static void AddNewElement(PSchElementBase& aPSchElementBase);
+										///< \param[in] aPSchElementBase Ссылка объект базы элемента.
+		/// Добавление изменений элемента.
+		static void AddElementChanges(PSchElementVars& aPShcElementVars);
+										///< \param[in] aPShcElementVars Ссылка объект переменных элемента.
+		/// Добавление изменения имени элемента.
+		static void AddElementRename(PSchElementName& aPSchElementName);
+										///< \param[in] aPSchElementName Ссылка объект имени элемента.
+		/// Добавление изменения свёрнутости элемента.
+		static void AddElementMinChanges(PSchElementMinimize& aPSchElementMinimize);
+										///< \param[in] aPSchElementName Ссылка объект свёрнутости элемента.
+		/// Добавление удаления элемента.
+		static void AddEraseElement(PSchElementEraser& aPSchElementEraser);
+										///< \param[in] aPSchElementEraser Ссылка объект удаления элемента.
+		/// Добавление нового линка.
+		static void AddNewLink(PSchLinkBase& aPSchLinkBase);
+										///< \param[in] aPSchLinkBase Ссылка объект базы линка.
+		/// Добавление изменений линка.
+		static void AddLinkChanges(PSchLinkVars& aPShcLinkVars);
+										///< \param[in] aPShcLinkVars Ссылка объект переменных линка.
+		/// Добавление новой группы.
+		static void AddNewGroup(PSchGroupBase& aPSchGroupBase);
+										///< \param[in] aPSchGroupBase Ссылка объект базы группы.
+		/// Добавление изменений группы.
+		static void AddGroupChanges(PSchGroupVars& aPShcGroupVars);
+										///< \param[in] aPShcGroupVars Ссылка объект переменных группы.
+		/// Добавление изменения имени группы.
+		static void AddGroupRename(PSchGroupName& aPSchGroupName);
+										///< \param[in] aPSchGroupName Ссылка объект имени группы.
+		/// Добавление изменения свёрнутости группы.
+		static void AddGroupMinChanges(PSchGroupMinimize& aPSchGroupMinimize);
+										///< \param[in] aPSchGroupMinimize Ссылка объект свёрнутости группы.
+		/// Добавление удаления группы.
+		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser);
+										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.
+		/// Получение данных из первой позиции.
+		static QueueSegment* GetFirst();
+										///< \return Указатель на структуру с типом позиции и void-указателем.
+		/// Очистка и удаление первой позиции.
+		static void RemoveFirst();
+		/// Очистка цепочки с удалением содержимого.
+		static void Clear();
+		/// Получение длины цепочки.
+		static int Count();
+										///< \return Кол-во звеньев цепочки.
+	private:
+		static QList<QueueSegment> l_Queue; ///< Лист очереди отправки.
+		static QueueSegment oQueueSegment; ///< Служебный объект сегмента.
+	};
 public:
 	/// Конструктор.
 	Environment(pthread_mutex_t ptLogMutex, char* p_chEnvName);
@@ -43,8 +119,6 @@ public:
 	/// Проверка инициализированности среды.
 	static bool CheckInitialized();
 										///< \return true при инициализированной среде.
-	/// Установка всех флагов всех объектов сцены на новые для клиента.
-	static void SetAllNew();
 	/// Удаление линка в позиции и обнуление указателя на него.
 	static void EraseLinkAt(int iPos);
 										///< \param[in] uiPos Позиция в массиве.
@@ -60,6 +134,8 @@ public:
 	/// Удаление группы по указателю.
 	static void EraseGroup(Group* p_Group);
 										///< \param[in] p_Group Указатель на группу.
+	/// Прогрузка цепочки отправки для подключившегося клиента.
+	static void FetchEnvToQueue();
 private:
 	/// Удаление элементов из группы.
 	static void EraseElementsFromGroup(Group* p_Group);
@@ -73,10 +149,6 @@ private:
 										///< \return Заглушка.
 	/// Работа с сетью.
 	static void NetOperations();
-	/// Проверка линка на актуальность по представленным элементам.
-	static bool CheckLinkForAct(Link* p_Link);
-										///< \param[in] p_Link Указатель на линк.
-										///< \return true - при актуальном линке.
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
@@ -94,16 +166,7 @@ private:
 	static QString strEnvPath; ///< Строка для пути среды.
 	static QString strEnvFilename; ///< Строка для имени файла среды.
 	static pthread_t thrEnv; ///< Идентификатор потока шагов среды.
-	static QList<Element*> lp_NewElements; ///< Лист для заполнения ссылками на новые элементы.
-	static QList<Element*> lp_ChangedElements; ///< Лист для заполнения ссылками на изменённые элементы.
-	static QList<Element*> lp_RenamedElements; ///< Лист для заполнения ссылками на переименованные элементы.
-	static QList<Element*> lp_MinChangedElements; ///< Лист для заполнения ссылками на элементы со сменой свёрнутого состояния.
-	static QList<Link*> lp_NewLinks; ///< Лист для заполнения ссылками на новые линки.
-	static QList<Link*> lp_ChangedLinks; ///< Лист для заполнения ссылками на изменённые линки.
-	static QList<Group*> lp_NewGroups; ///< Лист для заполнения ссылками на новые группы.
-	static QList<Group*> lp_ChangedGroups; ///< Лист для заполнения ссылками на изменённые группы.
-	static QList<Group*> lp_RenamedGroups; ///< Лист для заполнения ссылками на переименованные группы.
-	static QList<Group*> lp_MinChangedGroups; ///< Лист для заполнения ссылками на группы со сменой свёрнутого состояния.
+	static SendingQueue* p_SendingQueue; ///< Указатель на класс очереди отправки.
 };
 
 #endif // ENVIRONMENT_H

@@ -30,6 +30,7 @@ char MainWindow::m_chPassword[AUTH_PASSWORD_STR_LEN];
 char MainWindow::m_chEnvName[ENV_NAME_LEN];
 Environment* MainWindow::p_Environment = nullptr;
 int MainWindow::iCurrentClientConnection;
+bool MainWindow::bJustConnected = false;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс главного окна.
@@ -385,6 +386,7 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 		{
 			p_ui->label_ConnectedClient->setText(QString(m_chIPNameBuffer) + ":" + QString(m_chPortNameBuffer));
 			iCurrentClientConnection = iConnection;
+			bJustConnected = true;
 		}
 		else
 		{
@@ -433,7 +435,6 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 				else
 				{
 					oPSchStatusInfo.bReady = true;
-					Environment::SetAllNew();
 				}
 				p_Server->SendToClientImmediately(iCurrentClientConnection,
 												  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
@@ -444,6 +445,11 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 		case PROTO_C_SCH_READY:
 		{
 			Environment::bRequested = true;
+			if(bJustConnected)
+			{
+				p_Environment->FetchEnvToQueue();
+				bJustConnected = false;
+			}
 			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
 gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
 			{
@@ -868,8 +874,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 			LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
 					<< "] base from client.");
 			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), Environment);
-			p_Element->bNew = false;
-			p_Element->chTouchedBits = 0;
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_BASE. ========
@@ -881,8 +885,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 			LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
 					<< "] base from client.");
 			AppendToPBExternal(Group, p_Group = new Group(*p_PSchGroupBase), Environment);
-			p_Group->bNew = false;
-			p_Group->chTouchedBits = 0;
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
@@ -911,8 +913,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 			goto gLEx;
 gLO:		LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
 			AppendToPBExternal(Link, p_Link = new Link(*p_PSchLinkBase), Environment);
-			p_Link->bNew = false;
-			p_Link->chTouchedBits = 0;
 			goto gLEx;
 		}
 		//======== Следующий раздел... ========

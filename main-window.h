@@ -96,7 +96,7 @@ private:
 	/// Установка текста строки статуса.
 	static void SetStatusBarText(QString strMsg);
 							///< \param[in] strMsg Строка с сообщением.
-
+							///
 private slots:
 	// При переключении кнопки 'Запуск \ остановка сервера'.
 	void on_action_StartStopServer_triggered(bool checked);
@@ -142,6 +142,7 @@ private:
 	static char m_chEnvName[ENV_NAME_LEN]; ///< Буфер под строку имени среды.
 	static Environment* p_Environment; ///< Указатель на объект среды.
 	static int iCurrentClientConnection; ///< Текущий подключённый клиент или NO_CLIENT.
+	static bool bJustConnected; ///< Признак только что подключившегося клиента.
 };
 
 #endif // MAINWINDOW_H
