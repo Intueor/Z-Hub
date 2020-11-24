@@ -94,6 +94,16 @@ private:
 	static QString strEnvPath; ///< Строка для пути среды.
 	static QString strEnvFilename; ///< Строка для имени файла среды.
 	static pthread_t thrEnv; ///< Идентификатор потока шагов среды.
+	static QList<Element*> lp_NewElements; ///< Лист для заполнения ссылками на новые элементы.
+	static QList<Element*> lp_ChangedElements; ///< Лист для заполнения ссылками на изменённые элементы.
+	static QList<Element*> lp_RenamedElements; ///< Лист для заполнения ссылками на переименованные элементы.
+	static QList<Element*> lp_MinChangedElements; ///< Лист для заполнения ссылками на элементы со сменой свёрнутого состояния.
+	static QList<Link*> lp_NewLinks; ///< Лист для заполнения ссылками на новые линки.
+	static QList<Link*> lp_ChangedLinks; ///< Лист для заполнения ссылками на изменённые линки.
+	static QList<Group*> lp_NewGroups; ///< Лист для заполнения ссылками на новые группы.
+	static QList<Group*> lp_ChangedGroups; ///< Лист для заполнения ссылками на изменённые группы.
+	static QList<Group*> lp_RenamedGroups; ///< Лист для заполнения ссылками на переименованные группы.
+	static QList<Group*> lp_MinChangedGroups; ///< Лист для заполнения ссылками на группы со сменой свёрнутого состояния.
 };
 
 #endif // ENVIRONMENT_H

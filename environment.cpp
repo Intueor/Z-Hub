@@ -26,7 +26,16 @@ bool Environment::bStopEnvUpdate = false;
 pthread_t Environment::thrEnv;
 bool Environment::bRequested = false;
 PSchReadyFrame Environment::oPSchReadyFrame;
-
+QList<Element*> Environment::lp_NewElements;
+QList<Element*> Environment::lp_ChangedElements;
+QList<Element*> Environment::lp_RenamedElements;
+QList<Element*> Environment::lp_MinChangedElements;
+QList<Link*> Environment::lp_NewLinks;
+QList<Link*> Environment::lp_ChangedLinks;
+QList<Group*> Environment::lp_NewGroups;
+QList<Group*> Environment::lp_ChangedGroups;
+QList<Group*> Environment::lp_RenamedGroups;
+QList<Group*> Environment::lp_MinChangedGroups;
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс среды.
 // Конструктор.
@@ -829,7 +838,6 @@ void* Environment::EnvThread(void *p_vPlug)
 	bStopEnvUpdate = false;
 	RETURN_THREAD
 }
-
 // Работа с сетью.
 void Environment::NetOperations()
 {
@@ -841,21 +849,31 @@ void Environment::NetOperations()
 	PSchGroupName oPSchGroupName;
 	PSchLinkVars oPSchLinkVars;
 	PSchGroupVars oPSchGroupVars;
-	QList<Element*> lp_NewElements;
-	QList<Element*> lp_ChangedElements;
-	QList<Element*> lp_RenamedElements;
-	QList<Link*> lp_NewLinks;
-	QList<Link*> lp_ChangedLinks;
-	QList<Group*> lp_NewGroups;
-	QList<Group*> lp_ChangedGroups;
-	QList<Group*> lp_RenamedGroups;
+	PSchElementMinimize oPSchElementMinimize;
+	PSchGroupMinimize oPSchGroupMinimize;
 	//
-	memset(&oPSchElementVars, 0, sizeof(oPSchElementVars));
-	memset(&oPSchLinkVars, 0, sizeof(oPSchLinkVars));
 	bool bPresent;
 	int iEC, iECM;
 	int iLC, iLCM;
 	unsigned short ushNewsQantity = 1;
+	//
+	lp_NewElements.clear();
+	lp_ChangedElements.clear();
+	lp_RenamedElements.clear();
+	lp_MinChangedElements.clear();
+	lp_NewLinks.clear();
+	lp_ChangedLinks.clear();
+	lp_NewGroups.clear();
+	lp_ChangedGroups.clear();
+	lp_RenamedGroups.clear();
+	lp_MinChangedGroups.clear();
+	memset(&oPSchElementName, 0, sizeof(oPSchElementName));
+	memset(&oPSchGroupName, 0, sizeof(oPSchGroupName));
+	memset(&oPSchElementVars, 0, sizeof(oPSchElementVars));
+	memset(&oPSchLinkVars, 0, sizeof(oPSchLinkVars));
+	memset(&oPSchGroupVars, 0, sizeof(oPSchGroupVars));
+	memset(&oPSchElementMinimize, 0, sizeof(oPSchElementMinimize));
+	memset(&oPSchGroupMinimize, 0, sizeof(oPSchGroupMinimize));
 	//
 	if(MainWindow::p_Server->GetConnectionData(0).iStatus != NO_CONNECTION)
 	{
@@ -949,9 +967,9 @@ void Environment::NetOperations()
 					}
 					// Отправка полных данных на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																  PROTO_O_SCH_ELEMENT_BASE,
-																  (char*)&p_Element->oPSchElementBase,
-																  sizeof(PSchElementBase)));
+																			  PROTO_O_SCH_ELEMENT_BASE,
+																			  (char*)&p_Element->oPSchElementBase,
+																			  sizeof(PSchElementBase)));
 					LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
@@ -973,7 +991,7 @@ void Environment::NetOperations()
 					}
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_ELEMENT_VARS,
-																  (char*)&oPSchElementVars, sizeof(PSchElementVars)));
+																			  (char*)&oPSchElementVars, sizeof(PSchElementVars)));
 					LOG_P_2(LOG_CAT_I, "{Out} Changed element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
@@ -996,14 +1014,34 @@ void Environment::NetOperations()
 					}
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_ELEMENT_NAME,
-																  (char*)&oPSchElementName, sizeof(oPSchElementName)));
+																			  (char*)&oPSchElementName, sizeof(oPSchElementName)));
 					LOG_P_2(LOG_CAT_I, "{Out} Changed element`s name [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
 				}
-				lp_NewElements.clear();
-				lp_ChangedElements.clear();
-				lp_RenamedElements.clear();
+				// По свёрнутым\развёрнутым.
+				iEC = lp_MinChangedElements.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Element = lp_MinChangedElements.at(iEP);
+					oPSchElementMinimize.bMinimize = p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.bMinimized;
+					oPSchElementMinimize.ullIDInt = p_Element->oPSchElementBase.oPSchElementVars.ullIDInt;
+					if(iEP != iECM)
+					{
+						oPSchElementMinimize.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchElementMinimize.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_ELEMENT_MINIMIZE,
+																			  (char*)&oPSchElementMinimize, sizeof(oPSchElementMinimize)));
+					LOG_P_2(LOG_CAT_I, "{Out} Changed element`s minimize status [" <<
+							QString(oPSchElementMinimize.bMinimize).toStdString() << "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
 				//==================== Раздел линков.
 				for(int iL = 0; iL < iLC; iL++) // По всем линкам...
 				{
@@ -1047,7 +1085,7 @@ void Environment::NetOperations()
 					}
 					// Отправка полных данных на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_LINK_BASE,
-																  (char*)&p_Link->oPSchLinkBase, sizeof(PSchLinkBase)));
+																			  (char*)&p_Link->oPSchLinkBase, sizeof(PSchLinkBase)));
 					LOG_P_2(LOG_CAT_I, "{Out} New link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString()
 							<< "<>" << QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
@@ -1070,14 +1108,12 @@ void Environment::NetOperations()
 					}
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_LINK_VARS,
-																  (char*)&oPSchLinkVars, sizeof(PSchLinkVars)));
+																			  (char*)&oPSchLinkVars, sizeof(PSchLinkVars)));
 					LOG_P_2(LOG_CAT_I, "{Out} Changed link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString()
 							<< "<>" << QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
 				}
-				lp_NewLinks.clear();
-				lp_ChangedLinks.clear();
 				//==================== Раздел групп.
 				for(uint uiE = 0; uiE < PBCount(Group); uiE++) // По всем группам...
 				{
@@ -1150,7 +1186,7 @@ void Environment::NetOperations()
 					}
 					// Отправка полных данных на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_BASE,
-																  (char*)&p_Group->oPSchGroupBase, sizeof(PSchGroupBase)));
+																			  (char*)&p_Group->oPSchGroupBase, sizeof(PSchGroupBase)));
 					LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
@@ -1172,7 +1208,7 @@ void Environment::NetOperations()
 					}
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_VARS,
-																  (char*)&oPSchGroupVars, sizeof(PSchGroupVars)));
+																			  (char*)&oPSchGroupVars, sizeof(PSchGroupVars)));
 					LOG_P_2(LOG_CAT_I, "{Out} Changed group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
@@ -1195,14 +1231,36 @@ void Environment::NetOperations()
 					}
 					// Отправка изменений на соединение из запроса.
 					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_NAME,
-																  (char*)&oPSchGroupName, sizeof(oPSchGroupName)));
+																			  (char*)&oPSchGroupName, sizeof(oPSchGroupName)));
 					LOG_P_2(LOG_CAT_I, "{Out} Changed group`s name [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 							<< "] has been sent to client.");
 					bPresent = true; // Хоть один есть.
 				}
-				lp_NewGroups.clear();
-				lp_ChangedGroups.clear();
-				lp_RenamedGroups.clear();
+				// По свёрнутым\развёрнутым.
+				iEC = lp_MinChangedGroups.count();
+				iECM = iEC - 1;
+				for(int iEP = 0; iEP < iEC; iEP++)
+				{
+					p_Group = lp_MinChangedGroups.at(iEP);
+					oPSchGroupMinimize.bMinimize = p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bMinimized;
+					oPSchGroupMinimize.ullIDInt = p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt;
+					if(iEP != iECM)
+					{
+						oPSchGroupMinimize.bLastInQueue = false; // Не последний в цепочке.
+					}
+					else
+					{
+						oPSchGroupMinimize.bLastInQueue = true; // Последний в цепочке.
+					}
+					// Отправка изменений на соединение из запроса.
+					LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0, PROTO_O_SCH_GROUP_MINIMIZE,
+																			  (char*)&oPSchGroupMinimize, sizeof(oPSchGroupMinimize)));
+					LOG_P_2(LOG_CAT_I, "{Out} Changed group`s minimize status [" <<
+							QString(oPSchGroupMinimize.bMinimize).toStdString() << "] has been sent to client.");
+					bPresent = true; // Хоть один есть.
+				}
+				//
+
 				//
 				if(bPresent)
 				{
