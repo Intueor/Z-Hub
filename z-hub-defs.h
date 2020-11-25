@@ -19,6 +19,8 @@
 #define SCH_ELEMENT_BIT_FRAME           0b00000100
 #define SCH_ELEMENT_BIT_GROUP           0b00001000
 #define SCH_ELEMENT_BIT_ZPOS            0b00010000
+#define SCH_ELEMENT_BIT_MIN				0b00100000
+#define SCH_ELEMENT_BIT_VIS				0b01000000
 //
 #define SCH_LINK_BIT_SCR_PORT_POS       0b00000001
 #define SCH_LINK_BIT_DST_PORT_POS       0b00000010
@@ -30,6 +32,8 @@
 #define SCH_GROUP_BIT_GROUP				0b00001000
 #define SCH_GROUP_BIT_ZPOS              0b00010000
 #define SCH_GROUP_BIT_ELEMENTS_SHIFT    0b00100000
+#define SCH_GROUP_BIT_MIN				0b01000000
+#define SCH_GROUP_BIT_VIS				0b10000000
 
 //== КОНСТАНТЫ.
 // Многократно используемые строки.
@@ -69,6 +73,7 @@ const char m_chBkgColor[] = "BkgColor";
 const char m_chFrame[] = "Frame";
 const char m_chElements[] = "Elements";
 const char m_chMinimize[] = "Minimized";
+const char m_chHide[] = "Hided";
 const char m_chZ[] = "Z";
 const char m_chElement[] = "Element";
 const char m_chGroupID[] = "GroupID";

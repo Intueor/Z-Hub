@@ -404,8 +404,6 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 // Кэлбэк обработки приходящих пакетов данных.
 void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushType, void* p_ReceivedData, int iPocket)
 {
-	PSchElementMinimize* p_PSchElementMinimize;
-	PSchGroupMinimize* p_PSchGroupMinimize;
 	PSchLinkEraser* p_PSchLinkEraser;
 	PSchElementEraser* p_PSchElementEraser;
 	PSchGroupEraser* p_PSchGroupEraser;
@@ -456,50 +454,6 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 				RETVAL_SET(RETVAL_ERR);
 			}
 			break;
-		}
-		//======== Раздел PROTO_O_SCH_ELEMENT_MINIMIZE. ========
-		case PROTO_O_SCH_ELEMENT_MINIMIZE:
-		{
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Element minimize status from client.");
-			iEC = PBCountExternal(Element, Environment);
-			p_PSchElementMinimize = ((PSchElementMinimize*)p_ReceivedData);
-			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-			{
-				Element* p_Element;
-				//
-				p_Element = PBAccessExternal(Element, iE, Environment);
-				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementMinimize->ullIDInt) // При совп. с запрошенным...
-				{
-					p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.bMinimized = p_PSchElementMinimize->bMinimize;
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
-			goto gLEx;
-		}
-		//======== Раздел PROTO_O_SCH_GROUP_MINIMIZE. ========
-		case PROTO_O_SCH_GROUP_MINIMIZE:
-		{
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Group minimize status from client.");
-			iEC = PBCountExternal(Group, Environment);
-			p_PSchGroupMinimize = ((PSchGroupMinimize*)p_ReceivedData);
-			for(int iE = 0; iE < iEC; iE++) // По всем группам...
-			{
-				Group* p_Group;
-				//
-				p_Group = PBAccessExternal(Group, iE, Environment);
-				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupMinimize->ullIDInt) // При совп. с запрошенным...
-				{
-					p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bMinimized = p_PSchGroupMinimize->bMinimize;
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
-			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_ERASE. ========
 		case PROTO_O_SCH_GROUP_ERASE:

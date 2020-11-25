@@ -20,8 +20,6 @@
 #define PROTO_O_SCH_LINK_ERASE			11
 #define PROTO_O_SCH_GROUP_ERASE			12
 #define PROTO_O_SCH_STATUS              13
-#define PROTO_O_SCH_ELEMENT_MINIMIZE	14
-#define PROTO_O_SCH_GROUP_MINIMIZE		15
 
 //========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ =========================
 #define PocketTypesHub												\
@@ -38,8 +36,6 @@ CasePocket(PROTO_O_SCH_ELEMENT_VARS, PSchElementVars);				\
 CasePocket(PROTO_O_SCH_ELEMENT_BASE, PSchElementBase);				\
 CasePocket(PROTO_C_SCH_READY, PSchReadyFrame);						\
 CasePocket(PROTO_O_SCH_STATUS, PSchStatusInfo);						\
-CasePocket(PROTO_O_SCH_ELEMENT_MINIMIZE, PSchElementMinimize);		\
-CasePocket(PROTO_O_SCH_GROUP_MINIMIZE, PSchGroupMinimize);			\
 
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
 //========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
@@ -58,30 +54,15 @@ struct DbFrame
 	double dbH; ///< Высота.
 };
 
-/// Структура переключения свёрнутости элемента.
-struct PSchElementMinimize
-{
-	unsigned long long ullIDInt; ///< Уникальный номер элемента.
-	bool bMinimize; ///< Свернуть(true)\развернуть(false).
-	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
-};
-
-/// Структура переключения свёрнутости группы.
-struct PSchGroupMinimize
-{
-	unsigned long long ullIDInt; ///< Уникальный номер группы.
-	bool bMinimize; ///< Свернуть(true)\развернуть(false).
-	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
-};
-
 /// Структура определения графических качеств объекта схемы.
 struct SchElementGraph
 {
 	unsigned int uiObjectBkgColor; ///< Цвет подложки.
-	bool bMinimized; ///< Признак свёрнутоого объекта.
+	bool bMinimized; ///< Признак свёрнутоого элемента.
+	bool bHided; ///< Признак скрытого элемента.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
-	bool bBusy; ///< Признак занятого объекта.
+	bool bBusy; ///< Признак занятого элемента.
 	double dbObjectZPos; ///< Z-позиция в схеме.
 };
 /// Структура определения графических качеств линка схемы.
@@ -96,9 +77,10 @@ struct SchGroupGraph
 {
 	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	bool bMinimized; ///< Признак свёрнутой группы.
+	bool bHided; ///< Признак скрытой группы.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
-	bool bBusy; ///< Признак занятого объекта.
+	bool bBusy; ///< Признак занятой группы.
 	double dbObjectZPos; ///< Z-позиция в схеме.
 };
 //========================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================

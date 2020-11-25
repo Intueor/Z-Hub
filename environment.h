@@ -52,14 +52,12 @@ public:
 		static void AddNewElement(PSchElementBase& aPSchElementBase);
 										///< \param[in] aPSchElementBase Ссылка объект базы элемента.
 		/// Добавление изменений элемента.
-		static void AddElementChanges(PSchElementVars& aPShcElementVars);
-										///< \param[in] aPShcElementVars Ссылка объект переменных элемента.
-		/// Добавление изменения имени элемента.
-		static void AddElementRename(PSchElementName& aPSchElementName);
+		static void AddElementChanges(PSchElementVars& aPSchElementVars);
+										///< \param[in] aPSchElementVars Ссылка объект переменных элемента.
+										///< \param[in] aPSchElementVars Ссылка объект переменных элемента.
+		/// Добавление изменения имени элемента и очистка аналогов в очереди.
+		static void AddElementRenameAndFlush(PSchElementName& aPSchElementName);
 										///< \param[in] aPSchElementName Ссылка объект имени элемента.
-		/// Добавление изменения свёрнутости элемента.
-		static void AddElementMinChanges(PSchElementMinimize& aPSchElementMinimize);
-										///< \param[in] aPSchElementName Ссылка объект свёрнутости элемента.
 		/// Добавление удаления элемента.
 		static void AddEraseElement(PSchElementEraser& aPSchElementEraser);
 										///< \param[in] aPSchElementEraser Ссылка объект удаления элемента.
@@ -67,20 +65,17 @@ public:
 		static void AddNewLink(PSchLinkBase& aPSchLinkBase);
 										///< \param[in] aPSchLinkBase Ссылка объект базы линка.
 		/// Добавление изменений линка.
-		static void AddLinkChanges(PSchLinkVars& aPShcLinkVars);
-										///< \param[in] aPShcLinkVars Ссылка объект переменных линка.
+		static void AddLinkChanges(PSchLinkVars& aPSchLinkVars);
+										///< \param[in] aPSchLinkVars Ссылка объект переменных линка.
 		/// Добавление новой группы.
 		static void AddNewGroup(PSchGroupBase& aPSchGroupBase);
 										///< \param[in] aPSchGroupBase Ссылка объект базы группы.
 		/// Добавление изменений группы.
-		static void AddGroupChanges(PSchGroupVars& aPShcGroupVars);
+		static void AddGroupChanges(PSchGroupVars& aPSchGroupVars);
 										///< \param[in] aPShcGroupVars Ссылка объект переменных группы.
-		/// Добавление изменения имени группы.
-		static void AddGroupRename(PSchGroupName& aPSchGroupName);
+		/// Добавление изменения имени группы и очистка аналогов в очереди.
+		static void AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName);
 										///< \param[in] aPSchGroupName Ссылка объект имени группы.
-		/// Добавление изменения свёрнутости группы.
-		static void AddGroupMinChanges(PSchGroupMinimize& aPSchGroupMinimize);
-										///< \param[in] aPSchGroupMinimize Ссылка объект свёрнутости группы.
 		/// Добавление удаления группы.
 		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser);
 										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.

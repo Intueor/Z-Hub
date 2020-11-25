@@ -5,9 +5,12 @@
 #include "main-window.h"
 
 //== МАКРОСЫ.
-#define LOG_NAME				"environment"
-#define LOG_DIR_PATH			"../Z-Hub/logs/"
-
+#define LOG_NAME										"environment"
+#define LOG_DIR_PATH									"../Z-Hub/logs/"
+#define _SQ_Util(Type,Struct)							oQueueSegment.uchType = Type;											\
+														oQueueSegment.p_vUnitObject = (void*)(new Struct);						\
+														*(Struct*)oQueueSegment.p_vUnitObject = a##Struct;						\
+														l_Queue.append(oQueueSegment);
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 // Основное.
 LOGDECL_INIT_INCLASS(Environment)
@@ -39,98 +42,88 @@ Environment::SendingQueue::~SendingQueue()
 // Добавление нового элемента.
 void Environment::SendingQueue::AddNewElement(PSchElementBase& aPSchElementBase)
 {
-	oQueueSegment.uchType = QUEUE_NEW_ELEMENT;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchElementBase);
-	*(PSchElementBase*)oQueueSegment.p_vUnitObject = aPSchElementBase;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_NEW_ELEMENT, PSchElementBase);
 }
 // Добавление изменений элемента.
-void Environment::SendingQueue::AddElementChanges(PSchElementVars& aPShcElementVars)
+void Environment::SendingQueue::AddElementChanges(PSchElementVars& aPSchElementVars)
 {
-	oQueueSegment.uchType = QUEUE_CHANGED_ELEMENT;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchElementVars);
-	*(PSchElementVars*)oQueueSegment.p_vUnitObject = aPShcElementVars;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_CHANGED_ELEMENT, PSchElementVars);
 }
-// Добавление изменения имени элемента.
-void Environment::SendingQueue::AddElementRename(PSchElementName& aPSchElementName)
+// Добавление изменения имени элемента и очистка аналогов в очереди.
+void Environment::SendingQueue::AddElementRenameAndFlush(PSchElementName& aPSchElementName)
 {
-	oQueueSegment.uchType = QUEUE_RENAMED_ELEMENT;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchElementName);
-	*(PSchElementName*)oQueueSegment.p_vUnitObject = aPSchElementName;
-	l_Queue.append(oQueueSegment);
-}
-// Добавление изменения свёрнутости элемента.
-void Environment::SendingQueue::AddElementMinChanges(PSchElementMinimize& aPSchElementMinimize)
-{
-	oQueueSegment.uchType = QUEUE_MINCHANGED_ELEMENT;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchElementMinimize);
-	*(PSchElementMinimize*)oQueueSegment.p_vUnitObject = aPSchElementMinimize;
-	l_Queue.append(oQueueSegment);
+	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
+		if(p_QueueSegmentStored->uchType == QUEUE_RENAMED_ELEMENT)
+		{
+			PSchElementName* p_PSchElementNameStored = (PSchElementName*)(p_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchElementNameStored->ullIDInt == aPSchElementName.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_RENAMED_ELEMENT, PSchElementName);
 }
 // Добавление удаления элемента.
 void Environment::SendingQueue::AddEraseElement(PSchElementEraser& aPSchElementEraser)
 {
-	oQueueSegment.uchType = QUEUE_ERASED_ELEMENT;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchElementEraser);
-	*(PSchElementEraser*)oQueueSegment.p_vUnitObject = aPSchElementEraser;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_ERASED_ELEMENT, PSchElementEraser);
 }
 // Добавление нового линка.
 void Environment::SendingQueue::AddNewLink(PSchLinkBase& aPSchLinkBase)
 {
-	oQueueSegment.uchType = QUEUE_NEW_LINK;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchLinkBase);
-	*(PSchLinkBase*)oQueueSegment.p_vUnitObject = aPSchLinkBase;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_NEW_LINK, PSchLinkBase);
 }
 // Добавление изменений линка.
-void Environment::SendingQueue::AddLinkChanges(PSchLinkVars& aPShcLinkVars)
+void Environment::SendingQueue::AddLinkChanges(PSchLinkVars& aPSchLinkVars)
 {
-	oQueueSegment.uchType = QUEUE_CHANGED_LINK;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchLinkVars);
-	*(PSchLinkVars*)oQueueSegment.p_vUnitObject = aPShcLinkVars;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_CHANGED_LINK, PSchLinkVars);
 }
 // Добавление новой группы.
 void Environment::SendingQueue::AddNewGroup(PSchGroupBase& aPSchGroupBase)
 {
-	oQueueSegment.uchType = QUEUE_NEW_GROUP;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchGroupBase);
-	*(PSchGroupBase*)oQueueSegment.p_vUnitObject = aPSchGroupBase;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_NEW_GROUP, PSchGroupBase);
 }
 // Добавление изменений группы.
-void Environment::SendingQueue::AddGroupChanges(PSchGroupVars& aPShcGroupVars)
+void Environment::SendingQueue::AddGroupChanges(PSchGroupVars& aPSchGroupVars)
 {
-	oQueueSegment.uchType = QUEUE_CHANGED_GROUP;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchGroupVars);
-	*(PSchGroupVars*)oQueueSegment.p_vUnitObject = aPShcGroupVars;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_CHANGED_GROUP, PSchGroupVars);
 }
 // Добавление изменения имени группы.
-void Environment::SendingQueue::AddGroupRename(PSchGroupName& aPSchGroupName)
+void Environment::SendingQueue::AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName)
 {
-	oQueueSegment.uchType = QUEUE_RENAMED_GROUP;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchGroupName);
-	*(PSchGroupName*)oQueueSegment.p_vUnitObject = aPSchGroupName;
-	l_Queue.append(oQueueSegment);
-}
-// Добавление изменения свёрнутости группы.
-void Environment::SendingQueue::AddGroupMinChanges(PSchGroupMinimize& aPSchGroupMinimize)
-{
-	oQueueSegment.uchType = QUEUE_MINCHANGED_GROUP;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchGroupMinimize);
-	*(PSchGroupMinimize*)oQueueSegment.p_vUnitObject = aPSchGroupMinimize;
-	l_Queue.append(oQueueSegment);
+	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
+		if(p_QueueSegmentStored->uchType == QUEUE_RENAMED_GROUP)
+		{
+			PSchGroupName* p_PSchGroupNameStored = (PSchGroupName*)(p_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchGroupNameStored->ullIDInt == aPSchGroupName.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_RENAMED_GROUP, PSchGroupName);
 }
 // Добавление удаления группы.
 void Environment::SendingQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser)
 {
-	oQueueSegment.uchType = QUEUE_ERASED_GROUP;
-	oQueueSegment.p_vUnitObject = (void*)(new PSchGroupEraser);
-	*(PSchGroupEraser*)oQueueSegment.p_vUnitObject = aPSchGroupEraser;
-	l_Queue.append(oQueueSegment);
+	_SQ_Util(QUEUE_ERASED_GROUP, PSchGroupEraser);
 }
 
 // Получение данных из первой позиции.
@@ -160,11 +153,6 @@ void Environment::SendingQueue::RemoveFirst()
 			delete (PSchElementName*)p_QueueSegment->p_vUnitObject;
 			break;
 		}
-		case QUEUE_MINCHANGED_ELEMENT:
-		{
-			delete (PSchElementMinimize*)p_QueueSegment->p_vUnitObject;
-			break;
-		}
 		case QUEUE_NEW_LINK:
 		{
 			delete (PSchLinkBase*)p_QueueSegment->p_vUnitObject;
@@ -188,11 +176,6 @@ void Environment::SendingQueue::RemoveFirst()
 		case QUEUE_RENAMED_GROUP:
 		{
 			delete (PSchGroupName*)p_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_MINCHANGED_GROUP:
-		{
-			delete (PSchGroupMinimize*)p_QueueSegment->p_vUnitObject;
 			break;
 		}
 	}
@@ -424,6 +407,12 @@ bool Environment::LoadEnv()
 			p_NodeMinimize = p_NodeMinimize; // Заглушка.
 			oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bMinimized = true;
 		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
+		FIND_IN_CHILDLIST(p_NodeGroup, p_ListHides,
+						  m_chHide, FCN_ONE_LEVEL, p_NodeHide)
+		{
+			p_NodeHide = p_NodeHide; // Заглушка.
+			oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bHided = true;
+		} FIND_IN_CHILDLIST_END(p_ListHides);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListZs,
 						  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -601,6 +590,12 @@ bool Environment::LoadEnv()
 			p_NodeMinimize = p_NodeMinimize; // Заглушка.
 			oPSchElementBase.oPSchElementVars.oSchElementGraph.bMinimized = true;
 		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
+		FIND_IN_CHILDLIST(p_NodeElement, p_ListHides,
+						  m_chHide, FCN_ONE_LEVEL, p_NodeHide)
+		{
+			p_NodeHide = p_NodeHide; // Заглушка.
+			oPSchElementBase.oPSchElementVars.oSchElementGraph.bHided = true;
+		} FIND_IN_CHILDLIST_END(p_ListHides);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
 						  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -853,6 +848,10 @@ bool Environment::SaveEnv()
 		{
 			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chMinimize));
 		}
+		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bHided)
+		{
+			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chHide));
+		}
 		p_NodeZ = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.dbObjectZPos).
@@ -895,6 +894,10 @@ bool Environment::SaveEnv()
 		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.bMinimized)
 		{
 			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chMinimize));
+		}
+		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.bHided)
+		{
+			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chHide));
 		}
 		p_NodeZ = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
@@ -1033,14 +1036,12 @@ void Environment::NetOperations()
 	PSchElementBase* p_PSchElementBase;
 	PSchElementVars* p_PSchElementVars;
 	PSchElementName* p_PSchElementName;
-	PSchElementMinimize* p_PSchElementMinimize;
 	PSchElementEraser* p_PSchElementEraser;
 	PSchLinkBase* p_PSchLinkBase;
 	PSchLinkVars* p_PSchLinkVars;
 	PSchGroupBase* p_PSchGroupBase;
 	PSchGroupVars* p_PSchGroupVars;
 	PSchGroupName* p_PSchGroupName;
-	PSchGroupMinimize* p_PSchGroupMinimize;
 	PSchGroupEraser* p_PSchGroupEraser;
 	//
 	bool bPresent = false;
@@ -1120,28 +1121,6 @@ void Environment::NetOperations()
 																						  PROTO_O_SCH_ELEMENT_NAME,
 																						  (char*)p_PSchElementName, sizeof(PSchElementName)));
 								LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
-								break;
-							}
-							case QUEUE_MINCHANGED_ELEMENT:
-							{
-								p_PSchElementMinimize = (PSchElementMinimize*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
-								{
-									p_PSchElementMinimize->bLastInQueue = false;
-								}
-								else
-								{
-									p_PSchElementMinimize->bLastInQueue = true; // На последней новости.
-								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_ELEMENT_MINIMIZE,
-																						  (char*)p_PSchElementMinimize,
-																						  sizeof(PSchElementMinimize)));
-								LOG_P_2(LOG_CAT_I, "{Out} Min-changed element [" <<
-										QString::number(p_PSchElementMinimize->ullIDInt).toStdString()
 										<< m_chLogSentToClient);
 								bPresent = true; // Хоть один есть.
 								p_SendingQueue->RemoveFirst();
@@ -1275,28 +1254,6 @@ void Environment::NetOperations()
 																						  PROTO_O_SCH_GROUP_NAME,
 																						  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
 								LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
-								break;
-							}
-							case QUEUE_MINCHANGED_GROUP:
-							{
-								p_PSchGroupMinimize = (PSchGroupMinimize*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
-								{
-									p_PSchGroupMinimize->bLastInQueue = false;
-								}
-								else
-								{
-									p_PSchGroupMinimize->bLastInQueue = true; // На последней новости.
-								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_GROUP_MINIMIZE,
-																						  (char*)p_PSchGroupMinimize,
-																						  sizeof(PSchGroupMinimize)));
-								LOG_P_2(LOG_CAT_I, "{Out} Min-changed group [" <<
-										QString::number(p_PSchGroupMinimize->ullIDInt).toStdString()
 										<< m_chLogSentToClient);
 								bPresent = true; // Хоть один есть.
 								p_SendingQueue->RemoveFirst();
