@@ -20,14 +20,14 @@
 #define QUEUE_NEW_ELEMENT			1
 #define QUEUE_CHANGED_ELEMENT		2
 #define QUEUE_RENAMED_ELEMENT		3
-#define QUEUE_MINCHANGED_ELEMENT	4
+#define QUEUE_COLORED_ELEMENT		4
 #define QUEUE_ERASED_ELEMENT		5
 #define QUEUE_NEW_LINK				6
 #define QUEUE_CHANGED_LINK			7
 #define QUEUE_NEW_GROUP				8
 #define QUEUE_CHANGED_GROUP			9
 #define QUEUE_RENAMED_GROUP			10
-#define QUEUE_MINCHANGED_GROUP		11
+#define QUEUE_COLORED_GROUP			11
 #define QUEUE_ERASED_GROUP			12
 
 //== КЛАССЫ.
@@ -58,6 +58,9 @@ public:
 		/// Добавление изменения имени элемента и очистка аналогов в очереди.
 		static void AddElementRenameAndFlush(PSchElementName& aPSchElementName);
 										///< \param[in] aPSchElementName Ссылка объект имени элемента.
+		/// Добавление изменения цвета элемента и очистка аналогов в очереди.
+		static void AddElementColorAndFlush(PSchElementColor& aPSchElementColor);
+										///< \param[in] aPSchElementName Ссылка объект цвета элемента.
 		/// Добавление удаления элемента.
 		static void AddEraseElement(PSchElementEraser& aPSchElementEraser);
 										///< \param[in] aPSchElementEraser Ссылка объект удаления элемента.
@@ -76,6 +79,9 @@ public:
 		/// Добавление изменения имени группы и очистка аналогов в очереди.
 		static void AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName);
 										///< \param[in] aPSchGroupName Ссылка объект имени группы.
+		/// Добавление изменения цвета группы и очистка аналогов в очереди.
+		static void AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor);
+										///< \param[in] aPSchGroupName Ссылка объект цвета группы.
 		/// Добавление удаления группы.
 		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser);
 										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.

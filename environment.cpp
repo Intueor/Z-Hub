@@ -72,6 +72,29 @@ gF:	while(iN < iQ)
 	}
 	_SQ_Util(QUEUE_RENAMED_ELEMENT, PSchElementName);
 }
+// Добавление изменения цвета элемента и очистка аналогов в очереди.
+void Environment::SendingQueue::AddElementColorAndFlush(PSchElementColor& aPSchElementColor)
+{
+	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
+		if(p_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
+		{
+			PSchElementColor* p_PSchElementColorStored = (PSchElementColor*)(p_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchElementColorStored->ullIDInt == aPSchElementColor.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_COLORED_ELEMENT, PSchElementColor);
+}
 // Добавление удаления элемента.
 void Environment::SendingQueue::AddEraseElement(PSchElementEraser& aPSchElementEraser)
 {
@@ -119,6 +142,29 @@ gF:	while(iN < iQ)
 		iN++;
 	}
 	_SQ_Util(QUEUE_RENAMED_GROUP, PSchGroupName);
+}
+// Добавление изменения цвета гуппы и очистка аналогов в очереди.
+void Environment::SendingQueue::AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor)
+{
+	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
+		if(p_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
+		{
+			PSchGroupColor* p_PSchGroupColorStored = (PSchGroupColor*)(p_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchGroupColorStored->ullIDInt == aPSchGroupColor.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_COLORED_ELEMENT, PSchGroupColor);
 }
 // Добавление удаления группы.
 void Environment::SendingQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser)
@@ -356,7 +402,7 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogBkgColor << m_chLogNode);
 				return false;
 			}
-			oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor =
+			oPSchGroupBase.uiObjectBkgColor =
 					QColor(lstrHelper.at(0).toUInt(),
 						   lstrHelper.at(1).toUInt(),
 						   lstrHelper.at(2).toUInt(),
@@ -539,7 +585,7 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogBkgColor << m_chLogNode);
 				return false;
 			}
-			oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor =
+			oPSchElementBase.uiObjectBkgColor =
 					QColor(lstrHelper.at(0).toUInt(),
 						   lstrHelper.at(1).toUInt(),
 						   lstrHelper.at(2).toUInt(),
@@ -832,7 +878,7 @@ bool Environment::SaveEnv()
 				SetText(PBAccess(Group,iF)->oPSchGroupBase.m_chName);
 		p_NodeBkgColor = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chBkgColor));
 		oQColor = QColor();
-		oQColor.setRgba(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor);
+		oQColor.setRgba(PBAccess(Group,iF)->oPSchGroupBase.uiObjectBkgColor);
 		oQColor.getRgb(&iR, &iG, &iB, &iA);
 		p_NodeBkgColor->ToElement()->
 				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) +
@@ -875,7 +921,7 @@ bool Environment::SaveEnv()
 				SetText(PBAccess(Element,iF)->oPSchElementBase.m_chName);
 		p_NodeBkgColor = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chBkgColor));
 		oQColor = QColor();
-		oQColor.setRgba(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor);
+		oQColor.setRgba(PBAccess(Element,iF)->oPSchElementBase.uiObjectBkgColor);
 		oQColor.getRgb(&iR, &iG, &iB, &iA);
 		p_NodeBkgColor->ToElement()->
 				SetText((strHOne.setNum(iR) + "," + strHTwo.setNum(iG) + "," + strHThree.setNum(iB) + "," +
@@ -1037,12 +1083,14 @@ void Environment::NetOperations()
 	PSchElementVars* p_PSchElementVars;
 	PSchElementName* p_PSchElementName;
 	PSchElementEraser* p_PSchElementEraser;
+	PSchElementColor* p_PSchElementColor;
 	PSchLinkBase* p_PSchLinkBase;
 	PSchLinkVars* p_PSchLinkVars;
 	PSchGroupBase* p_PSchGroupBase;
 	PSchGroupVars* p_PSchGroupVars;
 	PSchGroupName* p_PSchGroupName;
 	PSchGroupEraser* p_PSchGroupEraser;
+	PSchGroupColor* p_PSchGroupColor;
 	//
 	bool bPresent = false;
 	unsigned short ushNewsQantity = 2;
@@ -1121,6 +1169,28 @@ void Environment::NetOperations()
 																						  PROTO_O_SCH_ELEMENT_NAME,
 																						  (char*)p_PSchElementName, sizeof(PSchElementName)));
 								LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
+										<< m_chLogSentToClient);
+								bPresent = true; // Хоть один есть.
+								p_SendingQueue->RemoveFirst();
+								break;
+							}
+							case QUEUE_COLORED_ELEMENT:
+							{
+								p_PSchElementColor = (PSchElementColor*)p_QueueSegment->p_vUnitObject;
+								if(ushNewsQantity > 1)
+								{
+									p_PSchElementColor->bLastInQueue = false;
+								}
+								else
+								{
+									p_PSchElementColor->bLastInQueue = true; // На последней новости.
+								}
+								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																						  PROTO_O_SCH_ELEMENT_COLOR,
+																						  (char*)p_PSchElementColor,
+																						  sizeof(PSchElementColor)));
+								LOG_P_2(LOG_CAT_I, "{Out} Recolored element [" <<
+										QString::number(p_PSchElementColor->ullIDInt).toStdString()
 										<< m_chLogSentToClient);
 								bPresent = true; // Хоть один есть.
 								p_SendingQueue->RemoveFirst();
@@ -1254,6 +1324,28 @@ void Environment::NetOperations()
 																						  PROTO_O_SCH_GROUP_NAME,
 																						  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
 								LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
+										<< m_chLogSentToClient);
+								bPresent = true; // Хоть один есть.
+								p_SendingQueue->RemoveFirst();
+								break;
+							}
+							case QUEUE_COLORED_GROUP:
+							{
+								p_PSchGroupColor = (PSchGroupColor*)p_QueueSegment->p_vUnitObject;
+								if(ushNewsQantity > 1)
+								{
+									p_PSchGroupColor->bLastInQueue = false;
+								}
+								else
+								{
+									p_PSchGroupColor->bLastInQueue = true; // На последней новости.
+								}
+								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																						  PROTO_O_SCH_GROUP_COLOR,
+																						  (char*)p_PSchGroupColor,
+																						  sizeof(PSchGroupColor)));
+								LOG_P_2(LOG_CAT_I, "{Out} Recolored group [" <<
+										QString::number(p_PSchGroupColor->ullIDInt).toStdString()
 										<< m_chLogSentToClient);
 								bPresent = true; // Хоть один есть.
 								p_SendingQueue->RemoveFirst();

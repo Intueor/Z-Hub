@@ -61,7 +61,6 @@ struct DbFrame
 /// Структура определения графических качеств объекта схемы.
 struct SchElementGraph
 {
-	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	bool bMinimized; ///< Признак свёрнутоого элемента.
 	bool bHided; ///< Признак скрытого элемента.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
@@ -79,7 +78,6 @@ struct SchLinkGraph
 /// Структура определения графических качеств объекта группы.
 struct SchGroupGraph
 {
-	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	bool bMinimized; ///< Признак свёрнутой группы.
 	bool bHided; ///< Признак скрытой группы.
 	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.

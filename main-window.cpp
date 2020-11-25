@@ -406,7 +406,9 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 {
 	PSchLinkEraser* p_PSchLinkEraser;
 	PSchElementEraser* p_PSchElementEraser;
+	PSchElementColor* p_PSchElementColor;
 	PSchGroupEraser* p_PSchGroupEraser;
+	PSchGroupColor* p_PSchGroupColor;
 	PSchElementName* p_PSchElementName;
 	PSchElementBase* p_PSchElementBase;
 	PSchLinkBase* p_PSchLinkBase;
@@ -478,6 +480,30 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 			LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
 			goto gLEx;
 		}
+		//======== Раздел PROTO_O_SCH_GROUP_COLOR. ========
+		case PROTO_O_SCH_GROUP_COLOR:
+		{
+			int iGC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
+			iGC = PBCountExternal(Group, Environment);
+			p_PSchGroupColor = ((PSchGroupColor*)p_ReceivedData);
+			for(int iG = 0; iG < iGC; iG++) // По всем группам...
+			{
+				Group* p_Group;
+				//
+				p_Group = PBAccessExternal(Group, iG, Environment);
+				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupColor->ullIDInt) // При совп. с запрошенным...
+				{
+					p_Group->oPSchGroupBase.uiObjectBkgColor = p_PSchGroupColor->uiObjectBkgColor;
+					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] color changed.");
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong group number for change color from client.");
+			goto gLEx;
+		}
+
 		//======== Раздел PROTO_O_SCH_ELEMENT_ERASE. ========
 		case PROTO_O_SCH_ELEMENT_ERASE:
 		{
@@ -501,7 +527,31 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 			LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
 			goto gLEx;
 		}
-		//======== Раздел PROTO_O_SCH_ELEMENT_ERASE. ========
+		//======== Раздел PROTO_O_SCH_ELEMENT_COLOR. ========
+		case PROTO_O_SCH_ELEMENT_COLOR:
+		{
+			int iEC;
+			//
+			LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
+			iEC = PBCountExternal(Element, Environment);
+			p_PSchElementColor = ((PSchElementColor*)p_ReceivedData);
+			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+			{
+				Element* p_Element;
+				//
+				p_Element = PBAccessExternal(Element, iE, Environment);
+				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementColor->ullIDInt) // При совп. с запрошенным...
+				{
+					p_Element->oPSchElementBase.uiObjectBkgColor = p_PSchElementColor->uiObjectBkgColor;
+					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] color changed.");
+					goto gLEx;
+				}
+			}
+			LOG_P_0(LOG_CAT_W, "Wrong element number for change color from client.");
+			goto gLEx;
+		}
+
+		//======== Раздел PROTO_O_SCH_LINK_ERASE. ========
 		case PROTO_O_SCH_LINK_ERASE:
 		{
 			int iLC;
@@ -565,13 +615,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 									<< "] is free.");
 						}
 					}
-					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_BKG_COLOR)
-					{
-						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.uiObjectBkgColor =
-								p_PSchElementVars->oSchElementGraph.uiObjectBkgColor;
-						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-										   << "] color.");
-					}
+
 					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_FRAME)
 					{
 						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame =
@@ -737,13 +781,6 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 									<< "] is free.");
 						}
-					}
-					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_BKG_COLOR)
-					{
-						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.uiObjectBkgColor =
-								p_PSchGroupVars->oSchGroupGraph.uiObjectBkgColor;
-						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-										   << "] color.");
 					}
 					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_GROUP)
 					{
