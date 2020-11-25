@@ -11,15 +11,17 @@
 #define PROTO_O_SCH_ELEMENT_BASE        2
 #define PROTO_O_SCH_ELEMENT_VARS        3
 #define PROTO_O_SCH_ELEMENT_NAME        4
-#define PROTO_O_SCH_LINK_BASE           5
-#define PROTO_O_SCH_LINK_VARS           6
-#define PROTO_O_SCH_GROUP_BASE          7
-#define PROTO_O_SCH_GROUP_VARS          8
-#define PROTO_O_SCH_GROUP_NAME          9
-#define PROTO_O_SCH_ELEMENT_ERASE		10
-#define PROTO_O_SCH_LINK_ERASE			11
-#define PROTO_O_SCH_GROUP_ERASE			12
-#define PROTO_O_SCH_STATUS              13
+#define PROTO_O_SCH_ELEMENT_COLOR		5
+#define PROTO_O_SCH_LINK_BASE           6
+#define PROTO_O_SCH_LINK_VARS           7
+#define PROTO_O_SCH_GROUP_BASE          8
+#define PROTO_O_SCH_GROUP_VARS          9
+#define PROTO_O_SCH_GROUP_NAME          10
+#define PROTO_O_SCH_GROUP_COLOR			11
+#define PROTO_O_SCH_ELEMENT_ERASE		12
+#define PROTO_O_SCH_LINK_ERASE			13
+#define PROTO_O_SCH_GROUP_ERASE			14
+#define PROTO_O_SCH_STATUS              15
 
 //========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ =========================
 #define PocketTypesHub												\
@@ -36,6 +38,8 @@ CasePocket(PROTO_O_SCH_ELEMENT_VARS, PSchElementVars);				\
 CasePocket(PROTO_O_SCH_ELEMENT_BASE, PSchElementBase);				\
 CasePocket(PROTO_C_SCH_READY, PSchReadyFrame);						\
 CasePocket(PROTO_O_SCH_STATUS, PSchStatusInfo);						\
+CasePocket(PROTO_O_SCH_GROUP_COLOR, PSchGroupColor);				\
+CasePocket(PROTO_O_SCH_ELEMENT_COLOR, PSchElementColor);			\
 
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
 //========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
@@ -110,6 +114,20 @@ struct PSchElementEraser
 	unsigned long long ullIDInt; ///< Уникальный номер элемента.
 	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
 };
+/// Структура команды смены цвета группы.
+struct PSchGroupColor
+{
+	unsigned long long ullIDInt; ///< Уникальный номер группы.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура команды смены цвета элемента.
+struct PSchElementColor
+{
+	unsigned long long ullIDInt; ///< Уникальный номер элемента.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
 /// Структура для передачи изменений в имени группы.
 struct PSchGroupName
 {
@@ -130,6 +148,7 @@ struct PSchGroupBase
 {
 	PSchGroupVars oPSchGroupVars; ///< Структура для передачи качеств группы.
 	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	bool bRequestGroupUpdate; ///< Флаг запроса обновления геометрии соответствующей группы после принятия новой группы.
 };
 /// Структура для передачи качеств линка схемы с указанием актуальных для изменения полей.
@@ -167,6 +186,7 @@ struct PSchElementBase
 {
 	PSchElementVars oPSchElementVars; ///< Структура для передачи качеств элемента схемы.
 	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	bool bRequestGroupUpdate; ///< Флаг запроса обновления геометрии соответствующей группы после принятия нового элемента.
 };
 
