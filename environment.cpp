@@ -9,6 +9,7 @@
 #define LOG_DIR_PATH									"../Z-Hub/logs/"
 #define _SQ_Util(Type,Struct)							oQueueSegment.uchType = Type;											\
 														oQueueSegment.p_vUnitObject = (void*)(new Struct);						\
+														oQueueSegment.bDirectionOut = bDirectionOut;							\
 														*(Struct*)oQueueSegment.p_vUnitObject = a##Struct;						\
 														l_Queue.append(oQueueSegment);
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
@@ -29,38 +30,38 @@ bool Environment::bStopEnvUpdate = false;
 pthread_t Environment::thrEnv;
 bool Environment::bRequested = false;
 PSchReadyFrame Environment::oPSchReadyFrame;
-QList<Environment::SendingQueue::QueueSegment> Environment::SendingQueue::l_Queue;
-Environment::SendingQueue::QueueSegment Environment::SendingQueue::oQueueSegment;
-Environment::SendingQueue* Environment::p_SendingQueue = nullptr;
+QList<Environment::EventsQueue::QueueSegment> Environment::EventsQueue::l_Queue;
+Environment::EventsQueue::QueueSegment Environment::EventsQueue::oQueueSegment;
+Environment::EventsQueue* Environment::p_EventsQueue = nullptr;
 //== ФУНКЦИИ КЛАССОВ.
-//== Класс очереди отправки.
+//== Класс очереди событий.
 // Деструктор.
-Environment::SendingQueue::~SendingQueue()
+Environment::EventsQueue::~EventsQueue()
 {
 	Clear();
 }
 // Добавление нового элемента.
-void Environment::SendingQueue::AddNewElement(PSchElementBase& aPSchElementBase)
+void Environment::EventsQueue::AddNewElement(PSchElementBase& aPSchElementBase, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_NEW_ELEMENT, PSchElementBase);
 }
 // Добавление изменений элемента.
-void Environment::SendingQueue::AddElementChanges(PSchElementVars& aPSchElementVars)
+void Environment::EventsQueue::AddElementChanges(PSchElementVars& aPSchElementVars, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_CHANGED_ELEMENT, PSchElementVars);
 }
 // Добавление изменения имени элемента и очистка аналогов в очереди.
-void Environment::SendingQueue::AddElementRenameAndFlush(PSchElementName& aPSchElementName)
+void Environment::EventsQueue::AddElementRenameAndFlush(PSchElementName& aPSchElementName, bool bDirectionOut)
 {
 	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
 gF:	while(iN < iQ)
 	{
-		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
-		if(p_QueueSegmentStored->uchType == QUEUE_RENAMED_ELEMENT)
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_ELEMENT)
 		{
-			PSchElementName* p_PSchElementNameStored = (PSchElementName*)(p_QueueSegmentStored->p_vUnitObject);
+			PSchElementName* p_PSchElementNameStored = (PSchElementName*)(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchElementNameStored->ullIDInt == aPSchElementName.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -73,17 +74,17 @@ gF:	while(iN < iQ)
 	_SQ_Util(QUEUE_RENAMED_ELEMENT, PSchElementName);
 }
 // Добавление изменения цвета элемента и очистка аналогов в очереди.
-void Environment::SendingQueue::AddElementColorAndFlush(PSchElementColor& aPSchElementColor)
+void Environment::EventsQueue::AddElementColorAndFlush(PSchElementColor& aPSchElementColor, bool bDirectionOut)
 {
 	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
 gF:	while(iN < iQ)
 	{
-		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
-		if(p_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
 		{
-			PSchElementColor* p_PSchElementColorStored = (PSchElementColor*)(p_QueueSegmentStored->p_vUnitObject);
+			PSchElementColor* p_PSchElementColorStored = (PSchElementColor*)(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchElementColorStored->ullIDInt == aPSchElementColor.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -96,42 +97,47 @@ gF:	while(iN < iQ)
 	_SQ_Util(QUEUE_COLORED_ELEMENT, PSchElementColor);
 }
 // Добавление удаления элемента.
-void Environment::SendingQueue::AddEraseElement(PSchElementEraser& aPSchElementEraser)
+void Environment::EventsQueue::AddEraseElement(PSchElementEraser& aPSchElementEraser, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_ERASED_ELEMENT, PSchElementEraser);
 }
 // Добавление нового линка.
-void Environment::SendingQueue::AddNewLink(PSchLinkBase& aPSchLinkBase)
+void Environment::EventsQueue::AddNewLink(PSchLinkBase& aPSchLinkBase, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_NEW_LINK, PSchLinkBase);
 }
 // Добавление изменений линка.
-void Environment::SendingQueue::AddLinkChanges(PSchLinkVars& aPSchLinkVars)
+void Environment::EventsQueue::AddLinkChanges(PSchLinkVars& aPSchLinkVars, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_CHANGED_LINK, PSchLinkVars);
 }
+// Добавление удаления линка.
+void Environment::EventsQueue::AddEraseLink(PSchLinkEraser& aPSchLinkEraser, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_ERASED_LINK, PSchLinkEraser);
+}
 // Добавление новой группы.
-void Environment::SendingQueue::AddNewGroup(PSchGroupBase& aPSchGroupBase)
+void Environment::EventsQueue::AddNewGroup(PSchGroupBase& aPSchGroupBase, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_NEW_GROUP, PSchGroupBase);
 }
 // Добавление изменений группы.
-void Environment::SendingQueue::AddGroupChanges(PSchGroupVars& aPSchGroupVars)
+void Environment::EventsQueue::AddGroupChanges(PSchGroupVars& aPSchGroupVars, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_CHANGED_GROUP, PSchGroupVars);
 }
 // Добавление изменения имени группы.
-void Environment::SendingQueue::AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName)
+void Environment::EventsQueue::AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName, bool bDirectionOut)
 {
 	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
 gF:	while(iN < iQ)
 	{
-		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
-		if(p_QueueSegmentStored->uchType == QUEUE_RENAMED_GROUP)
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_GROUP)
 		{
-			PSchGroupName* p_PSchGroupNameStored = (PSchGroupName*)(p_QueueSegmentStored->p_vUnitObject);
+			PSchGroupName* p_PSchGroupNameStored = (PSchGroupName*)(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchGroupNameStored->ullIDInt == aPSchGroupName.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -144,17 +150,17 @@ gF:	while(iN < iQ)
 	_SQ_Util(QUEUE_RENAMED_GROUP, PSchGroupName);
 }
 // Добавление изменения цвета гуппы и очистка аналогов в очереди.
-void Environment::SendingQueue::AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor)
+void Environment::EventsQueue::AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor, bool bDirectionOut)
 {
 	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
 gF:	while(iN < iQ)
 	{
-		const QueueSegment* p_QueueSegmentStored = &l_Queue.at(iN);
-		if(p_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
 		{
-			PSchGroupColor* p_PSchGroupColorStored = (PSchGroupColor*)(p_QueueSegmentStored->p_vUnitObject);
+			PSchGroupColor* p_PSchGroupColorStored = (PSchGroupColor*)(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchGroupColorStored->ullIDInt == aPSchGroupColor.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -167,76 +173,101 @@ gF:	while(iN < iQ)
 	_SQ_Util(QUEUE_COLORED_ELEMENT, PSchGroupColor);
 }
 // Добавление удаления группы.
-void Environment::SendingQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser)
+void Environment::EventsQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, bool bDirectionOut)
 {
 	_SQ_Util(QUEUE_ERASED_GROUP, PSchGroupEraser);
 }
 
-// Получение данных из первой позиции.
-Environment::SendingQueue::QueueSegment* Environment::SendingQueue::GetFirst()
+// Получение данных из позиции.
+const Environment::EventsQueue::QueueSegment* Environment::EventsQueue::Get(int iNum)
 {
-	return &l_Queue.first();
+	return &l_Queue.at(iNum);
 }
-// Очистка и удаление первой позиции.
-void Environment::SendingQueue::RemoveFirst()
+// Очистка и удаление позиции.
+void Environment::EventsQueue::Remove(int iNum)
 {
-	const QueueSegment* p_QueueSegment = &l_Queue.first();
+	const QueueSegment* pc_QueueSegment = &l_Queue.at(iNum);
 	//
-	switch(p_QueueSegment->uchType)
+	switch(pc_QueueSegment->uchType)
 	{
 		case QUEUE_NEW_ELEMENT:
 		{
-			delete (PSchElementBase*)p_QueueSegment->p_vUnitObject;
+			delete (PSchElementBase*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_CHANGED_ELEMENT:
 		{
-			delete (PSchElementVars*)p_QueueSegment->p_vUnitObject;
+			delete (PSchElementVars*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_RENAMED_ELEMENT:
 		{
-			delete (PSchElementName*)p_QueueSegment->p_vUnitObject;
+			delete (PSchElementName*)pc_QueueSegment->p_vUnitObject;
+			break;
+		}
+		case QUEUE_COLORED_ELEMENT:
+		{
+			delete (PSchElementColor*)pc_QueueSegment->p_vUnitObject;
+			break;
+		}
+		case QUEUE_ERASED_ELEMENT:
+		{
+			delete (PSchElementEraser*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_NEW_LINK:
 		{
-			delete (PSchLinkBase*)p_QueueSegment->p_vUnitObject;
+			delete (PSchLinkBase*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_CHANGED_LINK:
 		{
-			delete (PSchLinkVars*)p_QueueSegment->p_vUnitObject;
+			delete (PSchLinkVars*)pc_QueueSegment->p_vUnitObject;
+			break;
+		}
+		case QUEUE_ERASED_LINK:
+		{
+			delete (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_NEW_GROUP:
 		{
-			delete (PSchGroupBase*)p_QueueSegment->p_vUnitObject;
+			delete (PSchGroupBase*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_CHANGED_GROUP:
 		{
-			delete (PSchGroupVars*)p_QueueSegment->p_vUnitObject;
+			delete (PSchGroupVars*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 		case QUEUE_RENAMED_GROUP:
 		{
-			delete (PSchGroupName*)p_QueueSegment->p_vUnitObject;
+			delete (PSchGroupName*)pc_QueueSegment->p_vUnitObject;
+			break;
+		}
+		case QUEUE_COLORED_GROUP:
+		{
+			delete (PSchGroupColor*)pc_QueueSegment->p_vUnitObject;
+			break;
+		}
+		case QUEUE_ERASED_GROUP:
+		{
+			delete (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject;
 			break;
 		}
 	}
-	l_Queue.removeFirst();
+	l_Queue.removeAt(iNum);
 }
 // Очистка цепочки с удалением содержимого.
-void Environment::SendingQueue::Clear()
+void Environment::EventsQueue::Clear()
 {
 	while(l_Queue.count())
 	{
-		RemoveFirst();
+		Remove(0);
 	}
 }
 // Получение длины цепочки.
-int Environment::SendingQueue::Count()
+int Environment::EventsQueue::Count()
 {
 	return l_Queue.count();
 }
@@ -247,7 +278,7 @@ Environment::Environment(pthread_mutex_t ptLogMutex, char* p_chEnvName)
 {
 	LOG_CTRL_BIND_EXT_MUTEX(ptLogMutex);
 	LOG_CTRL_INIT;
-	p_SendingQueue = new SendingQueue;
+	p_EventsQueue = new EventsQueue;
 	p_chEnvNameInt = p_chEnvName;
 	bEnvLoaded = false;
 	bEnvThreadAlive = false;
@@ -260,7 +291,7 @@ Environment::~Environment()
 	ReleasePB(Group);
 	ReleasePB(Link);
 	ReleasePB(Element);
-	delete p_SendingQueue;
+	delete p_EventsQueue;
 	LOG_CLOSE;
 }
 
@@ -993,21 +1024,21 @@ bool Environment::SaveEnv()
 	return true;
 }
 
-// Прогрузка цепочки отправки для подключившегося клиента.
+// Прогрузка цепочки событий для подключившегося клиента.
 void Environment::FetchEnvToQueue()
 {
-	p_SendingQueue->Clear();
+	p_EventsQueue->Clear();
 	for(unsigned int iF = 0; iF != PBCount(Group); iF++)
 	{
-		p_SendingQueue->AddNewGroup(PBAccess(Group,iF)->oPSchGroupBase);
+		p_EventsQueue->AddNewGroup(PBAccess(Group,iF)->oPSchGroupBase, QUEUE_TO_CLIENT);
 	}
 	for(unsigned int iF = 0; iF != PBCount(Element); iF++)
 	{
-		p_SendingQueue->AddNewElement(PBAccess(Element,iF)->oPSchElementBase);
+		p_EventsQueue->AddNewElement(PBAccess(Element,iF)->oPSchElementBase, QUEUE_TO_CLIENT);
 	}
 	for(unsigned int iF = 0; iF != PBCount(Link); iF++)
 	{
-		p_SendingQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase);
+		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
 	}
 }
 
@@ -1099,287 +1130,355 @@ void Environment::NetOperations()
 	{
 		if(MainWindow::p_Server->IsConnectionSecured(0))
 		{
-			if(bRequested) // Если был запрос от клиента...
+			if(bRequested) // Если был запрос сессии от клиента...
 			{
-				// Цикл по всей очереди отправки до конца или исчерпания лимита новостей (если новосте меньше, чем очередь).
-				if(ushNewsQantity > p_SendingQueue->Count()) ushNewsQantity = p_SendingQueue->Count();
-				while(p_SendingQueue->Count())
+				// Цикл по всей очереди событий до конца или исчерпания лимита новостей (если новосте меньше, чем очередь).
+				if(ushNewsQantity > p_EventsQueue->Count()) ushNewsQantity = p_EventsQueue->Count();
+				while(p_EventsQueue->Count())
 				{
 					if(ushNewsQantity > 0)
 					{
-						SendingQueue::QueueSegment* p_QueueSegment = p_SendingQueue->GetFirst();
+						const EventsQueue::QueueSegment* pc_QueueSegment = p_EventsQueue->Get(0);
 						//
-						switch(p_QueueSegment->uchType)
+						switch(pc_QueueSegment->uchType)
 						{
 							case QUEUE_NEW_ELEMENT:
 							{
-								p_PSchElementBase = (PSchElementBase*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchElementBase = (PSchElementBase*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchElementBase->oPSchElementVars.bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchElementBase->oPSchElementVars.bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchElementBase->oPSchElementVars.bLastInQueue = true;  // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_ELEMENT_BASE,
+																							  (char*)p_PSchElementBase,
+																							  sizeof(PSchElementBase)));
+									LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_PSchElementBase->m_chName).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchElementBase->oPSchElementVars.bLastInQueue = true;  // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_ELEMENT_BASE,
-																						  (char*)p_PSchElementBase,
-																						  sizeof(PSchElementBase)));
-								LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_PSchElementBase->m_chName).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_CHANGED_ELEMENT:
 							{
-								p_PSchElementVars = (PSchElementVars*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchElementVars = (PSchElementVars*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchElementVars->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchElementVars->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchElementVars->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_ELEMENT_VARS,
+																							  (char*)p_PSchElementVars,
+																							  sizeof(PSchElementVars)));
+									LOG_P_2(LOG_CAT_I, "{Out} Changed element [" <<
+											QString::number(p_PSchElementVars->ullIDInt).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchElementVars->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_ELEMENT_VARS,
-																						  (char*)p_PSchElementVars,
-																						  sizeof(PSchElementVars)));
-								LOG_P_2(LOG_CAT_I, "{Out} Changed element [" <<
-										QString::number(p_PSchElementVars->ullIDInt).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_RENAMED_ELEMENT:
 							{
-								p_PSchElementName = (PSchElementName*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchElementName = (PSchElementName*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchElementName->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchElementName->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchElementName->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->
+												AddPocketToOutputBuffer(0,
+																		PROTO_O_SCH_ELEMENT_NAME,
+																		(char*)p_PSchElementName, sizeof(PSchElementName)));
+									LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchElementName->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_ELEMENT_NAME,
-																						  (char*)p_PSchElementName, sizeof(PSchElementName)));
-								LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_COLORED_ELEMENT:
 							{
-								p_PSchElementColor = (PSchElementColor*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchElementColor = (PSchElementColor*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchElementColor->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchElementColor->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchElementColor->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_ELEMENT_COLOR,
+																							  (char*)p_PSchElementColor,
+																							  sizeof(PSchElementColor)));
+									LOG_P_2(LOG_CAT_I, "{Out} Recolored element [" <<
+											QString::number(p_PSchElementColor->ullIDInt).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchElementColor->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_ELEMENT_COLOR,
-																						  (char*)p_PSchElementColor,
-																						  sizeof(PSchElementColor)));
-								LOG_P_2(LOG_CAT_I, "{Out} Recolored element [" <<
-										QString::number(p_PSchElementColor->ullIDInt).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_ERASED_ELEMENT:
 							{
-								p_PSchElementEraser = (PSchElementEraser*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchElementEraser = (PSchElementEraser*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchElementEraser->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchElementEraser->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchElementEraser->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_ELEMENT_ERASE,
+																							  (char*)p_PSchElementEraser,
+																							  sizeof(PSchElementEraser)));
+									LOG_P_2(LOG_CAT_I, "{Out} Erased element [" <<
+											QString::number(p_PSchElementEraser->ullIDInt).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchElementEraser->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_ELEMENT_ERASE,
-																						  (char*)p_PSchElementEraser,
-																						  sizeof(PSchElementEraser)));
-								LOG_P_2(LOG_CAT_I, "{Out} Erased element [" <<
-										QString::number(p_PSchElementEraser->ullIDInt).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_NEW_LINK:
 							{
-								p_PSchLinkBase = (PSchLinkBase*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchLinkBase = (PSchLinkBase*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchLinkBase->oPSchLinkVars.bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchLinkBase->oPSchLinkVars.bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchLinkBase->oPSchLinkVars.bLastInQueue= true;  // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_LINK_BASE,
+																							  (char*)p_PSchLinkBase,
+																							  sizeof(PSchLinkBase)));
+									LOG_P_2(LOG_CAT_I, "{Out} New link [" <<
+											QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDSrc).toStdString()
+											<< "<>" <<
+											QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDDst).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchLinkBase->oPSchLinkVars.bLastInQueue= true;  // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_LINK_BASE,
-																						  (char*)p_PSchLinkBase,
-																						  sizeof(PSchLinkBase)));
-								LOG_P_2(LOG_CAT_I, "{Out} New link [" <<
-										QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDSrc).toStdString()
-										<< "<>" <<
-										QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDDst).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_CHANGED_LINK:
 							{
-								p_PSchLinkVars = (PSchLinkVars*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchLinkVars = (PSchLinkVars*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchLinkVars->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchLinkVars->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchLinkVars->bLastInQueue = true;  // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_LINK_VARS,
+																							  (char*)p_PSchLinkVars,
+																							  sizeof(PSchLinkVars)));
+									LOG_P_2(LOG_CAT_I, "{Out} Changed link [" <<
+											QString::number(p_PSchLinkVars->ullIDSrc).toStdString()
+											<< "<>" <<
+											QString::number(p_PSchLinkVars->ullIDDst).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchLinkVars->bLastInQueue = true;  // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_LINK_VARS,
-																						  (char*)p_PSchLinkVars,
-																						  sizeof(PSchLinkVars)));
-								LOG_P_2(LOG_CAT_I, "{Out} Changed link [" <<
-										QString::number(p_PSchLinkVars->ullIDSrc).toStdString()
-										<< "<>" <<
-										QString::number(p_PSchLinkVars->ullIDDst).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_NEW_GROUP:
 							{
-								p_PSchGroupBase = (PSchGroupBase*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchGroupBase = (PSchGroupBase*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchGroupBase->oPSchGroupVars.bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchGroupBase->oPSchGroupVars.bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchGroupBase->oPSchGroupVars.bLastInQueue = true;  // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_GROUP_BASE,
+																							  (char*)p_PSchGroupBase,
+																							  sizeof(PSchGroupBase)));
+									LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_PSchGroupBase->m_chName).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchGroupBase->oPSchGroupVars.bLastInQueue = true;  // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_GROUP_BASE,
-																						  (char*)p_PSchGroupBase,
-																						  sizeof(PSchGroupBase)));
-								LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_PSchGroupBase->m_chName).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_CHANGED_GROUP:
 							{
-								p_PSchGroupVars = (PSchGroupVars*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchGroupVars = (PSchGroupVars*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchGroupVars->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchGroupVars->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchGroupVars->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_GROUP_VARS,
+																							  (char*)p_PSchGroupVars,
+																							  sizeof(PSchGroupVars)));
+									LOG_P_2(LOG_CAT_I, "{Out} Changed group [" <<
+											QString::number(p_PSchGroupVars->ullIDInt).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchGroupVars->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_GROUP_VARS,
-																						  (char*)p_PSchGroupVars,
-																						  sizeof(PSchGroupVars)));
-								LOG_P_2(LOG_CAT_I, "{Out} Changed group [" <<
-										QString::number(p_PSchGroupVars->ullIDInt).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_RENAMED_GROUP:
 							{
-								p_PSchGroupName = (PSchGroupName*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchGroupName = (PSchGroupName*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchGroupName->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchGroupName->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchGroupName->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_GROUP_NAME,
+																							  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
+									LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchGroupName->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_GROUP_NAME,
-																						  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
-								LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_COLORED_GROUP:
 							{
-								p_PSchGroupColor = (PSchGroupColor*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchGroupColor = (PSchGroupColor*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchGroupColor->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchGroupColor->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchGroupColor->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_GROUP_COLOR,
+																							  (char*)p_PSchGroupColor,
+																							  sizeof(PSchGroupColor)));
+									LOG_P_2(LOG_CAT_I, "{Out} Recolored group [" <<
+											QString::number(p_PSchGroupColor->ullIDInt).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchGroupColor->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_GROUP_COLOR,
-																						  (char*)p_PSchGroupColor,
-																						  sizeof(PSchGroupColor)));
-								LOG_P_2(LOG_CAT_I, "{Out} Recolored group [" <<
-										QString::number(p_PSchGroupColor->ullIDInt).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 							case QUEUE_ERASED_GROUP:
 							{
-								p_PSchGroupEraser = (PSchGroupEraser*)p_QueueSegment->p_vUnitObject;
-								if(ushNewsQantity > 1)
+								p_PSchGroupEraser = (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
 								{
-									p_PSchGroupEraser->bLastInQueue = false;
+									if(ushNewsQantity > 1)
+									{
+										p_PSchGroupEraser->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchGroupEraser->bLastInQueue = true; // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_GROUP_ERASE,
+																							  (char*)p_PSchGroupEraser,
+																							  sizeof(PSchGroupEraser)));
+									LOG_P_2(LOG_CAT_I, "{Out} Erased group [" <<
+											QString::number(p_PSchGroupEraser->ullIDInt).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
 								}
 								else
 								{
-									p_PSchGroupEraser->bLastInQueue = true; // На последней новости.
+
 								}
-								LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																						  PROTO_O_SCH_GROUP_ERASE,
-																						  (char*)p_PSchGroupEraser,
-																						  sizeof(PSchGroupEraser)));
-								LOG_P_2(LOG_CAT_I, "{Out} Erased group [" <<
-										QString::number(p_PSchGroupEraser->ullIDInt).toStdString()
-										<< m_chLogSentToClient);
-								bPresent = true; // Хоть один есть.
-								p_SendingQueue->RemoveFirst();
-								break;
-							}
-							default:
-							{
-								LOG_P_0(LOG_CAT_E, "Internal error: wrong queue unit type.");
-								p_SendingQueue->RemoveFirst();
 								break;
 							}
 						}
+						p_EventsQueue->Remove(0);
 						ushNewsQantity--;
 					}
 					else break;

@@ -24,79 +24,100 @@
 #define QUEUE_ERASED_ELEMENT		5
 #define QUEUE_NEW_LINK				6
 #define QUEUE_CHANGED_LINK			7
-#define QUEUE_NEW_GROUP				8
-#define QUEUE_CHANGED_GROUP			9
-#define QUEUE_RENAMED_GROUP			10
-#define QUEUE_COLORED_GROUP			11
-#define QUEUE_ERASED_GROUP			12
+#define QUEUE_ERASED_LINK			8
+#define QUEUE_NEW_GROUP				9
+#define QUEUE_CHANGED_GROUP			10
+#define QUEUE_RENAMED_GROUP			11
+#define QUEUE_COLORED_GROUP			12
+#define QUEUE_ERASED_GROUP			13
+#define QUEUE_TO_CLIENT				true
+#define QUEUE_FROM_CLIENT			false
 
 //== КЛАССЫ.
 /// Класс среды.
 class Environment
 {
 public:
-	/// Класс очереди отправки.
-	class SendingQueue
+	/// Класс очереди событий.
+	class EventsQueue
 	{
 	public:
-		/// Структура сегмента очереди отправки.
+		/// Структура сегмента очереди событий.
 		struct QueueSegment
 		{
+			bool bDirectionOut; ///< true, если от сервера к клиенту.
 			unsigned char uchType; ///< Тип юнита.
 			void* p_vUnitObject; ///< Указатель на объект юнита.
 		};
 	public:
 		/// Деструктор.
-		~SendingQueue();
+		~EventsQueue();
 		/// Добавление нового элемента.
-		static void AddNewElement(PSchElementBase& aPSchElementBase);
+		static void AddNewElement(PSchElementBase& aPSchElementBase, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementBase Ссылка объект базы элемента.
 		/// Добавление изменений элемента.
-		static void AddElementChanges(PSchElementVars& aPSchElementVars);
-										///< \param[in] aPSchElementVars Ссылка объект переменных элемента.
+		static void AddElementChanges(PSchElementVars& aPSchElementVars, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementVars Ссылка объект переменных элемента.
 		/// Добавление изменения имени элемента и очистка аналогов в очереди.
-		static void AddElementRenameAndFlush(PSchElementName& aPSchElementName);
+		static void AddElementRenameAndFlush(PSchElementName& aPSchElementName, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementName Ссылка объект имени элемента.
 		/// Добавление изменения цвета элемента и очистка аналогов в очереди.
-		static void AddElementColorAndFlush(PSchElementColor& aPSchElementColor);
+		static void AddElementColorAndFlush(PSchElementColor& aPSchElementColor, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementName Ссылка объект цвета элемента.
 		/// Добавление удаления элемента.
-		static void AddEraseElement(PSchElementEraser& aPSchElementEraser);
+		static void AddEraseElement(PSchElementEraser& aPSchElementEraser, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementEraser Ссылка объект удаления элемента.
 		/// Добавление нового линка.
-		static void AddNewLink(PSchLinkBase& aPSchLinkBase);
+		static void AddNewLink(PSchLinkBase& aPSchLinkBase, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchLinkBase Ссылка объект базы линка.
 		/// Добавление изменений линка.
-		static void AddLinkChanges(PSchLinkVars& aPSchLinkVars);
+		static void AddLinkChanges(PSchLinkVars& aPSchLinkVars, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchLinkVars Ссылка объект переменных линка.
+		/// Добавление удаления линка.
+		static void AddEraseLink(PSchLinkEraser& aPSchLinkEraser, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchLinkEraser Ссылка объект удаления элемента.
 		/// Добавление новой группы.
-		static void AddNewGroup(PSchGroupBase& aPSchGroupBase);
+		static void AddNewGroup(PSchGroupBase& aPSchGroupBase, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupBase Ссылка объект базы группы.
 		/// Добавление изменений группы.
-		static void AddGroupChanges(PSchGroupVars& aPSchGroupVars);
+		static void AddGroupChanges(PSchGroupVars& aPSchGroupVars, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPShcGroupVars Ссылка объект переменных группы.
 		/// Добавление изменения имени группы и очистка аналогов в очереди.
-		static void AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName);
+		static void AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupName Ссылка объект имени группы.
 		/// Добавление изменения цвета группы и очистка аналогов в очереди.
-		static void AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor);
+		static void AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupName Ссылка объект цвета группы.
 		/// Добавление удаления группы.
-		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser);
+		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.
-		/// Получение данных из первой позиции.
-		static QueueSegment* GetFirst();
+		/// Получение данных из позиции.
+		static const QueueSegment* Get(int iNum);
+										///< \param[in] iNum Номер позиции.
 										///< \return Указатель на структуру с типом позиции и void-указателем.
-		/// Очистка и удаление первой позиции.
-		static void RemoveFirst();
+		/// Очистка и удаление позиции.
+		static void Remove(int iNum);
+										///< \param[in] iNum Номер позиции.
 		/// Очистка цепочки с удалением содержимого.
 		static void Clear();
 		/// Получение длины цепочки.
 		static int Count();
 										///< \return Кол-во звеньев цепочки.
 	private:
-		static QList<QueueSegment> l_Queue; ///< Лист очереди отправки.
+		static QList<QueueSegment> l_Queue; ///< Лист очереди событий.
 		static QueueSegment oQueueSegment; ///< Служебный объект сегмента.
 	};
 public:
@@ -135,7 +156,7 @@ public:
 	/// Удаление группы по указателю.
 	static void EraseGroup(Group* p_Group);
 										///< \param[in] p_Group Указатель на группу.
-	/// Прогрузка цепочки отправки для подключившегося клиента.
+	/// Прогрузка цепочки событий для подключившегося клиента.
 	static void FetchEnvToQueue();
 private:
 	/// Удаление элементов из группы.
@@ -158,6 +179,7 @@ public:
 	static bool bStopEnvUpdate; ///< Сигнал на остановку потока среды.
 	static bool bRequested; ///< Наличие запроса от клиента.
 	static PSchReadyFrame oPSchReadyFrame; ///< Данные по запросу.
+	static EventsQueue* p_EventsQueue; ///< Указатель на класс очереди событий.
 
 private:
 	LOGDECL
@@ -167,7 +189,6 @@ private:
 	static QString strEnvPath; ///< Строка для пути среды.
 	static QString strEnvFilename; ///< Строка для имени файла среды.
 	static pthread_t thrEnv; ///< Идентификатор потока шагов среды.
-	static SendingQueue* p_SendingQueue; ///< Указатель на класс очереди отправки.
 };
 
 #endif // ENVIRONMENT_H

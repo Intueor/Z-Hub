@@ -460,11 +460,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		//======== Раздел PROTO_O_SCH_GROUP_ERASE. ========
 		case PROTO_O_SCH_GROUP_ERASE:
 		{
+			p_PSchGroupEraser = ((PSchGroupEraser*)p_ReceivedData);
+			Environment::p_EventsQueue->AddEraseGroup(*p_PSchGroupEraser, QUEUE_FROM_CLIENT);
 			int iGC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
 			iGC = PBCountExternal(Group, Environment);
-			p_PSchGroupEraser = ((PSchGroupEraser*)p_ReceivedData);
 			for(int iG = 0; iG < iGC; iG++) // По всем группам...
 			{
 				Group* p_Group;
@@ -483,11 +484,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		//======== Раздел PROTO_O_SCH_GROUP_COLOR. ========
 		case PROTO_O_SCH_GROUP_COLOR:
 		{
+			p_PSchGroupColor = ((PSchGroupColor*)p_ReceivedData);
+			Environment::p_EventsQueue->AddGroupColorAndFlush(*p_PSchGroupColor, QUEUE_FROM_CLIENT);
 			int iGC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
 			iGC = PBCountExternal(Group, Environment);
-			p_PSchGroupColor = ((PSchGroupColor*)p_ReceivedData);
 			for(int iG = 0; iG < iGC; iG++) // По всем группам...
 			{
 				Group* p_Group;
@@ -507,11 +509,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		//======== Раздел PROTO_O_SCH_ELEMENT_ERASE. ========
 		case PROTO_O_SCH_ELEMENT_ERASE:
 		{
+			p_PSchElementEraser = ((PSchElementEraser*)p_ReceivedData);
+			Environment::p_EventsQueue->AddEraseElement(*p_PSchElementEraser, QUEUE_FROM_CLIENT);
 			int iEC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
 			iEC = PBCountExternal(Element, Environment);
-			p_PSchElementEraser = ((PSchElementEraser*)p_ReceivedData);
 			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 			{
 				Element* p_Element;
@@ -530,11 +533,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		//======== Раздел PROTO_O_SCH_ELEMENT_COLOR. ========
 		case PROTO_O_SCH_ELEMENT_COLOR:
 		{
+			p_PSchElementColor = ((PSchElementColor*)p_ReceivedData);
+			Environment::p_EventsQueue->AddElementColorAndFlush(*p_PSchElementColor, QUEUE_FROM_CLIENT);
 			int iEC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
 			iEC = PBCountExternal(Element, Environment);
-			p_PSchElementColor = ((PSchElementColor*)p_ReceivedData);
 			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 			{
 				Element* p_Element;
@@ -554,11 +558,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		//======== Раздел PROTO_O_SCH_LINK_ERASE. ========
 		case PROTO_O_SCH_LINK_ERASE:
 		{
+			p_PSchLinkEraser = ((PSchLinkEraser*)p_ReceivedData);
+			Environment::p_EventsQueue->AddEraseLink(*p_PSchLinkEraser, QUEUE_FROM_CLIENT);
 			int iLC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
 			iLC = PBCountExternal(Link, Environment);
-			p_PSchLinkEraser = ((PSchLinkEraser*)p_ReceivedData);
 			for(int iL = 0; iL < iLC; iL++) // По всем линкам...
 			{
 				Link* p_Link;
@@ -581,11 +586,12 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		//======== Раздел PROTO_O_SCH_ELEMENT_VARS. ========
 		case PROTO_O_SCH_ELEMENT_VARS:
 		{
+			p_PSchElementVars = ((PSchElementVars*)p_ReceivedData);
+			Environment::p_EventsQueue->AddElementChanges(*p_PSchElementVars, QUEUE_FROM_CLIENT);
 			int iEC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
 			iEC = PBCountExternal(Element, Environment);
-			p_PSchElementVars = ((PSchElementVars*)p_ReceivedData);
 			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 			{
 				Element* p_Element;
@@ -678,11 +684,12 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 		//======== Раздел PROTO_O_SCH_ELEMENT_NAME. ========
 		case PROTO_O_SCH_ELEMENT_NAME:
 		{
+			p_PSchElementName = ((PSchElementName*)p_ReceivedData);
+			Environment::p_EventsQueue->AddElementRenameAndFlush(*p_PSchElementName, QUEUE_FROM_CLIENT);
 			int iEC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
 			iEC = PBCountExternal(Element, Environment);
-			p_PSchElementName = ((PSchElementName*)p_ReceivedData);
 			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 			{
 				Element* p_Element;
@@ -700,11 +707,12 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 		//======== Раздел PROTO_O_SCH_LINK_VARS. ========
 		case PROTO_O_SCH_LINK_VARS:
 		{
+			p_PSchLinkVars = ((PSchLinkVars*)p_ReceivedData);
+			Environment::p_EventsQueue->AddLinkChanges(*p_PSchLinkVars, QUEUE_FROM_CLIENT);
 			int iLC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
 			iLC = PBCountExternal(Link, Environment);
-			p_PSchLinkVars = ((PSchLinkVars*)p_ReceivedData);
 			for(int iL = 0; iL < iLC; iL++) // По всем линкам...
 			{
 				Link* p_Link;
@@ -741,11 +749,12 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 		//======== Раздел PROTO_O_SCH_GROUP_VARS. ========
 		case PROTO_O_SCH_GROUP_VARS:
 		{
+			p_PSchGroupVars = ((PSchGroupVars*)p_ReceivedData);
+			Environment::p_EventsQueue->AddGroupChanges(*p_PSchGroupVars, QUEUE_FROM_CLIENT);
 			int iGC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
 			iGC = PBCountExternal(Group, Environment);
-			p_PSchGroupVars = ((PSchGroupVars*)p_ReceivedData);
 			for(int iE = 0; iE < iGC; iE++) // По всем группам...
 			{
 				Group* p_Group;
@@ -837,11 +846,12 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		//======== Раздел PROTO_O_SCH_GROUP_NAME. ========
 		case PROTO_O_SCH_GROUP_NAME:
 		{
+			p_PSchGroupName = ((PSchGroupName*)p_ReceivedData);
+			Environment::p_EventsQueue->AddGroupRenameAndFlush(*p_PSchGroupName, QUEUE_FROM_CLIENT);
 			int iEC;
 			//
 			LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
 			iEC = PBCountExternal(Group, Environment);
-			p_PSchGroupName = ((PSchGroupName*)p_ReceivedData);
 			for(int iE = 0; iE < iEC; iE++) // По всем группам...
 			{
 				Group* p_Group;
@@ -859,9 +869,10 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
 		case PROTO_O_SCH_ELEMENT_BASE:
 		{
+			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
+			Environment::p_EventsQueue->AddNewElement(*p_PSchElementBase, QUEUE_FROM_CLIENT);
 			Element* p_Element;
 			//
-			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
 			LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
 					<< "] base from client.");
 			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), Environment);
@@ -870,9 +881,10 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		//======== Раздел PROTO_O_SCH_GROUP_BASE. ========
 		case PROTO_O_SCH_GROUP_BASE:
 		{
+			p_PSchGroupBase = ((PSchGroupBase*)p_ReceivedData);
+			Environment::p_EventsQueue->AddNewGroup(*p_PSchGroupBase, QUEUE_FROM_CLIENT);
 			Group* p_Group;
 			//
-			p_PSchGroupBase = ((PSchGroupBase*)p_ReceivedData);
 			LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
 					<< "] base from client.");
 			AppendToPBExternal(Group, p_Group = new Group(*p_PSchGroupBase), Environment);
@@ -881,11 +893,12 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
 		case PROTO_O_SCH_LINK_BASE:
 		{
+			p_PSchLinkBase = ((PSchLinkBase*)p_ReceivedData);
+			Environment::p_EventsQueue->AddNewLink(*p_PSchLinkBase, QUEUE_FROM_CLIENT);
 			Link* p_Link;
 			char* p_chSrc = nullptr;
 			char* p_chDst = nullptr;
 			//
-			p_PSchLinkBase = ((PSchLinkBase*)p_ReceivedData);
 			for(unsigned int uiF = 0; uiF != PBCountExternal(Element, Environment); uiF++)
 			{
 				Element* p_Element = PBAccessExternal(Element, uiF, Environment);
