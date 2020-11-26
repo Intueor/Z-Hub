@@ -1117,6 +1117,7 @@ void Environment::NetOperations()
 	PSchElementColor* p_PSchElementColor;
 	PSchLinkBase* p_PSchLinkBase;
 	PSchLinkVars* p_PSchLinkVars;
+	PSchLinkEraser* p_PSchLinkEraser;
 	PSchGroupBase* p_PSchGroupBase;
 	PSchGroupVars* p_PSchGroupVars;
 	PSchGroupName* p_PSchGroupName;
@@ -1165,7 +1166,11 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									Element* p_Element;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
+											<< "] base from client.");
+									AppendToPB(Element, p_Element = new Element(*p_PSchElementBase));
 								}
 								break;
 							}
@@ -1193,7 +1198,106 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iEC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
+									iEC = PBCount(Element);
+									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+									{
+										Element* p_Element;
+										//
+										p_Element = PBAccess(Element, iE);
+										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+										   p_PSchElementVars->ullIDInt) // При совп. с запрошенным...
+										{
+											if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_ZPOS)
+											{
+												p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos =
+														p_PSchElementVars->oSchElementGraph.dbObjectZPos;
+												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+														<< "] z-pos is: " <<
+														QString::number((int)p_PSchElementVars->oSchElementGraph.dbObjectZPos).toStdString());
+											}
+											if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_BUSY)
+											{
+												p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.bBusy =
+														p_PSchElementVars->oSchElementGraph.bBusy;
+												if(p_PSchElementVars->oSchElementGraph.bBusy)
+												{
+													LOG_P_2(LOG_CAT_I, "Element [" <<
+															QString(p_Element->oPSchElementBase.m_chName).toStdString()
+															<< "] is busy by client.");
+												}
+												else
+												{
+													LOG_P_2(LOG_CAT_I, "Element [" <<
+															QString(p_Element->oPSchElementBase.m_chName).toStdString()
+															<< "] is free.");
+												}
+											}
+											if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_FRAME)
+											{
+												p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame =
+														p_PSchElementVars->oSchElementGraph.oDbObjectFrame;
+												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+																   << "] frame.");
+											}
+											if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_GROUP)
+											{
+												if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
+												{
+													if(p_Element->p_Group != nullptr)
+													{
+														if(p_Element->p_Group->vp_ConnectedElements.contains(p_Element))
+														{
+															p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
+															LOG_P_2(LOG_CAT_I, "Element [" <<
+																	QString(p_Element->oPSchElementBase.m_chName).toStdString()
+																	<< "] group - detach.");
+															if(p_Element->p_Group->vp_ConnectedElements.isEmpty() &
+															   p_Element->p_Group->vp_ConnectedGroups.isEmpty())
+															{
+																LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+																Environment::EraseGroup(p_Element->p_Group);
+															}
+															p_Element->p_Group = nullptr;
+															p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
+															goto gEOK;
+														}
+														else
+														{
+gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
+															goto gEOK;
+														}
+													}
+													else goto gGEx;
+												}
+												// Обработка включения в группу.
+												for(int iG = 0; iG < (int)PBCount(Group); iG++)
+												{
+													if(PBAccess(Group, iG)->
+													   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
+													{
+														p_Element->p_Group = PBAccess(Group, iG);
+														if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup !=
+														   p_PSchElementVars->ullIDGroup)
+														{
+															p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup =
+																	p_PSchElementVars->ullIDGroup;
+															LOG_P_2(LOG_CAT_I, "Element [" <<
+																	QString(p_Element->oPSchElementBase.m_chName).toStdString()
+																	<< "] group - attach.");
+															p_Element->p_Group->vp_ConnectedElements.append(p_Element);
+														}
+														goto gEOK;
+													}
+												}
+												LOG_P_0(LOG_CAT_W, "Wrong group number for element");
+											}
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
 								}
 								break;
 							}
@@ -1220,7 +1324,24 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iEC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
+									iEC = PBCount(Element);
+									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+									{
+										Element* p_Element;
+										//
+										p_Element = PBAccess(Element, iE);
+										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+										   p_PSchElementName->ullIDInt) // При совп. с запрошенным...
+										{
+											CopyStrArray(p_PSchElementName->m_chName,
+														 p_Element->oPSchElementBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
 								}
 								break;
 							}
@@ -1248,7 +1369,25 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iEC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
+									iEC = PBCount(Element);
+									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+									{
+										Element* p_Element;
+										//
+										p_Element = PBAccess(Element, iE);
+										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+										   p_PSchElementColor->ullIDInt) // При совп. с запрошенным...
+										{
+											p_Element->oPSchElementBase.uiObjectBkgColor = p_PSchElementColor->uiObjectBkgColor;
+											LOG_P_2(LOG_CAT_I, "Element [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] color changed.");
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong element number for change color from client.");
 								}
 								break;
 							}
@@ -1277,6 +1416,25 @@ void Environment::NetOperations()
 								else
 								{
 
+									int iEC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
+									iEC = PBCount(Element);
+									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+									{
+										Element* p_Element;
+										//
+										p_Element = PBAccess(Element, iE);
+										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+										   p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
+										{
+											LOG_P_2(LOG_CAT_I, "Element [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erase.");
+											EraseElementAt(iE);
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
 								}
 								break;
 							}
@@ -1306,7 +1464,28 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									Link* p_Link;
+									char* p_chSrc = nullptr;
+									char* p_chDst = nullptr;
+									//
+									for(unsigned int uiF = 0; uiF != PBCount(Element); uiF++)
+									{
+										Element* p_Element = PBAccess(Element, uiF);
+										//
+										if(p_PSchLinkBase->oPSchLinkVars.ullIDSrc == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
+										{
+											p_chSrc = p_Element->oPSchElementBase.m_chName;
+										}
+										if(p_PSchLinkBase->oPSchLinkVars.ullIDDst == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
+										{
+											p_chDst = p_Element->oPSchElementBase.m_chName;
+										}
+										if((p_chSrc != nullptr) & (p_chDst != nullptr)) goto gLO;
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
+									goto gEOK;
+gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
+									AppendToPB(Link, p_Link = new Link(*p_PSchLinkBase));
 								}
 								break;
 							}
@@ -1336,7 +1515,96 @@ void Environment::NetOperations()
 								}
 								else
 								{
+									int iLC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
+									iLC = PBCount(Link);
+									for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+									{
+										Link* p_Link;
+										//
+										p_Link = PBAccess(Link, iL);
+										if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkVars->ullIDSrc) &&
+												(p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkVars->ullIDDst) &&
+												(p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkVars->ushiSrcPort) &&
+												(p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
+										// При совпадении с запрошенным...
+										{
+											if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
+											{
+												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos =
+														p_PSchLinkVars->oSchLinkGraph.oDbSrcPortGraphPos;
+												LOG_P_2(LOG_CAT_I, "Link [" <<
+														QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString() << "<>" <<
+														QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
+														<< "] vars - src port position.");
+											}
+											if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
+											{
+												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos =
+														p_PSchLinkVars->oSchLinkGraph.oDbDstPortGraphPos;
+												LOG_P_2(LOG_CAT_I, "Link [" <<
+														QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString() << "<>" <<
+														QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
+														<< "] vars - dst port position.");
+											}
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong link number from client.");
+								}
+								break;
+							}
+							case QUEUE_ERASED_LINK:
+							{
+								p_PSchLinkEraser = (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject;
+								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
+								{
+									if(ushNewsQantity > 1)
+									{
+										p_PSchLinkEraser->bLastInQueue = false;
+									}
+									else
+									{
+										p_PSchLinkEraser->bLastInQueue = true;  // На последней новости.
+									}
+									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																							  PROTO_O_SCH_LINK_ERASE,
+																							  (char*)p_PSchLinkEraser,
+																							  sizeof(PSchLinkEraser)));
+									LOG_P_2(LOG_CAT_I, "{Out} Erased link [" <<
+											QString::number(p_PSchLinkEraser->ullIDSrc).toStdString()
+											<< "<>" <<
+											QString::number(p_PSchLinkEraser->ullIDDst).toStdString()
+											<< m_chLogSentToClient);
+									bPresent = true;
+								}
+								else
+								{
 
+									int iLC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
+									iLC = PBCount(Link);
+									for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+									{
+										Link* p_Link;
+										//
+										p_Link = PBAccess(Link, iL);
+										if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkEraser->ullIDDst) &
+										   (p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc) &
+										   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort ==
+											p_PSchLinkEraser->ushiDstPort) &
+										   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort ==
+											p_PSchLinkEraser->ushiSrcPort)) // При совп. с запрошенным...
+										{
+											LOG_P_2(LOG_CAT_I, "Link [" << p_Link->p_SrcElement->oPSchElementBase.m_chName << "<>" <<
+													p_Link->p_DstElement->oPSchElementBase.m_chName << "] erase.");
+											EraseLinkAt(iL);
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong link for erase from client.");
 								}
 								break;
 							}
@@ -1363,7 +1631,11 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									Group* p_Group;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
+											<< "] base from client.");
+									AppendToPB(Group, p_Group = new Group(*p_PSchGroupBase));
 								}
 								break;
 							}
@@ -1391,7 +1663,102 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iGC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
+									iGC = PBCount(Group);
+									for(int iE = 0; iE < iGC; iE++) // По всем группам...
+									{
+										Group* p_Group;
+										//
+										p_Group = PBAccess(Group, iE);
+										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+										   p_PSchGroupVars->ullIDInt) // При совп. с запрошенным...
+										{
+											if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_FRAME)
+											{
+												p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame =
+														p_PSchGroupVars->oSchGroupGraph.oDbObjectFrame;
+												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+														<< "] frame.");
+											}
+											if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_ZPOS)
+											{
+												p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.dbObjectZPos =
+														p_PSchGroupVars->oSchGroupGraph.dbObjectZPos;
+												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+														<< "] z-pos is: " <<
+														QString::number((int)p_PSchGroupVars->oSchGroupGraph.dbObjectZPos).toStdString());
+											}
+											if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_BUSY)
+											{
+												p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bBusy =
+														p_PSchGroupVars->oSchGroupGraph.bBusy;
+												if(p_PSchGroupVars->oSchGroupGraph.bBusy)
+												{
+													LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+															<< "] is busy by client.");
+												}
+												else
+												{
+													LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+															<< "] is free.");
+												}
+											}
+											if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_GROUP)
+											{
+												if(p_PSchGroupVars->ullIDGroup == 0) // Обработка отсоединения от группы.
+												{
+													if(p_Group->p_GroupAbove != nullptr)
+													{
+														if(p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group))
+														{
+															p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
+															LOG_P_2(LOG_CAT_I, "Group [" <<
+																	QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+																	<< "] group - detach.");
+															if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() &
+															   p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
+															{
+																LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+																EraseGroup(p_Group->p_GroupAbove);
+															}
+															p_Group->p_GroupAbove = nullptr;
+															p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = 0;
+															goto gEOK;
+														}
+														else
+														{
+gGGEx:														LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
+															goto gEOK;
+														}
+													}
+													else goto gGGEx;
+												}
+												// Обработка включения в группу.
+												for(int iG = 0; iG < (int)PBCount(Group); iG++)
+												{
+													if(PBAccess(Group, iG)->
+													   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDGroup)
+													{
+														p_Group->p_GroupAbove = PBAccess(Group, iG);
+														if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup != p_PSchGroupVars->ullIDGroup)
+														{
+															p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = p_PSchGroupVars->ullIDGroup;
+															LOG_P_2(LOG_CAT_I, "Group [" <<
+																	QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+																	<< "] group - attach.");
+															p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
+														}
+														goto gEOK;
+													}
+												}
+												LOG_P_0(LOG_CAT_W, "Wrong group number for group");
+											}
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
 								}
 								break;
 							}
@@ -1417,7 +1784,23 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iEC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
+									iEC = PBCount(Group);
+									for(int iE = 0; iE < iEC; iE++) // По всем группам...
+									{
+										Group* p_Group;
+										//
+										p_Group = PBAccess(Group, iE);
+										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+										   p_PSchGroupName->ullIDInt) // При совп. с запрошенным...
+										{
+											CopyStrArray(p_PSchGroupName->m_chName, p_Group->oPSchGroupBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
 								}
 								break;
 							}
@@ -1445,7 +1828,25 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iGC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
+									iGC = PBCount(Group);
+									for(int iG = 0; iG < iGC; iG++) // По всем группам...
+									{
+										Group* p_Group;
+										//
+										p_Group = PBAccess(Group, iG);
+										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+										   p_PSchGroupColor->ullIDInt) // При совп. с запрошенным...
+										{
+											p_Group->oPSchGroupBase.uiObjectBkgColor = p_PSchGroupColor->uiObjectBkgColor;
+											LOG_P_2(LOG_CAT_I, "Group [" <<
+													QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] color changed.");
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong group number for change color from client.");
 								}
 								break;
 							}
@@ -1473,9 +1874,27 @@ void Environment::NetOperations()
 								}
 								else
 								{
-
+									int iGC;
+									//
+									LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
+									iGC = PBCount(Group);
+									for(int iG = 0; iG < iGC; iG++) // По всем группам...
+									{
+										Group* p_Group;
+										//
+										p_Group = PBAccess(Group, iG);
+										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+										   p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
+										{
+											LOG_P_2(LOG_CAT_I, "Group [" <<
+													QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erase.");
+											EraseGroupAt(iG);
+											goto gEOK;
+										}
+									}
+									LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
 								}
-								break;
+gEOK:							break;
 							}
 						}
 						p_EventsQueue->Remove(0);

@@ -462,23 +462,6 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		{
 			p_PSchGroupEraser = ((PSchGroupEraser*)p_ReceivedData);
 			Environment::p_EventsQueue->AddEraseGroup(*p_PSchGroupEraser, QUEUE_FROM_CLIENT);
-			int iGC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
-			iGC = PBCountExternal(Group, Environment);
-			for(int iG = 0; iG < iGC; iG++) // По всем группам...
-			{
-				Group* p_Group;
-				//
-				p_Group = PBAccessExternal(Group, iG, Environment);
-				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
-				{
-					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erase.");
-					Environment::EraseGroupAt(iG);
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_COLOR. ========
@@ -486,23 +469,6 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		{
 			p_PSchGroupColor = ((PSchGroupColor*)p_ReceivedData);
 			Environment::p_EventsQueue->AddGroupColorAndFlush(*p_PSchGroupColor, QUEUE_FROM_CLIENT);
-			int iGC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
-			iGC = PBCountExternal(Group, Environment);
-			for(int iG = 0; iG < iGC; iG++) // По всем группам...
-			{
-				Group* p_Group;
-				//
-				p_Group = PBAccessExternal(Group, iG, Environment);
-				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupColor->ullIDInt) // При совп. с запрошенным...
-				{
-					p_Group->oPSchGroupBase.uiObjectBkgColor = p_PSchGroupColor->uiObjectBkgColor;
-					LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] color changed.");
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong group number for change color from client.");
 			goto gLEx;
 		}
 
@@ -511,23 +477,6 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		{
 			p_PSchElementEraser = ((PSchElementEraser*)p_ReceivedData);
 			Environment::p_EventsQueue->AddEraseElement(*p_PSchElementEraser, QUEUE_FROM_CLIENT);
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
-			iEC = PBCountExternal(Element, Environment);
-			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-			{
-				Element* p_Element;
-				//
-				p_Element = PBAccessExternal(Element, iE, Environment);
-				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
-				{
-					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erase.");
-					Environment::EraseElementAt(iE);
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_COLOR. ========
@@ -535,52 +484,13 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		{
 			p_PSchElementColor = ((PSchElementColor*)p_ReceivedData);
 			Environment::p_EventsQueue->AddElementColorAndFlush(*p_PSchElementColor, QUEUE_FROM_CLIENT);
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
-			iEC = PBCountExternal(Element, Environment);
-			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-			{
-				Element* p_Element;
-				//
-				p_Element = PBAccessExternal(Element, iE, Environment);
-				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementColor->ullIDInt) // При совп. с запрошенным...
-				{
-					p_Element->oPSchElementBase.uiObjectBkgColor = p_PSchElementColor->uiObjectBkgColor;
-					LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] color changed.");
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong element number for change color from client.");
 			goto gLEx;
 		}
-
 		//======== Раздел PROTO_O_SCH_LINK_ERASE. ========
 		case PROTO_O_SCH_LINK_ERASE:
 		{
 			p_PSchLinkEraser = ((PSchLinkEraser*)p_ReceivedData);
 			Environment::p_EventsQueue->AddEraseLink(*p_PSchLinkEraser, QUEUE_FROM_CLIENT);
-			int iLC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
-			iLC = PBCountExternal(Link, Environment);
-			for(int iL = 0; iL < iLC; iL++) // По всем линкам...
-			{
-				Link* p_Link;
-				//
-				p_Link = PBAccessExternal(Link, iL, Environment);
-				if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkEraser->ullIDDst) &
-				   (p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc) &
-				   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkEraser->ushiDstPort) &
-				   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkEraser->ushiSrcPort)) // При совп. с запрошенным...
-				{
-					LOG_P_2(LOG_CAT_I, "Link [" << p_Link->p_SrcElement->oPSchElementBase.m_chName << "<>" <<
-							p_Link->p_DstElement->oPSchElementBase.m_chName << "] erase.");
-					Environment::EraseLinkAt(iL);
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong link for erase from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_VARS. ========
@@ -588,97 +498,6 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		{
 			p_PSchElementVars = ((PSchElementVars*)p_ReceivedData);
 			Environment::p_EventsQueue->AddElementChanges(*p_PSchElementVars, QUEUE_FROM_CLIENT);
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
-			iEC = PBCountExternal(Element, Environment);
-			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-			{
-				Element* p_Element;
-				//
-				p_Element = PBAccessExternal(Element, iE, Environment);
-				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementVars->ullIDInt) // При совп. с запрошенным...
-				{
-					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_ZPOS)
-					{
-						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.dbObjectZPos =
-								p_PSchElementVars->oSchElementGraph.dbObjectZPos;
-						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-								<< "] z-pos is: " << QString::number((int)p_PSchElementVars->oSchElementGraph.dbObjectZPos).toStdString());
-					}
-					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_BUSY)
-					{
-						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.bBusy =
-								p_PSchElementVars->oSchElementGraph.bBusy;
-						if(p_PSchElementVars->oSchElementGraph.bBusy)
-						{
-							LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-									<< "] is busy by client.");
-						}
-						else
-						{
-							LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-									<< "] is free.");
-						}
-					}
-
-					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_FRAME)
-					{
-						p_Element->oPSchElementBase.oPSchElementVars.oSchElementGraph.oDbObjectFrame =
-								p_PSchElementVars->oSchElementGraph.oDbObjectFrame;
-						LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-										   << "] frame.");
-					}
-					if(p_PSchElementVars->oSchElementGraph.uchChangesBits & SCH_ELEMENT_BIT_GROUP)
-					{
-						if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
-						{
-							if(p_Element->p_Group != nullptr)
-							{
-								if(p_Element->p_Group->vp_ConnectedElements.contains(p_Element))
-								{
-									p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
-									LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-											<< "] group - detach.");
-									if(p_Element->p_Group->vp_ConnectedElements.isEmpty() & p_Element->p_Group->vp_ConnectedGroups.isEmpty())
-									{
-										LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
-										Environment::EraseGroup(p_Element->p_Group);
-									}
-									p_Element->p_Group = nullptr;
-									p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
-									goto gLEx;
-								}
-								else
-								{
-gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
-									goto gLEx;
-								}
-							}
-							else goto gGEx;
-						}
-						for(int iG = 0; iG < (int)PBCountExternal(Group, Environment); iG++) // Обработка включения в группу.
-						{
-							if(PBAccessExternal(Group, iG, Environment)->
-							   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
-							{
-								p_Element->p_Group = PBAccessExternal(Group, iG, Environment);
-								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup != p_PSchElementVars->ullIDGroup)
-								{
-									p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = p_PSchElementVars->ullIDGroup;
-									LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-											<< "] group - attach.");
-									p_Element->p_Group->vp_ConnectedElements.append(p_Element);
-								}
-								goto gLEx;
-							}
-						}
-						LOG_P_0(LOG_CAT_W, "Wrong group number for element from ID." << QString::number(iConnection).toStdString());
-					}
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_NAME. ========
@@ -686,22 +505,6 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 		{
 			p_PSchElementName = ((PSchElementName*)p_ReceivedData);
 			Environment::p_EventsQueue->AddElementRenameAndFlush(*p_PSchElementName, QUEUE_FROM_CLIENT);
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
-			iEC = PBCountExternal(Element, Environment);
-			for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-			{
-				Element* p_Element;
-				//
-				p_Element = PBAccessExternal(Element, iE, Environment);
-				if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt == p_PSchElementName->ullIDInt) // При совп. с запрошенным...
-				{
-					CopyStrArray(p_PSchElementName->m_chName, p_Element->oPSchElementBase.m_chName, SCH_OBJ_NAME_STR_LEN);
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_LINK_VARS. ========
@@ -709,41 +512,6 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 		{
 			p_PSchLinkVars = ((PSchLinkVars*)p_ReceivedData);
 			Environment::p_EventsQueue->AddLinkChanges(*p_PSchLinkVars, QUEUE_FROM_CLIENT);
-			int iLC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
-			iLC = PBCountExternal(Link, Environment);
-			for(int iL = 0; iL < iLC; iL++) // По всем линкам...
-			{
-				Link* p_Link;
-				//
-				p_Link = PBAccessExternal(Link, iL, Environment);
-				if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkVars->ullIDSrc) &&
-						(p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkVars->ullIDDst) &&
-						(p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkVars->ushiSrcPort) &&
-						(p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
-					// При совпадении с запрошенным...
-				{
-					if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
-					{
-						p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos =
-								p_PSchLinkVars->oSchLinkGraph.oDbSrcPortGraphPos;
-						LOG_P_2(LOG_CAT_I, "Link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString() << "<>" <<
-								QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
-								<< "] vars - src port position.");
-					}
-					if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
-					{
-						p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos =
-								p_PSchLinkVars->oSchLinkGraph.oDbDstPortGraphPos;
-						LOG_P_2(LOG_CAT_I, "Link [" << QString(p_Link->p_SrcElement->oPSchElementBase.m_chName).toStdString() << "<>" <<
-								QString(p_Link->p_DstElement->oPSchElementBase.m_chName).toStdString()
-								<< "] vars - dst port position.");
-					}
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong link number from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_VARS. ========
@@ -751,96 +519,6 @@ gGEx:								LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 		{
 			p_PSchGroupVars = ((PSchGroupVars*)p_ReceivedData);
 			Environment::p_EventsQueue->AddGroupChanges(*p_PSchGroupVars, QUEUE_FROM_CLIENT);
-			int iGC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
-			iGC = PBCountExternal(Group, Environment);
-			for(int iE = 0; iE < iGC; iE++) // По всем группам...
-			{
-				Group* p_Group;
-				//
-				p_Group = PBAccessExternal(Group, iE, Environment);
-				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDInt) // При совп. с запрошенным...
-				{
-					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_FRAME)
-					{
-						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.oDbObjectFrame =
-								p_PSchGroupVars->oSchGroupGraph.oDbObjectFrame;
-						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-								<< "] frame.");
-					}
-					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_ZPOS)
-					{
-						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.dbObjectZPos =
-								p_PSchGroupVars->oSchGroupGraph.dbObjectZPos;
-						LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-								<< "] z-pos is: " << QString::number((int)p_PSchGroupVars->oSchGroupGraph.dbObjectZPos).toStdString());
-					}
-					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_BUSY)
-					{
-						p_Group->oPSchGroupBase.oPSchGroupVars.oSchGroupGraph.bBusy =
-								p_PSchGroupVars->oSchGroupGraph.bBusy;
-						if(p_PSchGroupVars->oSchGroupGraph.bBusy)
-						{
-							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-									<< "] is busy by client.");
-						}
-						else
-						{
-							LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-									<< "] is free.");
-						}
-					}
-					if(p_PSchGroupVars->oSchGroupGraph.uchChangesBits & SCH_GROUP_BIT_GROUP)
-					{
-						if(p_PSchGroupVars->ullIDGroup == 0) // Обработка отсоединения от группы.
-						{
-							if(p_Group->p_GroupAbove != nullptr)
-							{
-								if(p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group))
-								{
-									p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
-									LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-											<< "] group - detach.");
-									if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() &
-									   p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
-									{
-										LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
-										Environment::EraseGroup(p_Group->p_GroupAbove);
-									}
-									p_Group->p_GroupAbove = nullptr;
-									p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = 0;
-									goto gLEx;
-								}
-								else
-								{
-gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
-									goto gLEx;
-								}
-							}
-							else goto gGGEx;
-						}
-						for(int iG = 0; iG < (int)PBCountExternal(Group, Environment); iG++) // Обработка включения в группу.
-						{
-							if(PBAccessExternal(Group, iG, Environment)->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDGroup)
-							{
-								p_Group->p_GroupAbove = PBAccessExternal(Group, iG, Environment);
-								if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup != p_PSchGroupVars->ullIDGroup)
-								{
-									p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = p_PSchGroupVars->ullIDGroup;
-									LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-											<< "] group - attach.");
-									p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
-								}
-								goto gLEx;
-							}
-						}
-						LOG_P_0(LOG_CAT_W, "Wrong group number for group from ID." << QString::number(iConnection).toStdString());
-					}
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_NAME. ========
@@ -848,22 +526,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		{
 			p_PSchGroupName = ((PSchGroupName*)p_ReceivedData);
 			Environment::p_EventsQueue->AddGroupRenameAndFlush(*p_PSchGroupName, QUEUE_FROM_CLIENT);
-			int iEC;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
-			iEC = PBCountExternal(Group, Environment);
-			for(int iE = 0; iE < iEC; iE++) // По всем группам...
-			{
-				Group* p_Group;
-				//
-				p_Group = PBAccessExternal(Group, iE, Environment);
-				if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupName->ullIDInt) // При совп. с запрошенным...
-				{
-					CopyStrArray(p_PSchGroupName->m_chName, p_Group->oPSchGroupBase.m_chName, SCH_OBJ_NAME_STR_LEN);
-					goto gLEx;
-				}
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
@@ -871,11 +533,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		{
 			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
 			Environment::p_EventsQueue->AddNewElement(*p_PSchElementBase, QUEUE_FROM_CLIENT);
-			Element* p_Element;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
-					<< "] base from client.");
-			AppendToPBExternal(Element, p_Element = new Element(*p_PSchElementBase), Environment);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_BASE. ========
@@ -883,11 +540,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		{
 			p_PSchGroupBase = ((PSchGroupBase*)p_ReceivedData);
 			Environment::p_EventsQueue->AddNewGroup(*p_PSchGroupBase, QUEUE_FROM_CLIENT);
-			Group* p_Group;
-			//
-			LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
-					<< "] base from client.");
-			AppendToPBExternal(Group, p_Group = new Group(*p_PSchGroupBase), Environment);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
@@ -895,28 +547,6 @@ gGGEx:								LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 		{
 			p_PSchLinkBase = ((PSchLinkBase*)p_ReceivedData);
 			Environment::p_EventsQueue->AddNewLink(*p_PSchLinkBase, QUEUE_FROM_CLIENT);
-			Link* p_Link;
-			char* p_chSrc = nullptr;
-			char* p_chDst = nullptr;
-			//
-			for(unsigned int uiF = 0; uiF != PBCountExternal(Element, Environment); uiF++)
-			{
-				Element* p_Element = PBAccessExternal(Element, uiF, Environment);
-				//
-				if(p_PSchLinkBase->oPSchLinkVars.ullIDSrc == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
-				{
-					p_chSrc = p_Element->oPSchElementBase.m_chName;
-				}
-				if(p_PSchLinkBase->oPSchLinkVars.ullIDDst == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
-				{
-					p_chDst = p_Element->oPSchElementBase.m_chName;
-				}
-				if((p_chSrc != nullptr) & (p_chDst != nullptr)) goto gLO;
-			}
-			LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
-			goto gLEx;
-gLO:		LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
-			AppendToPBExternal(Link, p_Link = new Link(*p_PSchLinkBase), Environment);
 			goto gLEx;
 		}
 		//======== Следующий раздел... ========
