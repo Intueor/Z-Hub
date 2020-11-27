@@ -119,10 +119,11 @@ public:
 		/// Получение длины цепочки.
 		static int Count();
 										///< \return Кол-во звеньев цепочки.
+	public:
+		static unsigned int uiCurrentSegNumber; ///< Текущий номер сегмента.
 	private:
 		static QList<QueueSegment> l_Queue; ///< Лист очереди событий.
 		static QueueSegment oQueueSegment; ///< Служебный объект сегмента.
-		static unsigned int uiCurrentSegNumber; ///< Текущий номер сегмента.
 	};
 public:
 	/// Конструктор.
@@ -185,6 +186,7 @@ public:
 	static PSchReadyFrame oPSchReadyFrame; ///< Данные по запросу.
 	static EventsQueue* p_EventsQueue; ///< Указатель на класс очереди событий.
 	static pthread_mutex_t ptQueueMutex; ///< Инициализатор мьютекса отработки очереди событий.
+	static int iLastFetchingSegNumber; ///< Номер сегмента следующий за прогруженным при старте.
 private:
 	LOGDECL
 	LOGDECL_PTHRD_INCLASS_ADD

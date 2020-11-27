@@ -38,5 +38,7 @@ const char m_chLogSentToClient[] = "] has been sent to client.";
 // Диалоги.
 #define DIALOGS_ACCEPT                  0
 #define DIALOGS_REJECT                  -1
+#define SCH_STATUS_READY				0b01
+#define SCH_STATUS_LOADED				0b10
 
 #endif // MAINHUBDEFS_H

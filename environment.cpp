@@ -37,6 +37,7 @@ Environment::EventsQueue::QueueSegment Environment::EventsQueue::oQueueSegment;
 Environment::EventsQueue* Environment::p_EventsQueue = nullptr;
 pthread_mutex_t Environment::ptQueueMutex = PTHREAD_MUTEX_INITIALIZER;
 unsigned int Environment::EventsQueue::uiCurrentSegNumber;
+int Environment::iLastFetchingSegNumber;
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс очереди событий. Методы вызывать только из-под мьютекса.
 // Конструктор.
@@ -190,7 +191,8 @@ void Environment::EventsQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, 
 // Получение данных из позиции.
 const Environment::EventsQueue::QueueSegment* Environment::EventsQueue::Get(int iNum)
 {
-	return &l_Queue.at(iNum);
+	if(l_Queue.isEmpty()) return nullptr;
+	else return &l_Queue.at(iNum);
 }
 // Очистка и удаление позиции.
 void Environment::EventsQueue::Remove(int iNum)
@@ -1052,6 +1054,7 @@ void Environment::FetchEnvToQueue()
 	{
 		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
 	}
+	iLastFetchingSegNumber = (int)EventsQueue::uiCurrentSegNumber - 1; // Если не грузилось ничего, будет статус UPLOAD_STATUS_INACTIVE автом.
 	TryMutexUnlock(ptQueueMutex);
 }
 

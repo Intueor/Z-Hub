@@ -89,7 +89,7 @@ struct SchGroupGraph
 /// Структура готовности Хаба к работе с клиентом.
 struct PSchStatusInfo
 {
-	bool bReady; ///< Признак готовности.
+	unsigned char uchBits; ///< Биты статуса.
 };
 /// Структура команды удаления группы.
 struct PSchGroupEraser

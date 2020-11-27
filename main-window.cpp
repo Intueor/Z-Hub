@@ -417,6 +417,8 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 	PSchGroupName* p_PSchGroupName;
 	PSchElementVars* p_PSchElementVars;
 	PSchGroupVars* p_PSchGroupVars;
+	const Environment::EventsQueue::QueueSegment* pc_QueueSegment;
+	PSchStatusInfo oPSchStatusInfo;
 	//
 	TryMutexInit;
 	switch(ushType)
@@ -424,18 +426,18 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 		//======== Раздел PROTO_O_SCH_STATUS. ========
 		case PROTO_O_SCH_STATUS: // Отправка ответа о статусе среды при запросе клеинта.
 		{
-			PSchStatusInfo oPSchStatusInfo;
 			//
 			oPSchStatusInfo = *((PSchStatusInfo*)p_ReceivedData);
-			if(oPSchStatusInfo.bReady)
+			if(oPSchStatusInfo.uchBits & SCH_STATUS_READY)
 			{
-				if(p_ui->action_ChangeEnv->isEnabled())
+				oPSchStatusInfo.uchBits = 0;
+				if(!p_ui->action_ChangeEnv->isEnabled())
 				{
-					oPSchStatusInfo.bReady = false;
+					oPSchStatusInfo.uchBits = SCH_STATUS_READY;
 				}
 				else
 				{
-					oPSchStatusInfo.bReady = true;
+					oPSchStatusInfo.uchBits = 0;
 				}
 				p_Server->SendToClientImmediately(iCurrentClientConnection,
 												  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
@@ -452,6 +454,24 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 			}
 			Environment::bRequested = true;
 			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
+			if(Environment::iLastFetchingSegNumber != UPLOAD_STATUS_INACTIVE) // Если идёт процесс выгрузки на клиент...
+			{
+				if(Environment::EventsQueue::Count() == 0) // Если выгрузилась вся цепочка...
+				{
+					goto gUO;
+				}
+				else
+				{
+					pc_QueueSegment = Environment::EventsQueue::Get(0);
+					if((int)pc_QueueSegment->uiNumber > Environment::iLastFetchingSegNumber)
+					{ // Или текущее звено - последнее из взятых на выгрузку...
+gUO:					Environment::iLastFetchingSegNumber = UPLOAD_STATUS_INACTIVE;
+						oPSchStatusInfo.uchBits = SCH_STATUS_LOADED; // Отправка клиенту сообщения о конце выгрузки.
+						p_Server->SendToClientImmediately(iCurrentClientConnection,
+														  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
+					}
+				}
+			}
 gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
 			{
 				RETVAL_SET(RETVAL_ERR);
@@ -671,7 +691,7 @@ bool MainWindow::EnvStartProcedures()
 	{
 		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
 		{
-			oPSchStatusInfo.bReady = true;
+			oPSchStatusInfo.uchBits = SCH_STATUS_READY;
 			p_Server->SendToClientImmediately(iCurrentClientConnection, PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo));
 		}
 	}
@@ -687,7 +707,7 @@ bool MainWindow::EnvStopProcedures()
 	{
 		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
 		{
-			oPSchStatusInfo.bReady = false;
+			oPSchStatusInfo.uchBits = 0;
 			p_Server->SendToClientImmediately(iCurrentClientConnection, PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo));
 		}
 	}

@@ -13,6 +13,7 @@
 #define SCH_LINK_Z_SHIFT				0.01
 #define ENV_STEP_WAITING				1
 #define NO_CLIENT						-1
+#define UPLOAD_STATUS_INACTIVE			-1
 // Коды изменяемых полей.
 #define SCH_ELEMENT_BIT_BUSY            0b00000001
 #define SCH_ELEMENT_BIT_FRAME           0b00000010
