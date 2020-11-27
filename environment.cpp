@@ -7,7 +7,9 @@
 //== МАКРОСЫ.
 #define LOG_NAME										"environment"
 #define LOG_DIR_PATH									"../Z-Hub/logs/"
-#define _SQ_Util(Type,Struct)							oQueueSegment.uchType = Type;											\
+#define _SQ_Util(Type,Struct)							oQueueSegment.uchType = uiCurrentSegNumber;								\
+														uiCurrentSegNumber++;													\
+														oQueueSegment.uchType = Type;											\
 														oQueueSegment.p_vUnitObject = (void*)(new Struct);						\
 														oQueueSegment.bDirectionOut = bDirectionOut;							\
 														*(Struct*)oQueueSegment.p_vUnitObject = a##Struct;						\
@@ -34,8 +36,14 @@ QList<Environment::EventsQueue::QueueSegment> Environment::EventsQueue::l_Queue;
 Environment::EventsQueue::QueueSegment Environment::EventsQueue::oQueueSegment;
 Environment::EventsQueue* Environment::p_EventsQueue = nullptr;
 pthread_mutex_t Environment::ptQueueMutex = PTHREAD_MUTEX_INITIALIZER;
+unsigned int Environment::EventsQueue::uiCurrentSegNumber;
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс очереди событий. Методы вызывать только из-под мьютекса.
+// Конструктор.
+Environment::EventsQueue::EventsQueue()
+{
+	uiCurrentSegNumber = 0;
+}
 // Деструктор.
 Environment::EventsQueue::~EventsQueue()
 {
@@ -266,6 +274,7 @@ void Environment::EventsQueue::Clear()
 	{
 		Remove(0);
 	}
+	uiCurrentSegNumber = 0;
 }
 // Получение длины цепочки.
 int Environment::EventsQueue::Count()

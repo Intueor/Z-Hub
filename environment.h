@@ -45,11 +45,14 @@ public:
 		/// Структура сегмента очереди событий.
 		struct QueueSegment
 		{
+			unsigned int uiNumber; ///< Номер сегмента от старта.
 			bool bDirectionOut; ///< true, если от сервера к клиенту.
 			unsigned char uchType; ///< Тип юнита.
 			void* p_vUnitObject; ///< Указатель на объект юнита.
 		};
 	public:
+		/// Конструктор.
+		EventsQueue();
 		/// Деструктор.
 		~EventsQueue();
 		/// Добавление нового элемента.
@@ -119,6 +122,7 @@ public:
 	private:
 		static QList<QueueSegment> l_Queue; ///< Лист очереди событий.
 		static QueueSegment oQueueSegment; ///< Служебный объект сегмента.
+		static unsigned int uiCurrentSegNumber; ///< Текущий номер сегмента.
 	};
 public:
 	/// Конструктор.
