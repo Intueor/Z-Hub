@@ -7,7 +7,7 @@
 
 //== МАКРОСЫ.
 // ============================ ПОЛЬЗОВАТЕЛЬСКИЕ КОДЫ ПАКЕТОВ ==================================
-#define PROTO_C_SCH_READY               1
+#define PROTO_O_SCH_READY               1
 #define PROTO_O_SCH_ELEMENT_BASE        2
 #define PROTO_O_SCH_ELEMENT_VARS        3
 #define PROTO_O_SCH_ELEMENT_NAME        4
@@ -36,7 +36,7 @@ CasePocket(PROTO_O_SCH_LINK_BASE, PSchLinkBase);					\
 CasePocket(PROTO_O_SCH_ELEMENT_NAME, PSchElementName);				\
 CasePocket(PROTO_O_SCH_ELEMENT_VARS, PSchElementVars);				\
 CasePocket(PROTO_O_SCH_ELEMENT_BASE, PSchElementBase);				\
-CasePocket(PROTO_C_SCH_READY, PSchReadyFrame);						\
+CasePocket(PROTO_O_SCH_READY, PSchReadyFrame);						\
 CasePocket(PROTO_O_SCH_STATUS, PSchStatusInfo);						\
 CasePocket(PROTO_O_SCH_GROUP_COLOR, PSchGroupColor);				\
 CasePocket(PROTO_O_SCH_ELEMENT_COLOR, PSchElementColor);			\

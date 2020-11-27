@@ -442,8 +442,8 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 			}
 			goto gLEx;
 		}
-		//======== Раздел PROTO_C_SCH_READY. ========
-		case PROTO_C_SCH_READY:
+		//======== Раздел PROTO_O_SCH_READY. ========
+		case PROTO_O_SCH_READY:
 		{
 			if(bJustConnected)
 			{
@@ -664,6 +664,7 @@ bool MainWindow::EnvStartProcedures()
 		p_ui->action_StartStopEnv->setChecked(false);
 		return false;
 	}
+	p_Environment->FetchEnvToQueue();
 	p_ui->action_ChangeEnv->setDisabled(true);
 	p_ui->action_SaveCurrent->setDisabled(true);
 	if(iCurrentClientConnection != NO_CLIENT) // Если есть клиент, отправка ответа о работающей среде.
