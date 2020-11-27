@@ -38,7 +38,7 @@
 class Environment
 {
 public:
-	/// Класс очереди событий.
+	/// Класс очереди событий. Методы вызывать только из-под мьютекса.
 	class EventsQueue
 	{
 	public:
@@ -180,7 +180,7 @@ public:
 	static bool bRequested; ///< Наличие запроса от клиента.
 	static PSchReadyFrame oPSchReadyFrame; ///< Данные по запросу.
 	static EventsQueue* p_EventsQueue; ///< Указатель на класс очереди событий.
-
+	static pthread_mutex_t ptQueueMutex; ///< Инициализатор мьютекса отработки очереди событий.
 private:
 	LOGDECL
 	LOGDECL_PTHRD_INCLASS_ADD

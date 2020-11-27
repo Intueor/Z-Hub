@@ -33,8 +33,9 @@ PSchReadyFrame Environment::oPSchReadyFrame;
 QList<Environment::EventsQueue::QueueSegment> Environment::EventsQueue::l_Queue;
 Environment::EventsQueue::QueueSegment Environment::EventsQueue::oQueueSegment;
 Environment::EventsQueue* Environment::p_EventsQueue = nullptr;
+pthread_mutex_t Environment::ptQueueMutex = PTHREAD_MUTEX_INITIALIZER;
 //== ФУНКЦИИ КЛАССОВ.
-//== Класс очереди событий.
+//== Класс очереди событий. Методы вызывать только из-под мьютекса.
 // Деструктор.
 Environment::EventsQueue::~EventsQueue()
 {
@@ -1027,6 +1028,8 @@ bool Environment::SaveEnv()
 // Прогрузка цепочки событий для подключившегося клиента.
 void Environment::FetchEnvToQueue()
 {
+	TryMutexInit;
+	TryMutexLock(ptQueueMutex);
 	p_EventsQueue->Clear();
 	for(unsigned int iF = 0; iF != PBCount(Group); iF++)
 	{
@@ -1040,6 +1043,7 @@ void Environment::FetchEnvToQueue()
 	{
 		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
 	}
+	TryMutexUnlock(ptQueueMutex);
 }
 
 // Запуск среды.
@@ -1133,6 +1137,8 @@ void Environment::NetOperations()
 		{
 			if(bRequested) // Если был запрос сессии от клиента...
 			{
+				TryMutexInit;
+				TryMutexLock(ptQueueMutex);
 				// Цикл по всей очереди событий до конца или исчерпания лимита новостей (если новосте меньше, чем очередь).
 				if(ushNewsQantity > p_EventsQueue->Count()) ushNewsQantity = p_EventsQueue->Count();
 				while(p_EventsQueue->Count())
@@ -1907,6 +1913,7 @@ gEOK:							break;
 				{
 					LCHECK_BOOL(MainWindow::p_Server->SendBufferToClient(0, true));
 				}
+				TryMutexUnlock(ptQueueMutex);
 			}
 		}
 	}

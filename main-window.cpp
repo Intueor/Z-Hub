@@ -418,6 +418,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 	PSchElementVars* p_PSchElementVars;
 	PSchGroupVars* p_PSchGroupVars;
 	//
+	TryMutexInit;
 	switch(ushType)
 	{
 		//======== Раздел PROTO_O_SCH_STATUS. ========
@@ -444,12 +445,12 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 		//======== Раздел PROTO_C_SCH_READY. ========
 		case PROTO_C_SCH_READY:
 		{
-			Environment::bRequested = true;
 			if(bJustConnected)
 			{
 				p_Environment->FetchEnvToQueue();
 				bJustConnected = false;
 			}
+			Environment::bRequested = true;
 			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
 gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
 			{
@@ -461,14 +462,18 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		case PROTO_O_SCH_GROUP_ERASE:
 		{
 			p_PSchGroupEraser = ((PSchGroupEraser*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddEraseGroup(*p_PSchGroupEraser, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_COLOR. ========
 		case PROTO_O_SCH_GROUP_COLOR:
 		{
 			p_PSchGroupColor = ((PSchGroupColor*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddGroupColorAndFlush(*p_PSchGroupColor, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 
@@ -476,77 +481,99 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != 
 		case PROTO_O_SCH_ELEMENT_ERASE:
 		{
 			p_PSchElementEraser = ((PSchElementEraser*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddEraseElement(*p_PSchElementEraser, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_COLOR. ========
 		case PROTO_O_SCH_ELEMENT_COLOR:
 		{
 			p_PSchElementColor = ((PSchElementColor*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddElementColorAndFlush(*p_PSchElementColor, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_LINK_ERASE. ========
 		case PROTO_O_SCH_LINK_ERASE:
 		{
 			p_PSchLinkEraser = ((PSchLinkEraser*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddEraseLink(*p_PSchLinkEraser, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_VARS. ========
 		case PROTO_O_SCH_ELEMENT_VARS:
 		{
 			p_PSchElementVars = ((PSchElementVars*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddElementChanges(*p_PSchElementVars, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_NAME. ========
 		case PROTO_O_SCH_ELEMENT_NAME:
 		{
 			p_PSchElementName = ((PSchElementName*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddElementRenameAndFlush(*p_PSchElementName, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_LINK_VARS. ========
 		case PROTO_O_SCH_LINK_VARS:
 		{
 			p_PSchLinkVars = ((PSchLinkVars*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddLinkChanges(*p_PSchLinkVars, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_VARS. ========
 		case PROTO_O_SCH_GROUP_VARS:
 		{
 			p_PSchGroupVars = ((PSchGroupVars*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddGroupChanges(*p_PSchGroupVars, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_NAME. ========
 		case PROTO_O_SCH_GROUP_NAME:
 		{
 			p_PSchGroupName = ((PSchGroupName*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddGroupRenameAndFlush(*p_PSchGroupName, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
 		case PROTO_O_SCH_ELEMENT_BASE:
 		{
 			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddNewElement(*p_PSchElementBase, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_GROUP_BASE. ========
 		case PROTO_O_SCH_GROUP_BASE:
 		{
 			p_PSchGroupBase = ((PSchGroupBase*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddNewGroup(*p_PSchGroupBase, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Раздел PROTO_O_SCH_ELEMENT_BASE. ========
 		case PROTO_O_SCH_LINK_BASE:
 		{
 			p_PSchLinkBase = ((PSchLinkBase*)p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddNewLink(*p_PSchLinkBase, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
 		//======== Следующий раздел... ========

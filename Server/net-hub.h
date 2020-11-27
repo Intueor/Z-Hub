@@ -19,11 +19,11 @@
 
 //== МАКРОСЫ.
 #define TryMutexInit			int* p_iLocked = 0;
-#define TryMutexLock			{p_iLocked = new int;																					\
+#define TryMutexLock(Mutex)		{p_iLocked = new int;																					\
 								unsigned short* p_ushC = new unsigned short;															\
 								for(*p_ushC = 0; *p_ushC < PTHREAD_TRYLOCK_ATTEMPTS; *p_ushC += 1)										\
 								{																										\
-									*p_iLocked = pthread_mutex_trylock(&ptConnMutex);													\
+									*p_iLocked = pthread_mutex_trylock(&Mutex);															\
 									if(*p_iLocked == 0) break;																			\
 									if(*p_ushC > (PTHREAD_TRYLOCK_ATTEMPTS / 2))                                                        \
 									{                                                                                                   \
@@ -38,7 +38,7 @@
 								{																										\
 									LOG_P_0(LOG_CAT_E, "'ptherad' locking fault.");														\
 								}}
-#define TryMutexUnlock			{if(*p_iLocked == 0) pthread_mutex_unlock(&ptConnMutex);												\
+#define TryMutexUnlock(Mutex)	{if(*p_iLocked == 0) pthread_mutex_unlock(&Mutex);														\
 								delete p_iLocked;}
 // Сообщения.
 #define MSG_WRONG_CONNECTION    "Wrong connection number."

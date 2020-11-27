@@ -80,7 +80,7 @@ bool Server::AddPocketToOutputBuffer(int iConnection, unsigned short ushCommand,
 	bool bRes;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection != NO_CONNECTION)
 	{
 		// Добавление в буфер данного хаба.
@@ -91,7 +91,7 @@ bool Server::AddPocketToOutputBuffer(int iConnection, unsigned short ushCommand,
 		LOG_P_0(LOG_CAT_E, MSG_WRONG_CONNECTION);
 		bRes = false;
 	}
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	return bRes;
 }
 
@@ -101,7 +101,7 @@ bool Server::ResetPocketsBufferPositionPointer(int iConnection, bool bTryLock)
 	bool bRes = true;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection != NO_CONNECTION)
 	{
 		mThreadDadas[iConnection].oLocalNetHub.ResetPocketsBufferPositionPointer(); // Сброс внутреннего казателя буфера данного хаба.
@@ -111,7 +111,7 @@ bool Server::ResetPocketsBufferPositionPointer(int iConnection, bool bTryLock)
 		LOG_P_0(LOG_CAT_E, MSG_WRONG_CONNECTION);
 		bRes = false;
 	}
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	return bRes;
 }
 
@@ -184,7 +184,7 @@ bool Server::SendToClientImmediately(int iConnection, unsigned short ushCommand,
 	bool bRes = false;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection == NO_CONNECTION) goto gUE;
 	if((mThreadDadas[iConnection].bFullOnClient == false) && (mThreadDadas[iConnection].bSecured == true))
 	{
@@ -210,7 +210,7 @@ gUE:if(bRes == false) // При невозможности отправки из
 			}
 		}
 	}
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	return bRes;
 }
 
@@ -220,7 +220,7 @@ bool Server::SendBufferToClient(int iConnection, bool bResetPointer, bool bTryLo
 	bool bRes = false;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection == NO_CONNECTION) goto gUE;
 	if((mThreadDadas[iConnection].bFullOnClient == false) && (mThreadDadas[iConnection].bSecured == true))
 	{
@@ -246,7 +246,7 @@ gUE:if(bRes == false)  // При невозможности отправки и�
 			}
 		}
 	}
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	return bRes;
 }
 
@@ -255,9 +255,9 @@ void Server::SetClientRequestArrivedCB(CBClientRequestArrived pf_CBClientRequest
 {
 	TryMutexInit;
 	//
-	TryMutexLock;
+	TryMutexLock(ptConnMutex);
 	pf_CBClientRequestArrived = pf_CBClientRequestArrivedIn;
-	TryMutexUnlock;
+	TryMutexUnlock(ptConnMutex);
 }
 
 // Установка указателя кэлбэка обработки принятых пакетов от клиентов.
@@ -265,9 +265,9 @@ void Server::SetClientDataArrivedCB(CBClientDataArrived pf_CBClientDataArrivedIn
 {
 	TryMutexInit;
 	//
-	TryMutexLock;
+	TryMutexLock(ptConnMutex);
 	pf_CBClientDataArrived = pf_CBClientDataArrivedIn;
-	TryMutexUnlock;
+	TryMutexUnlock(ptConnMutex);
 }
 
 // Установка указателя кэлбэка отслеживания статута клиентов.
@@ -275,9 +275,9 @@ void Server::SetClientStatusChangedCB(CBClientStatusChanged pf_CBClientStatusCha
 {
 	TryMutexInit;
 	//
-	TryMutexLock;
+	TryMutexLock(ptConnMutex);
 	pf_CBClientStatusChanged = pf_CBClientStatusChangedIn;
-	TryMutexUnlock;
+	TryMutexUnlock(ptConnMutex);
 }
 
 // Удаление выбранного элемента из массива принятых пакетов.
@@ -286,7 +286,7 @@ int Server::ReleaseDataInPosition(int iConnection, uint uiPos, bool bTryLock)
 	int iRes = DATA_NOT_FOUND;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection != NO_CONNECTION)
 	{
 		if(mThreadDadas[iConnection].bFullOnServer == true)
@@ -305,7 +305,7 @@ int Server::ReleaseDataInPosition(int iConnection, uint uiPos, bool bTryLock)
 		iRes = NO_CONNECTION;
 		LOG_P_0(LOG_CAT_E, MSG_WRONG_CONNECTION);
 	}
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	if(iRes == DATA_NOT_FOUND)
 	{
 		LOG_P_0(LOG_CAT_E, "Trying to release empty position.");
@@ -319,16 +319,16 @@ int Server::AccessSelectedTypeOfData(int iConnection, void** pp_vDataBuffer, uns
 	int iRes;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection != NO_CONNECTION)
 	{
 		iRes = mThreadDadas[iConnection].
 				oLocalNetHub.AccessSelectedTypeOfData(pp_vDataBuffer, mThreadDadas[iConnection].mReceivedPockets, ushType);
-		if(bTryLock) TryMutexUnlock;
+		if(bTryLock) TryMutexUnlock(ptConnMutex);
 		return iRes;
 	}
 	LOG_P_0(LOG_CAT_E, "Wrong connection number (access).");
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	return NO_CONNECTION;
 }
 
@@ -338,13 +338,13 @@ bool Server::WithdrawClient(int iConnection, bool bTryLock)
 	TryMutexInit;
 	bool bRetval = true;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	mThreadDadas[iConnection].bKick = true; // Установка признака принудительного отключения.
 	if(SendToConnectionImmediately(iConnection, (char)PROTO_S_KICK, mThreadDadas[iConnection].bFullOnClient))
 	{
-		if(bTryLock) TryMutexUnlock;
+		if(bTryLock) TryMutexUnlock(ptConnMutex);
 		MSleep(WAITING_FOR_CLIENT_DSC);
-		if(bTryLock) TryMutexLock;
+		if(bTryLock) TryMutexLock(ptConnMutex);
 	}
 	else
 	{
@@ -356,7 +356,7 @@ bool Server::WithdrawClient(int iConnection, bool bTryLock)
 #else
 	closesocket(mThreadDadas[iConnection].oConnectionData.iSocket);
 #endif
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	return bRetval;
 }
 
@@ -385,16 +385,16 @@ int Server::FindFreeThrDadaPos()
 	uint uiPos = 0;
 	TryMutexInit;
 	//
-	TryMutexLock;
+	TryMutexLock(ptConnMutex);
 	for(; uiPos != MAX_CONN; uiPos++)
 	{
 		if(mThreadDadas[uiPos].bInUse == false) // Если не стоит флаг занятости - годен.
 		{
-			TryMutexUnlock;
+			TryMutexUnlock(ptConnMutex);
 			return (int)uiPos;
 		}
 	}
-	TryMutexUnlock;
+	TryMutexUnlock(ptConnMutex);
 	return NO_CONNECTION;
 }
 
@@ -404,14 +404,14 @@ NetHub::ConnectionData Server::GetConnectionData(int iConnection, bool bTryLock)
 	NetHub::ConnectionData oConnectionDataRes;
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 	if((iConnection < MAX_CONN) && (mThreadDadas[iConnection].bInUse == true))
 	{
 		oConnectionDataRes = mThreadDadas[iConnection].oConnectionData;
-		if(bTryLock) TryMutexUnlock;
+		if(bTryLock) TryMutexUnlock(ptConnMutex);
 		return oConnectionDataRes;
 	}
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 	oConnectionDataRes.iStatus = NO_CONNECTION;
 	return oConnectionDataRes;
 }
@@ -428,7 +428,7 @@ void Server::FillConnectionData(int iSocket, NetHub::ConnectionData& a_Connectio
 	TryMutexInit;
 	//
 	a_ConnectionData.ai_addrlen = sizeof(sockaddr_in6);
-	TryMutexLock;
+	TryMutexLock(ptConnMutex);
 	a_ConnectionData.iSocket = iSocket;
 	a_ConnectionData.iStatus = 0;
 #ifndef WIN32
@@ -438,7 +438,7 @@ void Server::FillConnectionData(int iSocket, NetHub::ConnectionData& a_Connectio
 	getpeername(a_ConnectionData.iSocket, (sockaddr*)a_ConnectionData.ai_addr,
 				(int*)&a_ConnectionData.ai_addrlen);
 #endif
-	TryMutexUnlock;
+	TryMutexUnlock(ptConnMutex);
 }
 
 // Заполнение буферов имён IP и порта.
@@ -446,7 +446,7 @@ void Server::FillIPAndPortNames(NetHub::ConnectionData& a_ConnectionData, char* 
 {
 	TryMutexInit;
 	//
-	if(bTryLock) TryMutexLock;
+	if(bTryLock) TryMutexLock(ptConnMutex);
 #ifndef WIN32
 	getnameinfo((sockaddr*)a_ConnectionData.ai_addr,
 				a_ConnectionData.ai_addrlen,
@@ -456,7 +456,7 @@ void Server::FillIPAndPortNames(NetHub::ConnectionData& a_ConnectionData, char* 
 				(socklen_t)a_ConnectionData.ai_addrlen,
 				p_chIP, INET6_ADDRSTRLEN, p_chPort, PORT_STR_LEN, NI_NUMERICHOST);
 #endif
-	if(bTryLock) TryMutexUnlock;
+	if(bTryLock) TryMutexUnlock(ptConnMutex);
 }
 
 // Поток соединения.
