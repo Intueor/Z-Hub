@@ -1,5 +1,5 @@
-#ifndef ELEMENT_H
-#define ELEMENT_H
+#ifndef RECEIVER_H
+#define RECEIVER_H
 
 //== ВКЛЮЧЕНИЯ.
 #include <QVector>
@@ -7,19 +7,20 @@
 
 //== ПРЕД-ДЕКЛАРАЦИИ.
 class Group;
+class Element;
 
 //== КЛАССЫ.
-/// Класс элемента.
-class Element
+/// Класс приёмника.
+class Receiver
 {
 public:
 	/// Конструктор.
-	Element(PSchElementBase& a_PSchElementBase);
-									///< \param[in] a_PSchElementBase Ссылка на структуру с данными по элементу.
+	Receiver(PSchReceiverBase& a_PSchReceiverBase);
+									///< \param[in] a_PSchReceiverBase Ссылка на структуру с данными приёмника.
 public:
-	PSchElementBase oPSchElementBase; ///< Структура с данными по элементу.
+	PSchReceiverBase oPSchReceiverBase; ///< Структура с данными по приёмника.
 	QVector<Element*> vp_LinkedElements; ///< Указатели на элементы-приёмники подключённых линков.
 	Group* p_Group; ///< Указатель на группу или nullptr.
 };
 
-#endif // ELEMENT_H
+#endif // RECEIVER_H

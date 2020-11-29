@@ -6,7 +6,7 @@
 #include "net-hub-defs.h"
 
 //== МАКРОСЫ.
-// ============================ ПОЛЬЗОВАТЕЛЬСКИЕ КОДЫ ПАКЕТОВ ==================================
+// ============================ ПОЛЬЗОВАТЕЛЬСКИЕ КОДЫ ПАКЕТОВ =================
 #define PROTO_O_SCH_READY               1
 #define PROTO_O_SCH_ELEMENT_BASE        2
 #define PROTO_O_SCH_ELEMENT_VARS        3
@@ -22,8 +22,20 @@
 #define PROTO_O_SCH_LINK_ERASE			13
 #define PROTO_O_SCH_GROUP_ERASE			14
 #define PROTO_O_SCH_STATUS              15
+#define PROTO_O_SCH_BROADCASTER_BASE    16
+#define PROTO_O_SCH_BROADCASTER_VARS    17
+#define PROTO_O_SCH_BROADCASTER_PORTS   18
+#define PROTO_O_SCH_BROADCASTER_COLOR	19
+#define PROTO_O_SCH_BROADCASTER_ERASE	20
+#define PROTO_O_SCH_BROADCASTER_NAME	21
+#define PROTO_O_SCH_RECEIVER_BASE		22
+#define PROTO_O_SCH_RECEIVER_VARS		23
+#define PROTO_O_SCH_RECEIVER_PORTS		24
+#define PROTO_O_SCH_RECEIVER_COLOR		25
+#define PROTO_O_SCH_RECEIVER_ERASE		26
+#define PROTO_O_SCH_RECEIVER_NAME		27
 
-//========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ =========================
+//========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ ===========================
 #define PocketTypesHub												\
 CasePocket(PROTO_O_SCH_GROUP_ERASE, PSchGroupEraser);				\
 CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
@@ -40,6 +52,21 @@ CasePocket(PROTO_O_SCH_READY, PSchReadyFrame);						\
 CasePocket(PROTO_O_SCH_STATUS, PSchStatusInfo);						\
 CasePocket(PROTO_O_SCH_GROUP_COLOR, PSchGroupColor);				\
 CasePocket(PROTO_O_SCH_ELEMENT_COLOR, PSchElementColor);			\
+CasePocket(PROTO_O_SCH_BROADCASTER_NAME, PSchBroadcasterName);		\
+CasePocket(PROTO_O_SCH_BROADCASTER_ERASE, PSchBroadcasterEraser);	\
+CasePocket(PROTO_O_SCH_BROADCASTER_PORTS, PSchBroadcasterPorts);	\
+CasePocket(PROTO_O_SCH_BROADCASTER_VARS, PSchBroadcasterVars);		\
+CasePocket(PROTO_O_SCH_BROADCASTER_BASE, PSchBroadcasterBase);		\
+CasePocket(PROTO_O_SCH_BROADCASTER_COLOR, PSchBroadcasterColor);	\
+CasePocket(PROTO_O_SCH_RECEIVER_NAME, PSchReceiverName);			\
+CasePocket(PROTO_O_SCH_RECEIVER_ERASE, PSchReceiverEraser);			\
+CasePocket(PROTO_O_SCH_RECEIVER_PORTS, PSchReceiverPorts);			\
+CasePocket(PROTO_O_SCH_RECEIVER_VARS, PSchReceiverVars);			\
+CasePocket(PROTO_O_SCH_RECEIVER_BASE, PSchReceiverBase);			\
+CasePocket(PROTO_O_SCH_RECEIVER_COLOR, PSchReceiverColor);			\
+
+//============================= РАЗНОЕ ДЛЯ ПАКЕТОВ ============================
+#define BROADCASTER_AND_RECEIVER_PORTS	32
 
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
 //========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
@@ -187,7 +214,114 @@ struct PSchElementBase
 	unsigned int uiObjectBkgColor; ///< Цвет подложки.
 	bool bRequestGroupUpdate; ///< Флаг запроса обновления геометрии соответствующей группы после принятия нового элемента.
 };
-
+/// Структура для передачи изменений в имени транслятора.
+struct PSchBroadcasterName
+{
+	unsigned long long ullIDInt; ///< Уникальный номер транслятора.
+	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура для передачи изменений портов транслятора.
+struct PSchBroadcasterPorts
+{
+	unsigned long long ullIDInt; ///< Уникальный номер транслятора.
+	unsigned short int m_ushiBroadcastPorts[BROADCASTER_AND_RECEIVER_PORTS]; ///< Порты транслятора.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура определения графических качеств объекта схемы.
+struct SchBroadcasterGraph
+{
+	bool bMinimized; ///< Признак свёрнутоого транслятора.
+	bool bHided; ///< Признак скрытого транслятора.
+	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
+	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
+	bool bBusy; ///< Признак занятого транслятора.
+	double dbObjectZPos; ///< Z-позиция в схеме.
+};
+/// Структура команды смены цвета транслятора.
+struct PSchBroadcasterColor
+{
+	unsigned long long ullIDInt; ///< Уникальный номер транслятора.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура команды удаления транслятора.
+struct PSchBroadcasterEraser
+{
+	unsigned long long ullIDInt; ///< Уникальный номер транслятора.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура для передачи качеств транслятора схемы с указанием актуальных для изменения полей.
+struct PSchBroadcasterVars
+{
+	unsigned long long ullIDInt; ///< Уникальный номер транслятора.
+	unsigned long long ullIDGroup; ///< Номер группы транслятора или 0.
+	SchBroadcasterGraph oSchBroadcasterGraph; ///< Объект структуры определения графических качеств транслятора схемы.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура для передачи транслятора схемы.
+struct PSchBroadcasterBase
+{
+	PSchBroadcasterVars oPSchBroadcasterVars; ///< Структура для передачи качеств транслятора схемы.
+	unsigned short int m_ushiBroadcastPorts[BROADCASTER_AND_RECEIVER_PORTS]; ///< Порты транслятора.
+	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bRequestGroupUpdate; ///< Флаг запроса обновления геометрии соответствующей группы после принятия нового транслятора.
+};
+/// Структура для передачи изменений в имени приёмника.
+struct PSchReceiverName
+{
+	unsigned long long ullIDInt; ///< Уникальный номер приёмника.
+	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура для передачи изменений портов приёмника.
+struct PSchReceiverPorts
+{
+	unsigned long long ullIDInt; ///< Уникальный номер приёмника.
+	unsigned short int m_ushiReceiverPorts[BROADCASTER_AND_RECEIVER_PORTS]; ///< Порты приёмника.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура определения графических качеств объекта схемы.
+struct SchReceiverGraph
+{
+	bool bMinimized; ///< Признак свёрнутоого приёмника.
+	bool bHided; ///< Признак скрытого приёмника.
+	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
+	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
+	bool bBusy; ///< Признак занятого приёмника.
+	double dbObjectZPos; ///< Z-позиция в схеме.
+};
+/// Структура команды смены цвета приёмника.
+struct PSchReceiverColor
+{
+	unsigned long long ullIDInt; ///< Уникальный номер приёмника.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура команды удаления приёмника.
+struct PSchReceiverEraser
+{
+	unsigned long long ullIDInt; ///< Уникальный номер приёмника.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура для передачи качеств приёмника схемы с указанием актуальных для изменения полей.
+struct PSchReceiverVars
+{
+	unsigned long long ullIDInt; ///< Уникальный номер приёмника.
+	unsigned long long ullIDGroup; ///< Номер группы приёмника или 0.
+	SchReceiverGraph oSchReceiverGraph; ///< Объект структуры определения графических качеств приёмника схемы.
+	bool bLastInQueue; ///< Признак последнего пункта в цепочке ответов.
+};
+/// Структура для передачи приёмника схемы.
+struct PSchReceiverBase
+{
+	PSchReceiverVars oPSchReceiverVars; ///< Структура для передачи качеств приёмника схемы.
+	unsigned short int m_ushiReceiverPorts[BROADCASTER_AND_RECEIVER_PORTS]; ///< Порты приёмника.
+	char m_chName[SCH_OBJ_NAME_STR_LEN]; ///< Буфер текста имени.
+	unsigned int uiObjectBkgColor; ///< Цвет подложки.
+	bool bRequestGroupUpdate; ///< Флаг запроса обновления геометрии соответствующей группы после принятия нового приёмника.
+};
 /// Структура ответа готовности принятия фрейма схемы.
 struct PSchReadyFrame
 {

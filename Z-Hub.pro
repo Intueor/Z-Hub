@@ -43,7 +43,9 @@ SOURCES += \
     Server/proto-parser.cpp \
     Server/proto-util.cpp \
     Server/server.cpp \
-    Dialogs/message-dialog.cpp
+    Dialogs/message-dialog.cpp \
+    broadcaster.cpp \
+    receiver.cpp
 
 HEADERS += \
     Dialogs/set-server-dialog.h \
@@ -72,7 +74,9 @@ HEADERS += \
     Server/protocol.h \
     Server/server.h \
     z-hub-defs.h \
-    Dialogs/message-dialog.h
+    Dialogs/message-dialog.h \
+    broadcaster.h \
+    receiver.h
 
 FORMS += \
     Dialogs/set-server-dialog.ui \

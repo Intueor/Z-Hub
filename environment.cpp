@@ -20,6 +20,8 @@ LOGDECL_INIT_INCLASS(Environment)
 LOGDECL_INIT_PTHRD_INCLASS_EXT_ADD(Environment)
 // Буферы.
 StaticPBSourceInit(Element,, Environment, MAX_ELEMENTS)
+StaticPBSourceInit(Broadcaster,, Environment, MAX_BROADCASTERS)
+StaticPBSourceInit(Receiver,, Environment, MAX_RECEIVERS)
 StaticPBSourceInit(Link,, Environment, MAX_LINKS)
 StaticPBSourceInit(Group,, Environment, MAX_GROUPS)
 //
@@ -303,6 +305,8 @@ Environment::~Environment()
 	ReleasePB(Group);
 	ReleasePB(Link);
 	ReleasePB(Element);
+	ReleasePB(Broadcaster);
+	ReleasePB(Receiver);
 	delete p_EventsQueue;
 	LOG_CLOSE;
 }

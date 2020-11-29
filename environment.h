@@ -11,10 +11,14 @@
 #include "element.h"
 #include "link.h"
 #include "group.h"
+#include "broadcaster.h"
+#include "receiver.h"
 #include "p_buffer.h"
 
 //== МАКРОСЫ.
 #define MAX_ELEMENTS				1024
+#define MAX_BROADCASTERS			256
+#define MAX_RECEIVERS				256
 #define MAX_LINKS					4096
 #define MAX_GROUPS					512
 #define QUEUE_NEW_ELEMENT			1
@@ -30,6 +34,16 @@
 #define QUEUE_RENAMED_GROUP			11
 #define QUEUE_COLORED_GROUP			12
 #define QUEUE_ERASED_GROUP			13
+#define QUEUE_NEW_BROADCASTER		14
+#define QUEUE_CHANGED_BROADCASTER	15
+#define QUEUE_RENAMED_BROADCASTER	16
+#define QUEUE_COLORED_BROADCASTER	17
+#define QUEUE_ERASED_BROADCASTER	18
+#define QUEUE_NEW_RECEIVER			19
+#define QUEUE_CHANGED_RECEIVER		20
+#define QUEUE_RENAMED_RECEIVER		21
+#define QUEUE_COLORED_RECEIVER		22
+#define QUEUE_ERASED_RECEIVER		23
 #define QUEUE_TO_CLIENT				true
 #define QUEUE_FROM_CLIENT			false
 
@@ -178,6 +192,8 @@ private:
 	static void NetOperations();
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
+	StaticPBHeaderInit(Broadcaster,, MAX_BROADCASTERS)
+	StaticPBHeaderInit(Receiver,, MAX_RECEIVERS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
 	static bool bEnvThreadAlive; ///< Флаг живого потока среды.
