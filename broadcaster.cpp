@@ -3,7 +3,7 @@
 #include "main-window.h"
 
 //== ФУНКЦИИ КЛАССОВ.
-//== Класс элемента.
+//== Класс транслятора.
 // Конструктор.
 Broadcaster::Broadcaster(PSchBroadcasterBase& a_PSchBroadcasterBase)
 {

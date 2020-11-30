@@ -121,6 +121,54 @@ public:
 		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, bool bDirectionOut);
 										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.
+		/// Добавление нового транслятора.
+		static void AddNewBroadcaster(PSchBroadcasterBase& aPSchBroadcasterBase, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchBroadcasterBase Ссылка объект базы транслятора.
+		/// Добавление изменений транслятора.
+		static void AddBroadcasterChanges(PSchBroadcasterVars& aPSchBroadcasterVars, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPShcBroadcasterVars Ссылка объект переменных транслятора.
+		/// Добавление изменений портов транслятора.
+		static void AddBroadcasterPorts(PSchBroadcasterPorts& aPSchBroadcasterPorts, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPShcBroadcasterPorts Ссылка объект портов транслятора.
+		/// Добавление изменения имени транслятора и очистка аналогов в очереди.
+		static void AddBroadcasterRenameAndFlush(PSchBroadcasterName& aPSchBroadcasterName, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchBroadcasterName Ссылка объект имени транслятора.
+		/// Добавление изменения цвета транслятора и очистка аналогов в очереди.
+		static void AddBroadcasterColorAndFlush(PSchBroadcasterColor& aPSchBroadcasterColor, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchBroadcasterName Ссылка объект цвета транслятора.
+		/// Добавление удаления транслятора.
+		static void AddEraseBroadcaster(PSchBroadcasterEraser& aPSchBroadcasterEraser, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchBroadcasterEraser Ссылка объект удаления транслятора.
+		/// Добавление нового приёмника.
+		static void AddNewReceiver(PSchReceiverBase& aPSchReceiverBase, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchReceiverBase Ссылка объект базы приёмника.
+		/// Добавление изменений приёмника.
+		static void AddReceiverChanges(PSchReceiverVars& aPSchReceiverVars, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPShcReceiverVars Ссылка объект переменных приёмника.
+		/// Добавление изменений портов приёмника.
+		static void AddReceiverPorts(PSchReceiverPorts& aPSchReceiverPorts, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPShcReceiverPorts Ссылка объект портов приёмника.
+		/// Добавление изменения имени приёмника и очистка аналогов в очереди.
+		static void AddReceiverRenameAndFlush(PSchReceiverName& aPSchReceiverName, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchReceiverName Ссылка объект имени приёмника.
+		/// Добавление изменения цвета приёмника и очистка аналогов в очереди.
+		static void AddReceiverColorAndFlush(PSchReceiverColor& aPSchReceiverColor, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchReceiverName Ссылка объект цвета приёмника.
+		/// Добавление удаления приёмника.
+		static void AddEraseReceiver(PSchReceiverEraser& aPSchReceiverEraser, bool bDirectionOut);
+										///< \param[in] true, если от сервера к клиенту.
+										///< \param[in] aPSchReceiverEraser Ссылка объект удаления приёмника.
 		/// Получение данных из позиции.
 		static const QueueSegment* Get(int iNum);
 										///< \param[in] iNum Номер позиции.
@@ -192,10 +240,10 @@ private:
 	static void NetOperations();
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
-	StaticPBHeaderInit(Broadcaster,, MAX_BROADCASTERS)
-	StaticPBHeaderInit(Receiver,, MAX_RECEIVERS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
+	StaticPBHeaderInit(Broadcaster,, MAX_BROADCASTERS)
+	StaticPBHeaderInit(Receiver,, MAX_RECEIVERS)
 	static bool bEnvThreadAlive; ///< Флаг живого потока среды.
 	static bool bStopEnvUpdate; ///< Сигнал на остановку потока среды.
 	static bool bRequested; ///< Наличие запроса от клиента.

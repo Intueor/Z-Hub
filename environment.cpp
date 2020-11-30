@@ -52,6 +52,7 @@ Environment::EventsQueue::~EventsQueue()
 {
 	Clear();
 }
+/////////////////////////////////// ЭЛЕМЕНТ ////////////////////////////////////
 // Добавление нового элемента.
 void Environment::EventsQueue::AddNewElement(PSchElementBase& aPSchElementBase, bool bDirectionOut)
 {
@@ -113,6 +114,7 @@ void Environment::EventsQueue::AddEraseElement(PSchElementEraser& aPSchElementEr
 {
 	_SQ_Util(QUEUE_ERASED_ELEMENT, PSchElementEraser);
 }
+/////////////////////////////////// ЛИНК ////////////////////////////////////
 // Добавление нового линка.
 void Environment::EventsQueue::AddNewLink(PSchLinkBase& aPSchLinkBase, bool bDirectionOut)
 {
@@ -128,6 +130,7 @@ void Environment::EventsQueue::AddEraseLink(PSchLinkEraser& aPSchLinkEraser, boo
 {
 	_SQ_Util(QUEUE_ERASED_LINK, PSchLinkEraser);
 }
+/////////////////////////////////// ГРУППА ////////////////////////////////////
 // Добавление новой группы.
 void Environment::EventsQueue::AddNewGroup(PSchGroupBase& aPSchGroupBase, bool bDirectionOut)
 {
@@ -189,7 +192,141 @@ void Environment::EventsQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, 
 {
 	_SQ_Util(QUEUE_ERASED_GROUP, PSchGroupEraser);
 }
-
+/////////////////////////////////// ТРАНСЛЯТОР ////////////////////////////////////
+// Добавление нового транслятора.
+void Environment::EventsQueue::AddNewBroadcaster(PSchBroadcasterBase& aPSchBroadcasterBase, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_NEW_GROUP, PSchBroadcasterBase);
+}
+// Добавление изменений транслятора.
+void Environment::EventsQueue::AddBroadcasterChanges(PSchBroadcasterVars& aPSchBroadcasterVars, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_CHANGED_LINK, PSchBroadcasterVars);
+}
+// Добавление изменения портов транслятора.
+void Environment::EventsQueue::AddBroadcasterPorts(PSchBroadcasterPorts& aPSchBroadcasterPorts, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_ERASED_GROUP, PSchBroadcasterPorts);
+}
+// Добавление изменения имени транслятора.
+void Environment::EventsQueue::AddBroadcasterRenameAndFlush(PSchBroadcasterName& aPSchBroadcasterName, bool bDirectionOut)
+{
+	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_BROADCASTER)
+		{
+			PSchBroadcasterName* p_PSchBroadcasterNameStored = (PSchBroadcasterName*)(pc_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchBroadcasterNameStored->ullIDInt == aPSchBroadcasterName.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_RENAMED_BROADCASTER, PSchBroadcasterName);
+}
+// Добавление изменения цвета транслятора и очистка аналогов в очереди.
+void Environment::EventsQueue::AddBroadcasterColorAndFlush(PSchBroadcasterColor& aPSchBroadcasterColor, bool bDirectionOut)
+{
+	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_BROADCASTER)
+		{
+			PSchBroadcasterColor* p_PSchBroadcasterColorStored = (PSchBroadcasterColor*)(pc_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchBroadcasterColorStored->ullIDInt == aPSchBroadcasterColor.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_COLORED_BROADCASTER, PSchBroadcasterColor);
+}
+// Добавление удаления транслятора.
+void Environment::EventsQueue::AddEraseBroadcaster(PSchBroadcasterEraser& aPSchBroadcasterEraser, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_ERASED_GROUP, PSchBroadcasterEraser);
+}
+/////////////////////////////////// ПРИЁМНИК ////////////////////////////////////
+// Добавление нового приёмника.
+void Environment::EventsQueue::AddNewReceiver(PSchReceiverBase& aPSchReceiverBase, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_NEW_GROUP, PSchReceiverBase);
+}
+// Добавление изменений приёмника.
+void Environment::EventsQueue::AddReceiverChanges(PSchReceiverVars& aPSchReceiverVars, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_CHANGED_LINK, PSchReceiverVars);
+}
+// Добавление изменения портов приёмника.
+void Environment::EventsQueue::AddReceiverPorts(PSchReceiverPorts& aPSchReceiverPorts, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_ERASED_GROUP, PSchReceiverPorts);
+}
+// Добавление изменения имени приёмника.
+void Environment::EventsQueue::AddReceiverRenameAndFlush(PSchReceiverName& aPSchReceiverName, bool bDirectionOut)
+{
+	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_BROADCASTER)
+		{
+			PSchReceiverName* p_PSchReceiverNameStored = (PSchReceiverName*)(pc_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchReceiverNameStored->ullIDInt == aPSchReceiverName.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_RENAMED_BROADCASTER, PSchReceiverName);
+}
+// Добавление изменения цвета приёмника и очистка аналогов в очереди.
+void Environment::EventsQueue::AddReceiverColorAndFlush(PSchReceiverColor& aPSchReceiverColor, bool bDirectionOut)
+{
+	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_BROADCASTER)
+		{
+			PSchReceiverColor* p_PSchReceiverColorStored = (PSchReceiverColor*)(pc_QueueSegmentStored->p_vUnitObject);
+			if(p_PSchReceiverColorStored->ullIDInt == aPSchReceiverColor.ullIDInt)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_COLORED_BROADCASTER, PSchReceiverColor);
+}
+// Добавление удаления приёмника.
+void Environment::EventsQueue::AddEraseReceiver(PSchReceiverEraser& aPSchReceiverEraser, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_ERASED_GROUP, PSchReceiverEraser);
+}
+//////////////////////////////////////////////////////////////////////////////
 // Получение данных из позиции.
 const Environment::EventsQueue::QueueSegment* Environment::EventsQueue::Get(int iNum)
 {
