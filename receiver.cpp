@@ -12,7 +12,7 @@ Receiver::Receiver(PSchReceiverBase& a_PSchReceiverBase)
 	{
 		oPSchReceiverBase.oPSchReceiverVars.ullIDInt = GenerateID();
 	}
-	oPSchReceiverBase.oPSchReceiverVars.oSchReceiverGraph.bBusy = false;
+	oPSchReceiverBase.oPSchReceiverVars.oSchBRGraph.bBusy = false;
 	p_Group = nullptr;
 	// Если не был вписан в группу, а надо...
 	if(oPSchReceiverBase.oPSchReceiverVars.ullIDGroup != 0)

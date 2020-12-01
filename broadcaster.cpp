@@ -12,7 +12,7 @@ Broadcaster::Broadcaster(PSchBroadcasterBase& a_PSchBroadcasterBase)
 	{
 		oPSchBroadcasterBase.oPSchBroadcasterVars.ullIDInt = GenerateID();
 	}
-	oPSchBroadcasterBase.oPSchBroadcasterVars.oSchBroadcasterGraph.bBusy = false;
+	oPSchBroadcasterBase.oPSchBroadcasterVars.oSchBRGraph.bBusy = false;
 	p_Group = nullptr;
 	// Если не был вписан в группу, а надо...
 	if(oPSchBroadcasterBase.oPSchBroadcasterVars.ullIDGroup != 0)

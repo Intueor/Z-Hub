@@ -66,10 +66,6 @@ CasePocket(PROTO_O_SCH_RECEIVER_ERASE, PSchReceiverEraser);			\
 //============================= РАЗНОЕ ДЛЯ ПАКЕТОВ ============================
 #define BROADCASTER_AND_RECEIVER_PORTS	32
 //============================ СТАНДАРТИЗАЦИЯ ОПРЕДЕЛЕНИЙ ==========================
-#define _Sch_EGBR_Graph(type)			struct Sch##type##Graph{bool bMinimized; bool bHided; DbFrame oDbObjectFrame;						\
-											unsigned char uchChangesBits; bool bBusy; double dbObjectZPos;}
-#define _Sch_L_Graph					struct SchLinkGraph{DbPoint oDbSrcPortGraphPos; DbPoint oDbDstPortGraphPos;							\
-											unsigned char uchChangesBits;}
 #define _PSch_EGBR_Eraser(type)			struct PSch##type##Eraser{unsigned long long ullIDInt; bool bLastInQueue;}
 #define _PSch_L_Eraser					struct PSchLinkEraser{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort; bool bLastInQueue;}
@@ -79,15 +75,17 @@ CasePocket(PROTO_O_SCH_RECEIVER_ERASE, PSchReceiverEraser);			\
 											bool bLastInQueue;}
 #define _PSch_BR_Ports(type)			struct PSch##type##Ports{unsigned long long ullIDInt;												\
 											unsigned short int m_ushiPorts[BROADCASTER_AND_RECEIVER_PORTS]; bool bLastInQueue;}
-#define _PSch_EGBR_Vars(type)			struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
-											Sch##type##Graph oSch##type##Graph; bool bLastInQueue;}
+#define _PSch_EG_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
+											SchGraph oSchGraph; bool bLastInQueue;}
+#define _PSch_BR_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
+											SchBRGraph oSchBRGraph; bool bLastInQueue;}
 #define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort;									\
 											SchLinkGraph oSchLinkGraph; bool bLastInQueue;}
 #define _PSch_Obj_Base(type)			struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
 											unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 #define _PSch_Link_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
-#define _PSch_RB_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars;											\
+#define _PSch_BR_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars;											\
 											unsigned short int m_ushiPorts[BROADCASTER_AND_RECEIVER_PORTS];									\
 											char m_chName[SCH_OBJ_NAME_STR_LEN]; unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
@@ -106,19 +104,40 @@ struct DbFrame
 	double dbW; ///< Ширина.
 	double dbH; ///< Высота.
 };
-/// Структура определения параметрического фрейма.
-struct DbPFrame
+/// Структура определения сферы.
+struct DbSphere
 {
 	double dbX; ///< Коорд. X.
 	double dbY; ///< Коорд. Y.
 	double dbR; ///< Радиус.
 };
-/// Стандартизируемые определения.
-_Sch_EGBR_Graph(Element);
-_Sch_L_Graph;
-_Sch_EGBR_Graph(Group);
-_Sch_EGBR_Graph(Broadcaster);
-_Sch_EGBR_Graph(Receiver);
+/// Структура определения графических качеств объекта схемы.
+struct SchGraph
+{
+	bool bMinimized; ///< Признак свёрнутоого транслятора.
+	bool bHided; ///< Признак скрытого транслятора.
+	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
+	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
+	bool bBusy; ///< Признак занятого транслятора.
+	double dbObjectZPos; ///< Z-позиция в схеме.
+};
+/// Структура определения графических качеств линка схемы.
+struct SchLinkGraph
+{
+	DbPoint oDbSrcPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна источника.
+	DbPoint oDbDstPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна приёмника.
+	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
+};
+/// Структура определения графических качеств параметрического объекта схемы.
+struct SchBRGraph
+{
+	bool bMinimized; ///< Признак свёрнутоого транслятора.
+	bool bHided; ///< Признак скрытого транслятора.
+	DbSphere oDbSphere; ///< Вмещающая сфера.
+	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
+	bool bBusy; ///< Признак занятого транслятора.
+	double dbObjectZPos; ///< Z-позиция в схеме.
+};
 //========================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================
 /// Структура ответа готовности принятия фрейма схемы.
 struct PSchReadyFrame
@@ -146,15 +165,15 @@ _PSch_EGBR_Name(Broadcaster);
 _PSch_EGBR_Name(Receiver);
 _PSch_BR_Ports(Broadcaster);
 _PSch_BR_Ports(Receiver);
-_PSch_EGBR_Vars(Element);
+_PSch_EG_Vars(Element);
 _PSch_L_Vars;
-_PSch_EGBR_Vars(Group);
-_PSch_EGBR_Vars(Broadcaster);
-_PSch_EGBR_Vars(Receiver);
+_PSch_EG_Vars(Group);
+_PSch_BR_Vars(Broadcaster);
+_PSch_BR_Vars(Receiver);
 _PSch_Obj_Base(Element);
 _PSch_Link_Base;
 _PSch_Obj_Base(Group);
-_PSch_RB_Base(Broadcaster);
-_PSch_RB_Base(Receiver);
+_PSch_BR_Base(Broadcaster);
+_PSch_BR_Base(Receiver);
 
 #endif // PROTOCOL_H
