@@ -340,71 +340,29 @@ void Environment::EventsQueue::Remove(int iNum)
 	//
 	switch(pc_QueueSegment->uchType)
 	{
-		case QUEUE_NEW_ELEMENT:
-		{
-			delete (PSchElementBase*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_CHANGED_ELEMENT:
-		{
-			delete (PSchElementVars*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_RENAMED_ELEMENT:
-		{
-			delete (PSchElementName*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_COLORED_ELEMENT:
-		{
-			delete (PSchElementColor*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_ERASED_ELEMENT:
-		{
-			delete (PSchElementEraser*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_NEW_LINK:
-		{
-			delete (PSchLinkBase*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_CHANGED_LINK:
-		{
-			delete (PSchLinkVars*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_ERASED_LINK:
-		{
-			delete (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_NEW_GROUP:
-		{
-			delete (PSchGroupBase*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_CHANGED_GROUP:
-		{
-			delete (PSchGroupVars*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_RENAMED_GROUP:
-		{
-			delete (PSchGroupName*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_COLORED_GROUP:
-		{
-			delete (PSchGroupColor*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
-		case QUEUE_ERASED_GROUP:
-		{
-			delete (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject;
-			break;
-		}
+		case QUEUE_NEW_ELEMENT:{delete (PSchElementBase*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_CHANGED_ELEMENT:{delete (PSchElementVars*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_RENAMED_ELEMENT:{delete (PSchElementName*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_COLORED_ELEMENT:{delete (PSchElementColor*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_ERASED_ELEMENT:{delete (PSchElementEraser*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_NEW_LINK:{delete (PSchLinkBase*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_CHANGED_LINK:{delete (PSchLinkVars*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_ERASED_LINK:{delete (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_NEW_GROUP:{delete (PSchGroupBase*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_CHANGED_GROUP:{delete (PSchGroupVars*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_RENAMED_GROUP:{delete (PSchGroupName*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_COLORED_GROUP:{delete (PSchGroupColor*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_ERASED_GROUP:{delete (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_NEW_BROADCASTER:{delete (PSchBroadcasterBase*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_CHANGED_BROADCASTER:{delete (PSchBroadcasterVars*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_RENAMED_BROADCASTER:{delete (PSchBroadcasterName*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_COLORED_BROADCASTER:{delete (PSchBroadcasterColor*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_ERASED_BROADCASTER:{delete (PSchBroadcasterEraser*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_NEW_RECEIVER:{delete (PSchReceiverBase*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_CHANGED_RECEIVER:{delete (PSchReceiverVars*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_RENAMED_RECEIVER:{delete (PSchReceiverName*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_COLORED_RECEIVER:{delete (PSchReceiverColor*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_ERASED_RECEIVER:{delete (PSchReceiverEraser*)pc_QueueSegment->p_vUnitObject; break;}
 	}
 	l_Queue.removeAt(iNum);
 }
