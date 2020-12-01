@@ -208,14 +208,26 @@ public:
 	/// Проверка инициализированности среды.
 	static bool CheckInitialized();
 										///< \return true при инициализированной среде.
-	/// Удаление линка в позиции и обнуление указателя на него.
+	/// Удаление линка в позиции и удаление указателя на него.
 	static void EraseLinkAt(int iPos);
 										///< \param[in] uiPos Позиция в массиве.
 	/// Удаление линков для элемента.
 	static void EraseLinksForElement(Element* p_Element);
 										///< \param[in] p_Element Указатель на элемент.
+	/// Удаление линков для транслятора.
+	static void EraseLinksForBroadcaster(Broadcaster* p_Broadcaster);
+										///< \param[in] p_Broadcaster Указатель на транслятор.
+	/// Удаление линков для транслятора.
+	static void EraseLinksForReceiver(Receiver* p_Receiver);
+										///< \param[in] p_Receiver Указатель на приёмник.
 	/// Удаление элемента в позиции и обнуление указателя на него.
 	static void EraseElementAt(int iPos);
+										///< \param[in] uiPos Позиция в массиве.
+	/// Удаление транслятора в позиции и обнуление указателя на него.
+	static void EraseBroadcasterAt(int iPos);
+										///< \param[in] uiPos Позиция в массиве.
+	/// Удаление приёмника в позиции и обнуление указателя на него.
+	static void EraseReceiverAt(int iPos);
 										///< \param[in] uiPos Позиция в массиве.
 	/// Удаление группы в позиции и обнуление указателя на неё.
 	static void EraseGroupAt(int iPos);
@@ -229,6 +241,12 @@ private:
 	/// Удаление элементов из группы.
 	static void EraseElementsFromGroup(Group* p_Group);
 								///< \param[in] p_Group Указатель на группу.
+	/// Удаление трансляторов из группы.
+	static void EraseBroadcastersFromGroup(Group* p_Group);
+								///< \param[in] p_Group Указатель на группу.
+	/// Удаление приёмников из группы.
+	static void EraseReceiversFromGroup(Group* p_Group);
+								///< \param[in] p_Group Указатель на группу.
 	/// Удаление групп из группы.
 	static void EraseGroupsFromGroup(Group* p_Group);
 								///< \param[in] p_Group Указатель на группу.
@@ -236,6 +254,10 @@ private:
 	static void* EnvThread(void *p_vPlug);
 										///< \param[in] p_vPlug Заглушка.
 										///< \return Заглушка.
+	/// Проверка и установка признака последней новости.
+	static void CheckLastInQueue(unsigned short ushNewsQantity, bool& abLastInQueue);
+										///< \param[in] ushNewsQantity Кол-во новостей за цикл.
+										///< \param[in] abLastInQueue Ссылка на признак последней новости.
 	/// Работа с сетью.
 	static void NetOperations();
 public:

@@ -79,7 +79,8 @@ CasePocket(PROTO_O_SCH_RECEIVER_ERASE, PSchReceiverEraser);			\
 											SchGraph oSchGraph; bool bLastInQueue;}
 #define _PSch_BR_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
 											SchBRGraph oSchBRGraph; bool bLastInQueue;}
-#define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
+#define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc; unsigned char uchSrcType;							\
+											unsigned long long ullIDDst; unsigned char uchDstType;											\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort;									\
 											SchLinkGraph oSchLinkGraph; bool bLastInQueue;}
 #define _PSch_Obj_Base(type)			struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
@@ -116,7 +117,7 @@ struct SchGraph
 {
 	bool bMinimized; ///< Признак свёрнутоого транслятора.
 	bool bHided; ///< Признак скрытого транслятора.
-	DbFrame oDbObjectFrame; ///< Вмещающий прямоугольник.
+	DbFrame oDbFrame; ///< Вмещающий прямоугольник.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
 	bool bBusy; ///< Признак занятого транслятора.
 	double dbObjectZPos; ///< Z-позиция в схеме.

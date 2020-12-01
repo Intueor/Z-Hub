@@ -33,6 +33,24 @@
 #define SCH_GROUP_BIT_ELEMENTS_SHIFT    0b00010000
 #define SCH_GROUP_BIT_MIN				0b00100000
 #define SCH_GROUP_BIT_VIS				0b01000000
+//
+#define SCH_BROADCASTER_BIT_BUSY        0b00000001
+#define SCH_BROADCASTER_BIT_SPHERE      0b00000010
+#define SCH_BROADCASTER_BIT_GROUP       0b00000100
+#define SCH_BROADCASTER_BIT_ZPOS        0b00001000
+#define SCH_BROADCASTER_BIT_MIN			0b00010000
+#define SCH_BROADCASTER_BIT_VIS			0b00100000
+//
+#define SCH_RECEIVER_BIT_BUSY			0b00000001
+#define SCH_RECEIVER_BIT_SPHERE			0b00000010
+#define SCH_RECEIVER_BIT_GROUP			0b00000100
+#define SCH_RECEIVER_BIT_ZPOS			0b00001000
+#define SCH_RECEIVER_BIT_MIN			0b00010000
+#define SCH_RECEIVER_BIT_VIS			0b00100000
+//
+#define SCH_LINK_TYPE_ELEMENT			0
+#define SCH_LINK_TYPE_BROADCASTER		1
+#define SCH_LINK_TYPE_RECEIVER			2
 
 //== КОНСТАНТЫ.
 // Многократно используемые строки.
@@ -47,6 +65,8 @@ const char m_chLogEnvNodeAbsend[] = " node is absend.";
 const char m_chLogEnvNodeFormatIncorrect[] = " node format incorrect - " ;
 const char m_chLogEnvGroup[] = "'Group'";
 const char m_chLogEnvElement[] = "'Element'";
+const char m_chLogEnvBroadcaster[] = "'Broadcaster'";
+const char m_chLogEnvReceiver[] = "'Receiver'";
 const char m_chLogEnvLink[] = "'Link'";
 const char m_chLogMissing[] = "missing ";
 const char m_chLogWrong[] = "wrong ";
@@ -55,6 +75,8 @@ const char m_chLogID[] = "'ID'";
 const char m_chLogName[] = "'Name'";
 const char m_chLogBkgColor[] = "'BkgColor'";
 const char m_chLogFrame[] = "'Frame'";
+const char m_chLogSphere[] = "'Sphere'";
+const char m_chLogPorts[] = "'Ports'";
 const char m_chLogZ[] = "'Z'";
 const char m_chLogPos[] = "'Pos'";
 const char m_chLogSrcID[] = "'SrcID'";
@@ -70,11 +92,17 @@ const char m_chID[] = "ID";
 const char m_chName[] = "Name";
 const char m_chBkgColor[] = "BkgColor";
 const char m_chFrame[] = "Frame";
+const char m_chSphere[] = "Sphere";
+const char m_chPorts[] = "Ports";
 const char m_chElements[] = "Elements";
+const char m_chBroadcasters[] = "Broadcasters";
+const char m_chReceivers[] = "Receivers";
 const char m_chMinimize[] = "Minimized";
 const char m_chHide[] = "Hided";
 const char m_chZ[] = "Z";
 const char m_chElement[] = "Element";
+const char m_chBroadcaster[] = "Broadcaster";
+const char m_chReceiver[] = "Receiver";
 const char m_chGroupID[] = "GroupID";
 const char m_chLinks[] = "Links";
 const char m_chLink[] = "Link";
