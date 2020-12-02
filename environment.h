@@ -132,6 +132,12 @@ public:
 										///< \param[in] p_chEnvName Указатель на строку с именем среды.
 	/// Деструктор.
 	~Environment();
+	// Прогрузка элемента и его разновидностей.
+	static bool InitElementForEnv(PSchElementBase& a_oPSchElementBase, XMLNode* p_NodeElement, unsigned char uchElementTypeBits);
+										///< \param[in] a_oPSchElementBase Ссылка на базу элемента.
+										///< \param[in] p_NodeElement Указатель на разъём элемента.
+										///< \param[in] uchElementTypeBits Биты для установки типа элемента (обычный, транслятор, приёмник).
+										///< \return true при удаче.
 	/// Загрузка среды.
 	static bool LoadEnv();
 										///< \return true при удаче.

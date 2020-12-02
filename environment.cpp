@@ -258,6 +258,173 @@ Environment::~Environment()
 	LOG_CLOSE;
 }
 
+// Прогрузка элемента и его разновидностей.
+bool Environment::InitElementForEnv(PSchElementBase& a_oPSchElementBase, XMLNode* p_NodeElement, unsigned char uchElementTypeBits)
+{
+	bool bPresent;
+	QString strHelper;
+	QStringList lstrHelper;
+	//
+	memset(&a_oPSchElementBase, 0, sizeof(a_oPSchElementBase));
+	bPresent = false;
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListIDs,
+					  m_chID, FCN_ONE_LEVEL, p_NodeID)
+	{
+		strHelper = QString(p_NodeID->FirstChild()->Value());
+		if(strHelper.isEmpty())
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogID << m_chLogNode);
+			return false;
+		}
+		a_oPSchElementBase.oPSchElementVars.ullIDInt = strHelper.toULongLong();
+		bPresent = true;
+	} FIND_IN_CHILDLIST_END(p_ListIDs);
+	if(!bPresent)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+				m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogID << m_chLogNode);
+		return false;
+	}
+	bPresent = false;
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListNames,
+					  m_chName, FCN_ONE_LEVEL, p_NodeName)
+	{
+		strHelper = QString(p_NodeName->FirstChild()->Value());
+		if(strHelper.isEmpty())
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogName << m_chLogNode);
+			return false;
+		}
+		memcpy(a_oPSchElementBase.m_chName,
+			   strHelper.toStdString().c_str(), SizeOfChars(strHelper.toStdString().length() + 1));
+		bPresent = true;
+	} FIND_IN_CHILDLIST_END(p_ListNames);
+	if(!bPresent)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement
+				<< m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
+		return false;
+	}
+	bPresent = false;
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListBkgColors,
+					  m_chBkgColor, FCN_ONE_LEVEL, p_NodeBkgColor)
+	{
+		strHelper = QString(p_NodeBkgColor->FirstChild()->Value());
+		if(strHelper.isEmpty())
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogBkgColor << m_chLogNode);
+			return false;
+		}
+		lstrHelper = strHelper.split(',');
+		if(lstrHelper.count() != 4)
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogBkgColor << m_chLogNode);
+			return false;
+		}
+		a_oPSchElementBase.uiObjectBkgColor =
+				QColor(lstrHelper.at(0).toUInt(),
+					   lstrHelper.at(1).toUInt(),
+					   lstrHelper.at(2).toUInt(),
+					   lstrHelper.at(3).toUInt()).rgba();
+		bPresent = true;
+	} FIND_IN_CHILDLIST_END(p_ListBkgColors);
+	if(!bPresent)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt <<
+				m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogBkgColor << m_chLogNode);
+		return false;
+	}
+	bPresent = false;
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListFrames,
+					  m_chFrame, FCN_ONE_LEVEL, p_NodeFrame)
+	{
+		strHelper = QString(p_NodeFrame->FirstChild()->Value());
+		if(strHelper.isEmpty())
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogFrame << m_chLogNode);
+			return false;
+		}
+		lstrHelper = strHelper.split(',');
+		if(lstrHelper.count() != 4)
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogFrame << m_chLogNode);
+			return false;
+		}
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX = lstrHelper.at(0).toDouble();
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY = lstrHelper.at(1).toDouble();
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbW = lstrHelper.at(2).toDouble();
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbH = lstrHelper.at(3).toDouble();
+		bPresent = true;
+	} FIND_IN_CHILDLIST_END(p_ListFrames);
+	if(!bPresent)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+				m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogFrame << m_chLogNode);
+		return false;
+	}
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListMinimizes,
+					  m_chMinimized, FCN_ONE_LEVEL, p_NodeMinimize)
+	{
+		p_NodeMinimize = p_NodeMinimize; // Заглушка.
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
+	} FIND_IN_CHILDLIST_END(p_ListMinimizes);
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListHides,
+					  m_chHided, FCN_ONE_LEVEL, p_NodeHide)
+	{
+		p_NodeHide = p_NodeHide; // Заглушка.
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_HIDED;
+	} FIND_IN_CHILDLIST_END(p_ListHides);
+	bPresent = false;
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
+					  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
+	{
+		strHelper = QString(p_NodeZ->FirstChild()->Value());
+		if(strHelper.isEmpty())
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << m_chLogZ << m_chLogNode);
+			return false;
+		}
+		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos = strHelper.toDouble();
+		bPresent = true;
+	} FIND_IN_CHILDLIST_END(p_ListZs);
+	if(!bPresent)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+				m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogZ << m_chLogNode);
+		return false;
+	}
+	FIND_IN_CHILDLIST(p_NodeElement, p_ListGroupIDs,
+					  m_chGroupID, FCN_ONE_LEVEL, p_NodeGroupID)
+	{
+		strHelper = QString(p_NodeGroupID->FirstChild()->Value());
+		if(strHelper.isEmpty())
+		{
+			LOG_P_0(LOG_CAT_E,
+					m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+					m_chLogWrong << "'GroupID'" << m_chLogNode);
+			return false;
+		}
+		a_oPSchElementBase.oPSchElementVars.ullIDGroup = strHelper.toULongLong();
+	} FIND_IN_CHILDLIST_END(p_ListGroupIDs);
+	a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= uchElementTypeBits;
+	AppendToPB(Element, new Element(a_oPSchElementBase));
+	return true;
+}
+
 // Загрузка среды.
 bool Environment::LoadEnv()
 {
@@ -275,6 +442,8 @@ bool Environment::LoadEnv()
 	QString strHelper;
 	list<XMLNode*> l_pGroups;
 	list<XMLNode*> l_pElements;
+	list<XMLNode*> l_pBroadcasters;
+	list<XMLNode*> l_pReceivers;
 	list<XMLNode*> l_pLinks;
 	list<XMLNode*> l_pZs;
 	//
@@ -515,163 +684,22 @@ bool Environment::LoadEnv()
 	PARSE_CHILDLIST(l_pElements.front(), p_ListElements, m_chElement,
 					FCN_ONE_LEVEL, p_NodeElement)
 	{
-		memset(&oPSchElementBase, 0, sizeof(oPSchElementBase));
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListIDs,
-						  m_chID, FCN_ONE_LEVEL, p_NodeID)
-		{
-			strHelper = QString(p_NodeID->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogID << m_chLogNode);
-				return false;
-			}
-			oPSchElementBase.oPSchElementVars.ullIDInt = strHelper.toULongLong();
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListIDs);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
-					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogID << m_chLogNode);
-			return false;
-		}
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListNames,
-						  m_chName, FCN_ONE_LEVEL, p_NodeName)
-		{
-			strHelper = QString(p_NodeName->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogName << m_chLogNode);
-				return false;
-			}
-			memcpy(oPSchElementBase.m_chName,
-				   strHelper.toStdString().c_str(), SizeOfChars(strHelper.toStdString().length() + 1));
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListNames);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement
-					<< m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
-			return false;
-		}
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListBkgColors,
-						  m_chBkgColor, FCN_ONE_LEVEL, p_NodeBkgColor)
-		{
-			strHelper = QString(p_NodeBkgColor->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogBkgColor << m_chLogNode);
-				return false;
-			}
-			lstrHelper = strHelper.split(',');
-			if(lstrHelper.count() != 4)
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogBkgColor << m_chLogNode);
-				return false;
-			}
-			oPSchElementBase.uiObjectBkgColor =
-					QColor(lstrHelper.at(0).toUInt(),
-						   lstrHelper.at(1).toUInt(),
-						   lstrHelper.at(2).toUInt(),
-						   lstrHelper.at(3).toUInt()).rgba();
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListBkgColors);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt <<
-					m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogBkgColor << m_chLogNode);
-			return false;
-		}
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListFrames,
-						  m_chFrame, FCN_ONE_LEVEL, p_NodeFrame)
-		{
-			strHelper = QString(p_NodeFrame->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogFrame << m_chLogNode);
-				return false;
-			}
-			lstrHelper = strHelper.split(',');
-			if(lstrHelper.count() != 4)
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogFrame << m_chLogNode);
-				return false;
-			}
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX = lstrHelper.at(0).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY = lstrHelper.at(1).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbW = lstrHelper.at(2).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbH = lstrHelper.at(3).toDouble();
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListFrames);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
-					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogFrame << m_chLogNode);
-			return false;
-		}
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListMinimizes,
-						  m_chMinimized, FCN_ONE_LEVEL, p_NodeMinimize)
-		{
-			p_NodeMinimize = p_NodeMinimize; // Заглушка.
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
-		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListHides,
-						  m_chHided, FCN_ONE_LEVEL, p_NodeHide)
-		{
-			p_NodeHide = p_NodeHide; // Заглушка.
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_HIDED;
-		} FIND_IN_CHILDLIST_END(p_ListHides);
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
-						  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
-		{
-			strHelper = QString(p_NodeZ->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogZ << m_chLogNode);
-				return false;
-			}
-			oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos = strHelper.toDouble();
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListZs);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
-					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogZ << m_chLogNode);
-			return false;
-		}
-		FIND_IN_CHILDLIST(p_NodeElement, p_ListGroupIDs,
-						  m_chGroupID, FCN_ONE_LEVEL, p_NodeGroupID)
-		{
-			strHelper = QString(p_NodeGroupID->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << "'GroupID'" << m_chLogNode);
-				return false;
-			}
-			oPSchElementBase.oPSchElementVars.ullIDGroup = strHelper.toULongLong();
-		} FIND_IN_CHILDLIST_END(p_ListGroupIDs);
-		AppendToPB(Element, new Element(oPSchElementBase));
+		if(!InitElementForEnv(oPSchElementBase, p_NodeElement, 0)) return false;
 	} PARSE_CHILDLIST_END(p_ListElements);
+	// ТРАНСЛЯТОРЫ.
+	PARSE_CHILDLIST(l_pElements.front(), p_ListBroadcasters, m_chBroadcaster,
+					FCN_ONE_LEVEL, p_NodeBroadcaster)
+	{
+		if(!InitElementForEnv(oPSchElementBase, p_NodeBroadcaster, SCH_SETTINGS_ELEMENT_BIT_EXTENDED))
+			return false;
+	} PARSE_CHILDLIST_END(p_ListBroadcasters);
+	// ПРИЁМНИКИ.
+	PARSE_CHILDLIST(l_pElements.front(), p_ListReceivers, m_chReceiver,
+					FCN_ONE_LEVEL, p_NodeReceiver)
+	{
+		if(!InitElementForEnv(oPSchElementBase, p_NodeReceiver, SCH_SETTINGS_ELEMENT_BIT_EXTENDED | SCH_SETTINGS_ELEMENT_BIT_RECEIVER))
+			return false;
+	} PARSE_CHILDLIST_END(p_ListReceivers);
 	// ЛИНКИ.
 	PARSE_CHILDLIST(l_pLinks.front(), p_ListLinks, m_chLink,
 					FCN_ONE_LEVEL, p_NodeLink)
@@ -906,7 +934,13 @@ bool Environment::SaveEnv()
 	p_NodeElements = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chElements));
 	for(unsigned int iF = 0; iF != PBCount(Element); iF++)
 	{
-		p_NodeElement = p_NodeElements->InsertEndChild(xmlEnv.NewElement(m_chElement));
+		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_ELEMENT_BIT_EXTENDED)
+		{
+			if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_ELEMENT_BIT_RECEIVER)
+				p_NodeElement = p_NodeElements->InsertEndChild(xmlEnv.NewElement(m_chReceiver));
+			else p_NodeElement = p_NodeElements->InsertEndChild(xmlEnv.NewElement(m_chBroadcaster));
+		}
+		else p_NodeElement = p_NodeElements->InsertEndChild(xmlEnv.NewElement(m_chElement));
 		p_NodeID = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chID));
 		p_NodeID->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.ullIDInt).toStdString().c_str());

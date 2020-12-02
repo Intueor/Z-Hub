@@ -63,7 +63,7 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define SCH_SETTINGS_EG_BIT_MIN					0b00000010
 #define SCH_SETTINGS_EG_BIT_HIDED				0b00000100
 #define SCH_SETTINGS_ELEMENT_BIT_EXTENDED		0b00001000
-#define SCH_SETTINGS_ELEMENT_BIT_BROADCASTER	0b00010000
+#define SCH_SETTINGS_ELEMENT_BIT_RECEIVER		0b00010000
 //============================ СТАНДАРТИЗАЦИЯ ОПРЕДЕЛЕНИЙ =========================
 #define _PSch_EG_Eraser(type)			struct PSch##type##Eraser{unsigned long long ullIDInt; bool bLastInQueue;}
 #define _PSch_L_Eraser					struct PSchLinkEraser{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
