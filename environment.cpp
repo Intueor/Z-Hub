@@ -429,10 +429,10 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogFrame << m_chLogNode);
 				return false;
 			}
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbX = lstrHelper.at(0).toDouble();
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbY = lstrHelper.at(1).toDouble();
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbW = lstrHelper.at(2).toDouble();
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbH = lstrHelper.at(3).toDouble();
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbX = lstrHelper.at(0).toDouble();
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbY = lstrHelper.at(1).toDouble();
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbW = lstrHelper.at(2).toDouble();
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbH = lstrHelper.at(3).toDouble();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListFrames);
 		if(!bPresent)
@@ -445,13 +445,13 @@ bool Environment::LoadEnv()
 						  m_chMinimize, FCN_ONE_LEVEL, p_NodeMinimize)
 		{
 			p_NodeMinimize = p_NodeMinimize; // Заглушка.
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.bMinimized = true;
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.bMinimized = true;
 		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListHides,
 						  m_chHide, FCN_ONE_LEVEL, p_NodeHide)
 		{
 			p_NodeHide = p_NodeHide; // Заглушка.
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.bHided = true;
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.bHided = true;
 		} FIND_IN_CHILDLIST_END(p_ListHides);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListZs,
@@ -465,7 +465,7 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogZ << m_chLogNode);
 				return false;
 			}
-			oPSchGroupBase.oPSchGroupVars.oSchGraph.dbObjectZPos = strHelper.toDouble();
+			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos = strHelper.toDouble();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListZs);
 		if(!bPresent)
@@ -612,10 +612,10 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogFrame << m_chLogNode);
 				return false;
 			}
-			oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbX = lstrHelper.at(0).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbY = lstrHelper.at(1).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbW = lstrHelper.at(2).toDouble();
-			oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbH = lstrHelper.at(3).toDouble();
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX = lstrHelper.at(0).toDouble();
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY = lstrHelper.at(1).toDouble();
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbW = lstrHelper.at(2).toDouble();
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbH = lstrHelper.at(3).toDouble();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListFrames);
 		if(!bPresent)
@@ -628,13 +628,13 @@ bool Environment::LoadEnv()
 						  m_chMinimize, FCN_ONE_LEVEL, p_NodeMinimize)
 		{
 			p_NodeMinimize = p_NodeMinimize; // Заглушка.
-			oPSchElementBase.oPSchElementVars.oSchGraph.bMinimized = true;
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.bMinimized = true;
 		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
 		FIND_IN_CHILDLIST(p_NodeElement, p_ListHides,
 						  m_chHide, FCN_ONE_LEVEL, p_NodeHide)
 		{
 			p_NodeHide = p_NodeHide; // Заглушка.
-			oPSchElementBase.oPSchElementVars.oSchGraph.bHided = true;
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.bHided = true;
 		} FIND_IN_CHILDLIST_END(p_ListHides);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
@@ -648,7 +648,7 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogZ << m_chLogNode);
 				return false;
 			}
-			oPSchElementBase.oPSchElementVars.oSchGraph.dbObjectZPos = strHelper.toDouble();
+			oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos = strHelper.toDouble();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListZs);
 		if(!bPresent)
@@ -739,8 +739,8 @@ bool Environment::LoadEnv()
 						m_chLogWrong << m_chLogSrcPortPos << m_chLogNode);
 				return false;
 			}
-			oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos.dbX = lstrHelper.at(0).toDouble();
-			oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos.dbY = lstrHelper.at(1).toDouble();
+			oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos.dbX = lstrHelper.at(0).toDouble();
+			oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos.dbY = lstrHelper.at(1).toDouble();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListSrcPortPoss);
 		if(!bPresent)
@@ -811,8 +811,8 @@ bool Environment::LoadEnv()
 						m_chLogEnvNodeFormatIncorrect << m_chLogWrong << m_chLogDstPortPos << m_chLogNode);
 				return false;
 			}
-			oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos.dbX = lstrHelper.at(0).toDouble();
-			oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos.dbY = lstrHelper.at(1).toDouble();
+			oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbX = lstrHelper.at(0).toDouble();
+			oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbY = lstrHelper.at(1).toDouble();
 			bPresent = true;
 		} FIND_IN_CHILDLIST_END(p_ListDstPortPoss);
 		if(!bPresent)
@@ -879,22 +879,22 @@ bool Environment::SaveEnv()
 						 "," + strHFour.setNum(iA)).toStdString().c_str());
 		p_NodeFrame = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chFrame));
 		p_NodeFrame->ToElement()->
-				SetText((strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbX) + "," +
-						 strHTwo.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbY) + "," +
-						 strHThree.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbW) + "," +
-						 strHFour.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame.dbH)).
+				SetText((strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbX) + "," +
+						 strHTwo.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbY) + "," +
+						 strHThree.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbW) + "," +
+						 strHFour.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame.dbH)).
 						toStdString().c_str());
-		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.bMinimized)
+		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.bMinimized)
 		{
 			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chMinimize));
 		}
-		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.bHided)
+		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.bHided)
 		{
 			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chHide));
 		}
 		p_NodeZ = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
-				SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchGraph.dbObjectZPos).
+				SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos).
 						toStdString().c_str());
 		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
 		{
@@ -923,25 +923,25 @@ bool Environment::SaveEnv()
 		p_NodeFrame = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chFrame));
 		p_NodeFrame->ToElement()->
 				SetText((strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
-										oSchGraph.oDbFrame.dbX) + "," +
+										oSchEGGraph.oDbFrame.dbX) + "," +
 						 strHTwo.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
-										oSchGraph.oDbFrame.dbY) + "," +
+										oSchEGGraph.oDbFrame.dbY) + "," +
 						 strHThree.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
-										  oSchGraph.oDbFrame.dbW) + "," +
+										  oSchEGGraph.oDbFrame.dbW) + "," +
 						 strHFour.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.
-										 oSchGraph.oDbFrame.dbH)).
+										 oSchEGGraph.oDbFrame.dbH)).
 						toStdString().c_str());
-		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchGraph.bMinimized)
+		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.bMinimized)
 		{
 			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chMinimize));
 		}
-		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchGraph.bHided)
+		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.bHided)
 		{
 			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chHide));
 		}
 		p_NodeZ = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
-				SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchGraph.dbObjectZPos).
+				SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos).
 						toStdString().c_str());
 		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.ullIDGroup != 0)
 		{
@@ -962,8 +962,8 @@ bool Environment::SaveEnv()
 				SetText(strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.ushiSrcPort).toStdString().c_str());
 		p_NodeSrcPortPos = p_NodeLink->InsertEndChild(xmlEnv.NewElement(m_chSrcPortPos));
 		p_NodeSrcPortPos->ToElement()->
-				SetText((strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos.dbX) + "," +
-						 strHTwo.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos.dbY)).
+				SetText((strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos.dbX) + "," +
+						 strHTwo.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos.dbY)).
 						toStdString().c_str());
 		p_NodeDstID = p_NodeLink->InsertEndChild(xmlEnv.NewElement(m_chDstID));
 		p_NodeDstID->ToElement()->
@@ -973,8 +973,8 @@ bool Environment::SaveEnv()
 				SetText(strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.ushiDstPort).toStdString().c_str());
 		p_NodeDstPortPos = p_NodeLink->InsertEndChild(xmlEnv.NewElement(m_chDstPortPos));
 		p_NodeDstPortPos->ToElement()->
-				SetText((strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos.dbX) + "," +
-						 strHTwo.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos.dbY)).
+				SetText((strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbX) + "," +
+						 strHTwo.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbY)).
 						toStdString().c_str());
 	}
 	eResult = xmlEnv.SaveFile(strEnvPath.toStdString().c_str());
@@ -1063,14 +1063,14 @@ void* Environment::EnvThread(void *p_vPlug)
 	RETURN_THREAD
 }
 
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbX >
+//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX >
 // oPSchReadyFrame.oDbFrame.dbX) &
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbY >
+//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY >
 // oPSchReadyFrame.oDbFrame.dbY) &
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbX <
+//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX <
 // (oPSchReadyFrame.oDbFrame.dbX +
 //  oPSchReadyFrame.oDbFrame.dbW)) &
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame.dbY <
+//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY <
 // (oPSchReadyFrame.oDbFrame.dbY +
 //  oPSchReadyFrame.oDbFrame.dbH))
 
@@ -1178,19 +1178,19 @@ void Environment::NetOperations()
 										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
 										   p_PSchElementVars->ullIDInt) // При совп. с запрошенным...
 										{
-											if(p_PSchElementVars->oSchGraph.uchChangesBits & SCH_ELEMENT_BIT_ZPOS)
+											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_ELEMENT_BIT_ZPOS)
 											{
-												p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.dbObjectZPos =
-														p_PSchElementVars->oSchGraph.dbObjectZPos;
+												p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos =
+														p_PSchElementVars->oSchEGGraph.dbObjectZPos;
 												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 														<< "] z-pos is: " <<
-														QString::number((int)p_PSchElementVars->oSchGraph.dbObjectZPos).toStdString());
+														QString::number((int)p_PSchElementVars->oSchEGGraph.dbObjectZPos).toStdString());
 											}
-											if(p_PSchElementVars->oSchGraph.uchChangesBits & SCH_ELEMENT_BIT_BUSY)
+											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_ELEMENT_BIT_BUSY)
 											{
-												p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.bBusy =
-														p_PSchElementVars->oSchGraph.bBusy;
-												if(p_PSchElementVars->oSchGraph.bBusy)
+												p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.bBusy =
+														p_PSchElementVars->oSchEGGraph.bBusy;
+												if(p_PSchElementVars->oSchEGGraph.bBusy)
 												{
 													LOG_P_2(LOG_CAT_I, "Element [" <<
 															QString(p_Element->oPSchElementBase.m_chName).toStdString()
@@ -1203,14 +1203,14 @@ void Environment::NetOperations()
 															<< "] is free.");
 												}
 											}
-											if(p_PSchElementVars->oSchGraph.uchChangesBits & SCH_ELEMENT_BIT_FRAME)
+											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_ELEMENT_BIT_FRAME)
 											{
-												p_Element->oPSchElementBase.oPSchElementVars.oSchGraph.oDbFrame =
-														p_PSchElementVars->oSchGraph.oDbFrame;
+												p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame =
+														p_PSchElementVars->oSchEGGraph.oDbFrame;
 												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 																   << "] frame.");
 											}
-											if(p_PSchElementVars->oSchGraph.uchChangesBits & SCH_ELEMENT_BIT_GROUP)
+											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_ELEMENT_BIT_GROUP)
 											{
 												if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
 												{
@@ -1462,16 +1462,16 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 												(p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
 										// При совпадении с запрошенным...
 										{
-											if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
+											if(p_PSchLinkVars->oSchLGraph.uchChangesBits & SCH_LINK_BIT_SCR_PORT_POS)
 											{
-												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbSrcPortGraphPos =
-														p_PSchLinkVars->oSchLinkGraph.oDbSrcPortGraphPos;
+												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos =
+														p_PSchLinkVars->oSchLGraph.oDbSrcPortGraphPos;
 												LOG_P_2(LOG_CAT_I, "Link vars - src port position.");
 											}
-											if(p_PSchLinkVars->oSchLinkGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
+											if(p_PSchLinkVars->oSchLGraph.uchChangesBits & SCH_LINK_BIT_DST_PORT_POS)
 											{
-												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLinkGraph.oDbDstPortGraphPos =
-														p_PSchLinkVars->oSchLinkGraph.oDbDstPortGraphPos;
+												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos =
+														p_PSchLinkVars->oSchLGraph.oDbDstPortGraphPos;
 												LOG_P_2(LOG_CAT_I, "Link vars - dst port position.");
 											}
 											goto gEOK;
@@ -1578,26 +1578,26 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
 										   p_PSchGroupVars->ullIDInt) // При совп. с запрошенным...
 										{
-											if(p_PSchGroupVars->oSchGraph.uchChangesBits & SCH_GROUP_BIT_FRAME)
+											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_GROUP_BIT_FRAME)
 											{
-												p_Group->oPSchGroupBase.oPSchGroupVars.oSchGraph.oDbFrame =
-														p_PSchGroupVars->oSchGraph.oDbFrame;
+												p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame =
+														p_PSchGroupVars->oSchEGGraph.oDbFrame;
 												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 														<< "] frame.");
 											}
-											if(p_PSchGroupVars->oSchGraph.uchChangesBits & SCH_GROUP_BIT_ZPOS)
+											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_GROUP_BIT_ZPOS)
 											{
-												p_Group->oPSchGroupBase.oPSchGroupVars.oSchGraph.dbObjectZPos =
-														p_PSchGroupVars->oSchGraph.dbObjectZPos;
+												p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos =
+														p_PSchGroupVars->oSchEGGraph.dbObjectZPos;
 												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 														<< "] z-pos is: " <<
-														QString::number((int)p_PSchGroupVars->oSchGraph.dbObjectZPos).toStdString());
+														QString::number((int)p_PSchGroupVars->oSchEGGraph.dbObjectZPos).toStdString());
 											}
-											if(p_PSchGroupVars->oSchGraph.uchChangesBits & SCH_GROUP_BIT_BUSY)
+											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_GROUP_BIT_BUSY)
 											{
-												p_Group->oPSchGroupBase.oPSchGroupVars.oSchGraph.bBusy =
-														p_PSchGroupVars->oSchGraph.bBusy;
-												if(p_PSchGroupVars->oSchGraph.bBusy)
+												p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.bBusy =
+														p_PSchGroupVars->oSchEGGraph.bBusy;
+												if(p_PSchGroupVars->oSchEGGraph.bBusy)
 												{
 													LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 															<< "] is busy by client.");
@@ -1608,7 +1608,7 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 															<< "] is free.");
 												}
 											}
-											if(p_PSchGroupVars->oSchGraph.uchChangesBits & SCH_GROUP_BIT_GROUP)
+											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_GROUP_BIT_GROUP)
 											{
 												if(p_PSchGroupVars->ullIDGroup == 0) // Обработка отсоединения от группы.
 												{

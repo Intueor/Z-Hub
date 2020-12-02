@@ -48,16 +48,16 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define _PSch_EG_Name(type)				struct PSch##type##Name{unsigned long long ullIDInt; char m_chName[SCH_OBJ_NAME_STR_LEN];			\
 											bool bLastInQueue;}
 #define _PSch_EG_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
-											SchGraph oSchGraph; bool bLastInQueue;}
+											SchEGGraph oSchEGGraph; bool bLastInQueue;}
 #define _PSch_BR_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
 											SchBRGraph oSchBRGraph; bool bLastInQueue;}
 #define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc; unsigned char uchSrcType;							\
 											unsigned long long ullIDDst; unsigned char uchDstType;											\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort;									\
-											SchLinkGraph oSchLinkGraph; bool bLastInQueue;}
-#define _PSch_Obj_Base(type)			struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
+											SchLGraph oSchLGraph; bool bLastInQueue;}
+#define _PSch_EG_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
 											unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
-#define _PSch_Link_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
+#define _PSch_L_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
 //========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
 /// Структура определения точки.
@@ -75,17 +75,17 @@ struct DbFrame
 	double dbH; ///< Высота.
 };
 /// Структура определения графических качеств объекта схемы.
-struct SchGraph
+struct SchEGGraph
 {
-	bool bMinimized; ///< Признак свёрнутоого транслятора.
-	bool bHided; ///< Признак скрытого транслятора.
+	bool bMinimized; ///< Признак свёрнутоого объекта.
+	bool bHided; ///< Признак скрытого объекта.
 	DbFrame oDbFrame; ///< Вмещающий прямоугольник.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
-	bool bBusy; ///< Признак занятого транслятора.
+	bool bBusy; ///< Признак занятого объекта.
 	double dbObjectZPos; ///< Z-позиция в схеме.
 };
 /// Структура определения графических качеств линка схемы.
-struct SchLinkGraph
+struct SchLGraph
 {
 	DbPoint oDbSrcPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна источника.
 	DbPoint oDbDstPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна приёмника.
@@ -113,8 +113,8 @@ _PSch_EG_Name(Group);
 _PSch_EG_Vars(Element);
 _PSch_L_Vars;
 _PSch_EG_Vars(Group);
-_PSch_Obj_Base(Element);
-_PSch_Link_Base;
-_PSch_Obj_Base(Group);
+_PSch_EG_Base(Element);
+_PSch_L_Base;
+_PSch_EG_Base(Group);
 
 #endif // PROTOCOL_H
