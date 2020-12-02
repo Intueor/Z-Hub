@@ -6,7 +6,7 @@
 #include "net-hub-defs.h"
 
 //== МАКРОСЫ.
-// ============================ ПОЛЬЗОВАТЕЛЬСКИЕ КОДЫ ПАКЕТОВ =================
+// ========================= ПОЛЬЗОВАТЕЛЬСКИЕ КОДЫ ПАКЕТОВ ========================
 #define PROTO_O_SCH_READY               1
 #define PROTO_O_SCH_STATUS              2
 #define PROTO_O_SCH_ELEMENT_BASE        3
@@ -22,7 +22,7 @@
 #define PROTO_O_SCH_GROUP_NAME          13
 #define PROTO_O_SCH_GROUP_COLOR			14
 #define PROTO_O_SCH_GROUP_ERASE			15
-//========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ ===========================
+//============================= ПРИВЯЗКА ТИПОВ ПАКЕТОВ ============================
 #define PocketTypesHub												\
 CasePocket(PROTO_O_SCH_READY, PSchReadyFrame);						\
 CasePocket(PROTO_O_SCH_STATUS, PSchStatusInfo);						\
@@ -39,7 +39,32 @@ CasePocket(PROTO_O_SCH_GROUP_ERASE, PSchGroupEraser);				\
 CasePocket(PROTO_O_SCH_LINK_BASE, PSchLinkBase);					\
 CasePocket(PROTO_O_SCH_LINK_VARS, PSchLinkVars);					\
 CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
-//============================ СТАНДАРТИЗАЦИЯ ОПРЕДЕЛЕНИЙ ==========================
+//============================= КОДЫ ПОЛЕЙ ПРИЗНАКОВ ==============================
+#define SCH_CHANGES_ELEMENT_BIT_BUSY            0b00000001
+#define SCH_CHANGES_ELEMENT_BIT_FRAME           0b00000010
+#define SCH_CHANGES_ELEMENT_BIT_GROUP           0b00000100
+#define SCH_CHANGES_ELEMENT_BIT_ZPOS            0b00001000
+#define SCH_CHANGES_ELEMENT_BIT_MIN				0b00010000
+#define SCH_CHANGES_ELEMENT_BIT_VIS				0b00100000
+//
+#define SCH_CHANGES_LINK_BIT_SCR_PORT_POS       0b00000001
+#define SCH_CHANGES_LINK_BIT_DST_PORT_POS       0b00000010
+#define SCH_CHANGES_LINK_BIT_INIT_ERROR         0b11111111
+//
+#define SCH_CHANGES_GROUP_BIT_BUSY              0b00000001
+#define SCH_CHANGES_GROUP_BIT_FRAME             0b00000010
+#define SCH_CHANGES_GROUP_BIT_GROUP				0b00000100
+#define SCH_CHANGES_GROUP_BIT_ZPOS              0b00001000
+#define SCH_CHANGES_GROUP_BIT_ELEMENTS_SHIFT    0b00010000
+#define SCH_CHANGES_GROUP_BIT_MIN				0b00100000
+#define SCH_CHANGES_GROUP_BIT_VIS				0b01000000
+//
+#define SCH_SETTINGS_EG_BIT_BUSY				0b00000001
+#define SCH_SETTINGS_EG_BIT_MIN					0b00000010
+#define SCH_SETTINGS_EG_BIT_HIDED				0b00000100
+#define SCH_SETTINGS_ELEMENT_BIT_EXTENDED		0b00001000
+#define SCH_SETTINGS_ELEMENT_BIT_BROADCASTER	0b00010000
+//============================ СТАНДАРТИЗАЦИЯ ОПРЕДЕЛЕНИЙ =========================
 #define _PSch_EG_Eraser(type)			struct PSch##type##Eraser{unsigned long long ullIDInt; bool bLastInQueue;}
 #define _PSch_L_Eraser					struct PSchLinkEraser{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort; bool bLastInQueue;}
@@ -58,8 +83,8 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define _PSch_EG_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
 											unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 #define _PSch_L_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
-//=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
-//========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
+//============================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ =============================
+//============================= ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ ===========================
 /// Структура определения точки.
 struct DbPoint
 {
@@ -77,11 +102,9 @@ struct DbFrame
 /// Структура определения графических качеств объекта схемы.
 struct SchEGGraph
 {
-	bool bMinimized; ///< Признак свёрнутоого объекта.
-	bool bHided; ///< Признак скрытого объекта.
-	DbFrame oDbFrame; ///< Вмещающий прямоугольник.
-	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
-	bool bBusy; ///< Признак занятого объекта.
+	unsigned char uchSettingsBits; ///< Поле признаков занятости, свёрнутости, скрытости и типа элемента (только для элемента).
+	DbFrame oDbFrame; ///< Вмещающий прямоугольник или радиус (берётся по ширине).
+	unsigned char uchChangesBits; ///< Поле признаков актуальных полей при изменении.
 	double dbObjectZPos; ///< Z-позиция в схеме.
 };
 /// Структура определения графических качеств линка схемы.
@@ -89,9 +112,9 @@ struct SchLGraph
 {
 	DbPoint oDbSrcPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна источника.
 	DbPoint oDbDstPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна приёмника.
-	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
+	unsigned char uchChangesBits; ///< Поле признаков актуальных полей при изменении.
 };
-//========================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================
+//=============================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================
 /// Структура ответа готовности принятия фрейма схемы.
 struct PSchReadyFrame
 {

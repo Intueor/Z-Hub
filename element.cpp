@@ -12,7 +12,7 @@ Element::Element(PSchElementBase& a_PSchElementBase)
 	{
 		oPSchElementBase.oPSchElementVars.ullIDInt = GenerateID();
 	}
-	oPSchElementBase.oPSchElementVars.oSchEGGraph.bBusy = false;
+	ResetBit(oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits, SCH_SETTINGS_EG_BIT_BUSY);
 	p_Group = nullptr;
 	// Если не был вписан в группу, а надо...
 	if(oPSchElementBase.oPSchElementVars.ullIDGroup != 0)
