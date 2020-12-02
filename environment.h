@@ -11,14 +11,10 @@
 #include "element.h"
 #include "link.h"
 #include "group.h"
-#include "broadcaster.h"
-#include "receiver.h"
 #include "p_buffer.h"
 
 //== МАКРОСЫ.
 #define MAX_ELEMENTS				1024
-#define MAX_BROADCASTERS			256
-#define MAX_RECEIVERS				256
 #define MAX_LINKS					4096
 #define MAX_GROUPS					512
 #define QUEUE_NEW_ELEMENT			1
@@ -34,16 +30,6 @@
 #define QUEUE_RENAMED_GROUP			11
 #define QUEUE_COLORED_GROUP			12
 #define QUEUE_ERASED_GROUP			13
-#define QUEUE_NEW_BROADCASTER		14
-#define QUEUE_CHANGED_BROADCASTER	15
-#define QUEUE_RENAMED_BROADCASTER	16
-#define QUEUE_COLORED_BROADCASTER	17
-#define QUEUE_ERASED_BROADCASTER	18
-#define QUEUE_NEW_RECEIVER			19
-#define QUEUE_CHANGED_RECEIVER		20
-#define QUEUE_RENAMED_RECEIVER		21
-#define QUEUE_COLORED_RECEIVER		22
-#define QUEUE_ERASED_RECEIVER		23
 #define QUEUE_TO_CLIENT				true
 #define QUEUE_FROM_CLIENT			false
 
@@ -121,54 +107,6 @@ public:
 		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, bool bDirectionOut);
 										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.
-		/// Добавление нового транслятора.
-		static void AddNewBroadcaster(PSchBroadcasterBase& aPSchBroadcasterBase, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchBroadcasterBase Ссылка объект базы транслятора.
-		/// Добавление изменений транслятора.
-		static void AddBroadcasterChanges(PSchBroadcasterVars& aPSchBroadcasterVars, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPShcBroadcasterVars Ссылка объект переменных транслятора.
-		/// Добавление изменений портов транслятора.
-		static void AddBroadcasterPorts(PSchBroadcasterPorts& aPSchBroadcasterPorts, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPShcBroadcasterPorts Ссылка объект портов транслятора.
-		/// Добавление изменения имени транслятора и очистка аналогов в очереди.
-		static void AddBroadcasterRenameAndFlush(PSchBroadcasterName& aPSchBroadcasterName, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchBroadcasterName Ссылка объект имени транслятора.
-		/// Добавление изменения цвета транслятора и очистка аналогов в очереди.
-		static void AddBroadcasterColorAndFlush(PSchBroadcasterColor& aPSchBroadcasterColor, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchBroadcasterName Ссылка объект цвета транслятора.
-		/// Добавление удаления транслятора.
-		static void AddEraseBroadcaster(PSchBroadcasterEraser& aPSchBroadcasterEraser, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchBroadcasterEraser Ссылка объект удаления транслятора.
-		/// Добавление нового приёмника.
-		static void AddNewReceiver(PSchReceiverBase& aPSchReceiverBase, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchReceiverBase Ссылка объект базы приёмника.
-		/// Добавление изменений приёмника.
-		static void AddReceiverChanges(PSchReceiverVars& aPSchReceiverVars, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPShcReceiverVars Ссылка объект переменных приёмника.
-		/// Добавление изменений портов приёмника.
-		static void AddReceiverPorts(PSchReceiverPorts& aPSchReceiverPorts, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPShcReceiverPorts Ссылка объект портов приёмника.
-		/// Добавление изменения имени приёмника и очистка аналогов в очереди.
-		static void AddReceiverRenameAndFlush(PSchReceiverName& aPSchReceiverName, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchReceiverName Ссылка объект имени приёмника.
-		/// Добавление изменения цвета приёмника и очистка аналогов в очереди.
-		static void AddReceiverColorAndFlush(PSchReceiverColor& aPSchReceiverColor, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchReceiverName Ссылка объект цвета приёмника.
-		/// Добавление удаления приёмника.
-		static void AddEraseReceiver(PSchReceiverEraser& aPSchReceiverEraser, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
-										///< \param[in] aPSchReceiverEraser Ссылка объект удаления приёмника.
 		/// Получение данных из позиции.
 		static const QueueSegment* Get(int iNum);
 										///< \param[in] iNum Номер позиции.
@@ -214,20 +152,8 @@ public:
 	/// Удаление линков для элемента.
 	static void EraseLinksForElement(Element* p_Element);
 										///< \param[in] p_Element Указатель на элемент.
-	/// Удаление линков для транслятора.
-	static void EraseLinksForBroadcaster(Broadcaster* p_Broadcaster);
-										///< \param[in] p_Broadcaster Указатель на транслятор.
-	/// Удаление линков для транслятора.
-	static void EraseLinksForReceiver(Receiver* p_Receiver);
-										///< \param[in] p_Receiver Указатель на приёмник.
 	/// Удаление элемента в позиции и обнуление указателя на него.
 	static void EraseElementAt(int iPos);
-										///< \param[in] uiPos Позиция в массиве.
-	/// Удаление транслятора в позиции и обнуление указателя на него.
-	static void EraseBroadcasterAt(int iPos);
-										///< \param[in] uiPos Позиция в массиве.
-	/// Удаление приёмника в позиции и обнуление указателя на него.
-	static void EraseReceiverAt(int iPos);
 										///< \param[in] uiPos Позиция в массиве.
 	/// Удаление группы в позиции и обнуление указателя на неё.
 	static void EraseGroupAt(int iPos);
@@ -240,12 +166,6 @@ public:
 private:
 	/// Удаление элементов из группы.
 	static void EraseElementsFromGroup(Group* p_Group);
-								///< \param[in] p_Group Указатель на группу.
-	/// Удаление трансляторов из группы.
-	static void EraseBroadcastersFromGroup(Group* p_Group);
-								///< \param[in] p_Group Указатель на группу.
-	/// Удаление приёмников из группы.
-	static void EraseReceiversFromGroup(Group* p_Group);
 								///< \param[in] p_Group Указатель на группу.
 	/// Удаление групп из группы.
 	static void EraseGroupsFromGroup(Group* p_Group);
@@ -264,8 +184,6 @@ public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
-	StaticPBHeaderInit(Broadcaster,, MAX_BROADCASTERS)
-	StaticPBHeaderInit(Receiver,, MAX_RECEIVERS)
 	static bool bEnvThreadAlive; ///< Флаг живого потока среды.
 	static bool bStopEnvUpdate; ///< Сигнал на остановку потока среды.
 	static bool bRequested; ///< Наличие запроса от клиента.

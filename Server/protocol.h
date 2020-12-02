@@ -22,18 +22,6 @@
 #define PROTO_O_SCH_GROUP_NAME          13
 #define PROTO_O_SCH_GROUP_COLOR			14
 #define PROTO_O_SCH_GROUP_ERASE			15
-#define PROTO_O_SCH_BROADCASTER_BASE    16
-#define PROTO_O_SCH_BROADCASTER_VARS    17
-#define PROTO_O_SCH_BROADCASTER_PORTS   18
-#define PROTO_O_SCH_BROADCASTER_NAME	19
-#define PROTO_O_SCH_BROADCASTER_COLOR	20
-#define PROTO_O_SCH_BROADCASTER_ERASE	21
-#define PROTO_O_SCH_RECEIVER_BASE		22
-#define PROTO_O_SCH_RECEIVER_VARS		23
-#define PROTO_O_SCH_RECEIVER_PORTS		24
-#define PROTO_O_SCH_RECEIVER_NAME		25
-#define PROTO_O_SCH_RECEIVER_COLOR		26
-#define PROTO_O_SCH_RECEIVER_ERASE		27
 //========================== ПРИВЯЗКА ТИПОВ ПАКЕТОВ ===========================
 #define PocketTypesHub												\
 CasePocket(PROTO_O_SCH_READY, PSchReadyFrame);						\
@@ -51,30 +39,14 @@ CasePocket(PROTO_O_SCH_GROUP_ERASE, PSchGroupEraser);				\
 CasePocket(PROTO_O_SCH_LINK_BASE, PSchLinkBase);					\
 CasePocket(PROTO_O_SCH_LINK_VARS, PSchLinkVars);					\
 CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
-CasePocket(PROTO_O_SCH_BROADCASTER_BASE, PSchBroadcasterBase);		\
-CasePocket(PROTO_O_SCH_BROADCASTER_VARS, PSchBroadcasterVars);		\
-CasePocket(PROTO_O_SCH_BROADCASTER_PORTS, PSchBroadcasterPorts);	\
-CasePocket(PROTO_O_SCH_BROADCASTER_COLOR, PSchBroadcasterColor);	\
-CasePocket(PROTO_O_SCH_BROADCASTER_NAME, PSchBroadcasterName);		\
-CasePocket(PROTO_O_SCH_BROADCASTER_ERASE, PSchBroadcasterEraser);	\
-CasePocket(PROTO_O_SCH_RECEIVER_BASE, PSchReceiverBase);			\
-CasePocket(PROTO_O_SCH_RECEIVER_VARS, PSchReceiverVars);			\
-CasePocket(PROTO_O_SCH_RECEIVER_PORTS, PSchReceiverPorts);			\
-CasePocket(PROTO_O_SCH_RECEIVER_COLOR, PSchReceiverColor);			\
-CasePocket(PROTO_O_SCH_RECEIVER_NAME, PSchReceiverName);			\
-CasePocket(PROTO_O_SCH_RECEIVER_ERASE, PSchReceiverEraser);			\
-//============================= РАЗНОЕ ДЛЯ ПАКЕТОВ ============================
-#define BROADCASTER_AND_RECEIVER_PORTS	32
 //============================ СТАНДАРТИЗАЦИЯ ОПРЕДЕЛЕНИЙ ==========================
-#define _PSch_EGBR_Eraser(type)			struct PSch##type##Eraser{unsigned long long ullIDInt; bool bLastInQueue;}
+#define _PSch_EG_Eraser(type)			struct PSch##type##Eraser{unsigned long long ullIDInt; bool bLastInQueue;}
 #define _PSch_L_Eraser					struct PSchLinkEraser{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort; bool bLastInQueue;}
-#define _PSch_EGBR_Color(type)			struct PSch##type##Color{unsigned long long ullIDInt; unsigned int uiObjectBkgColor;				\
+#define _PSch_EG_Color(type)			struct PSch##type##Color{unsigned long long ullIDInt; unsigned int uiObjectBkgColor;				\
 											bool bLastInQueue;}
-#define _PSch_EGBR_Name(type)			struct PSch##type##Name{unsigned long long ullIDInt; char m_chName[SCH_OBJ_NAME_STR_LEN];			\
+#define _PSch_EG_Name(type)				struct PSch##type##Name{unsigned long long ullIDInt; char m_chName[SCH_OBJ_NAME_STR_LEN];			\
 											bool bLastInQueue;}
-#define _PSch_BR_Ports(type)			struct PSch##type##Ports{unsigned long long ullIDInt;												\
-											unsigned short int m_ushiPorts[BROADCASTER_AND_RECEIVER_PORTS]; bool bLastInQueue;}
 #define _PSch_EG_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
 											SchGraph oSchGraph; bool bLastInQueue;}
 #define _PSch_BR_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
@@ -86,9 +58,6 @@ CasePocket(PROTO_O_SCH_RECEIVER_ERASE, PSchReceiverEraser);			\
 #define _PSch_Obj_Base(type)			struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
 											unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 #define _PSch_Link_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
-#define _PSch_BR_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars;											\
-											unsigned short int m_ushiPorts[BROADCASTER_AND_RECEIVER_PORTS];									\
-											char m_chName[SCH_OBJ_NAME_STR_LEN]; unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 //=========================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ ===========================
 //========================== ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ =========================
 /// Структура определения точки.
@@ -104,13 +73,6 @@ struct DbFrame
 	double dbY; ///< Коорд. Y.
 	double dbW; ///< Ширина.
 	double dbH; ///< Высота.
-};
-/// Структура определения сферы.
-struct DbSphere
-{
-	double dbX; ///< Коорд. X.
-	double dbY; ///< Коорд. Y.
-	double dbR; ///< Радиус.
 };
 /// Структура определения графических качеств объекта схемы.
 struct SchGraph
@@ -129,16 +91,6 @@ struct SchLinkGraph
 	DbPoint oDbDstPortGraphPos; ///< Графическая позиция разъёма порта на периметре окна приёмника.
 	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
 };
-/// Структура определения графических качеств параметрического объекта схемы.
-struct SchBRGraph
-{
-	bool bMinimized; ///< Признак свёрнутоого транслятора.
-	bool bHided; ///< Признак скрытого транслятора.
-	DbSphere oDbSphere; ///< Вмещающая сфера.
-	unsigned char uchChangesBits; ///< Байт с битами-признаками актуальных полей при изменении.
-	bool bBusy; ///< Признак занятого транслятора.
-	double dbObjectZPos; ///< Z-позиция в схеме.
-};
 //========================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================
 /// Структура ответа готовности принятия фрейма схемы.
 struct PSchReadyFrame
@@ -151,30 +103,18 @@ struct PSchStatusInfo
 	unsigned char uchBits; ///< Биты статуса.
 };
 /// Стандартизируемые определения.
-_PSch_EGBR_Eraser(Element);
+_PSch_EG_Eraser(Element);
 _PSch_L_Eraser;
-_PSch_EGBR_Eraser(Group);
-_PSch_EGBR_Eraser(Broadcaster);
-_PSch_EGBR_Eraser(Receiver);
-_PSch_EGBR_Color(Element);
-_PSch_EGBR_Color(Group);
-_PSch_EGBR_Color(Broadcaster);
-_PSch_EGBR_Color(Receiver);
-_PSch_EGBR_Name(Element);
-_PSch_EGBR_Name(Group);
-_PSch_EGBR_Name(Broadcaster);
-_PSch_EGBR_Name(Receiver);
-_PSch_BR_Ports(Broadcaster);
-_PSch_BR_Ports(Receiver);
+_PSch_EG_Eraser(Group);
+_PSch_EG_Color(Element);
+_PSch_EG_Color(Group);
+_PSch_EG_Name(Element);
+_PSch_EG_Name(Group);
 _PSch_EG_Vars(Element);
 _PSch_L_Vars;
 _PSch_EG_Vars(Group);
-_PSch_BR_Vars(Broadcaster);
-_PSch_BR_Vars(Receiver);
 _PSch_Obj_Base(Element);
 _PSch_Link_Base;
 _PSch_Obj_Base(Group);
-_PSch_BR_Base(Broadcaster);
-_PSch_BR_Base(Receiver);
 
 #endif // PROTOCOL_H

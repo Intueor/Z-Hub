@@ -15,8 +15,8 @@ public:
 									///< \param[in] a_PSchLinkBase Ссылка на структуру с данными по линку.
 public:
 	PSchLinkBase oPSchLinkBase; ///< Структура с данными по линку.
-	void* v_SrcObject; ///< Указатель на объект-источник, тип указан в oPSchLinkBase.
-	void* v_DstObject; ///< Указатель на объект-приёмник, тип указан в oPSchLinkBase.
+	Element* p_SrcElement; ///< Указатель на элемент-источник.
+	Element* p_DstElement; ///< Указатель на элемент-приёмник.
 };
 
 #endif // LINK_H
