@@ -35,6 +35,8 @@ const char m_chLogSentToClient[] = "] has been sent to client.";
 	dbframe.dbY = qreal.y();                                                                        \
 	dbframe.dbH = qreal.height();                                                                   \
 	dbframe.dbW = qreal.width();
+#define ResetBit(field,bit)					field |= bit; field ^= bit
+#define CopyBit(field_src,field_dst,bit)	ResetBit(field_dst,bit); field_dst |= (field_src & bit)
 // Диалоги.
 #define DIALOGS_ACCEPT                  0
 #define DIALOGS_REJECT                  -1

@@ -37,5 +37,6 @@ void FillNumericStructWithIPPortStrs(NumericAddress& a_NumericAddress, const QSt
 /// Создание уникального номера.
 unsigned long long GenerateID();
 												///< \return Номер.
+/// Установка бита в
 
 #endif // MAINHUB_H

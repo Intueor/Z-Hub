@@ -41,8 +41,6 @@
 #define TryMutexUnlock(Mutex)	{if(*p_iLocked == 0) pthread_mutex_unlock(&Mutex);														\
 								delete p_iLocked;}
 
-#define ResetBit(field,bit)					field |= bit; field ^= bit
-#define CopyBit(field_src,field_dst,bit)	ResetBit(field_dst,bit); field_dst |= (field_src & bit)
 // Сообщения.
 #define MSG_WRONG_CONNECTION    "Wrong connection number."
 

@@ -1246,6 +1246,33 @@ void Environment::NetOperations()
 												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
 																   << "] frame.");
 											}
+											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_MIN)
+											{
+												CopyBit(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
+														SCH_SETTINGS_EG_BIT_MIN);
+												if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
+												   SCH_SETTINGS_EG_BIT_MIN)
+												{
+													LOG_P_2(LOG_CAT_I, "Element [" <<
+															QString(p_Element->oPSchElementBase.m_chName).toStdString()
+																	   << "] minimized.");
+												}
+												else
+												{
+													LOG_P_2(LOG_CAT_I, "Element [" <<
+															QString(p_Element->oPSchElementBase.m_chName).toStdString()
+																	   << "] restored.");
+												}
+											}
+											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_VIS)
+											{
+												CopyBit(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
+														SCH_CHANGES_ELEMENT_BIT_VIS);
+												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+																   << "] hiding status.");
+											}
 											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_GROUP)
 											{
 												if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
