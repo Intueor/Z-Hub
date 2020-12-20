@@ -1222,7 +1222,7 @@ void Environment::NetOperations()
 											}
 											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_BUSY)
 											{
-												CopyBit(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+												CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
 														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
 														SCH_SETTINGS_EG_BIT_BUSY);
 												if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
@@ -1248,7 +1248,7 @@ void Environment::NetOperations()
 											}
 											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_MIN)
 											{
-												CopyBit(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+												CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
 														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
 														SCH_SETTINGS_EG_BIT_MIN);
 												if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
@@ -1267,7 +1267,7 @@ void Environment::NetOperations()
 											}
 											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_VIS)
 											{
-												CopyBit(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+												CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
 														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
 														SCH_CHANGES_ELEMENT_BIT_VIS);
 												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
@@ -1658,7 +1658,7 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 											}
 											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_BUSY)
 											{
-												CopyBit(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
+												CopyBits(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
 														p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits,
 														SCH_SETTINGS_EG_BIT_BUSY);
 												if(p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits &
