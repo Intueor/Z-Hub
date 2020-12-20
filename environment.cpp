@@ -380,12 +380,6 @@ bool Environment::InitElementForEnv(PSchElementBase& a_oPSchElementBase, XMLNode
 		p_NodeMinimize = p_NodeMinimize; // Заглушка.
 		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
 	} FIND_IN_CHILDLIST_END(p_ListMinimizes);
-	FIND_IN_CHILDLIST(p_NodeElement, p_ListHides,
-					  m_chHided, FCN_ONE_LEVEL, p_NodeHide)
-	{
-		p_NodeHide = p_NodeHide; // Заглушка.
-		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_HIDED;
-	} FIND_IN_CHILDLIST_END(p_ListHides);
 	bPresent = false;
 	FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
 					  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -616,12 +610,6 @@ bool Environment::LoadEnv()
 			p_NodeMinimize = p_NodeMinimize; // Заглушка.
 			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
 		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
-		FIND_IN_CHILDLIST(p_NodeGroup, p_ListHides,
-						  m_chHided, FCN_ONE_LEVEL, p_NodeHide)
-		{
-			p_NodeHide = p_NodeHide; // Заглушка.
-			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_HIDED;
-		} FIND_IN_CHILDLIST_END(p_ListHides);
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListZs,
 						  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -916,10 +904,6 @@ bool Environment::SaveEnv()
 		{
 			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chMinimized));
 		}
-		if(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_EG_BIT_HIDED)
-		{
-			p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chHided));
-		}
 		p_NodeZ = p_NodeGroup->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Group,iF)->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos).
@@ -968,10 +952,6 @@ bool Environment::SaveEnv()
 		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_EG_BIT_MIN)
 		{
 			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chMinimized));
-		}
-		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_EG_BIT_HIDED)
-		{
-			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chHided));
 		}
 		p_NodeZ = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
@@ -1264,14 +1244,6 @@ void Environment::NetOperations()
 															QString(p_Element->oPSchElementBase.m_chName).toStdString()
 																	   << "] restored.");
 												}
-											}
-											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_VIS)
-											{
-												CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
-														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
-														SCH_CHANGES_ELEMENT_BIT_VIS);
-												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-																   << "] hiding status.");
 											}
 											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_GROUP)
 											{
