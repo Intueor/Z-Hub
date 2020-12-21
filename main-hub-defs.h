@@ -43,5 +43,9 @@ const char m_chLogSentToClient[] = "] has been sent to client.";
 #define DIALOGS_REJECT                  -1
 #define SCH_STATUS_READY				0b01
 #define SCH_STATUS_LOADED				0b10
+#define TRY_LOCK						true
+#define DONT_TRY_LOCK					false
+#define RESET_POINTER					true
+#define DONT_RESET_POINTER				fasle
 
 #endif // MAINHUBDEFS_H

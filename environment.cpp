@@ -1004,9 +1004,12 @@ bool Environment::SaveEnv()
 // Прогрузка цепочки событий для подключившегося клиента.
 void Environment::FetchEnvToQueue()
 {
+	while(p_EventsQueue->Count() != 0)
+	{
+		MSleep(ENV_STEP_WAITING);
+	}
 	TryMutexInit;
 	TryMutexLock(ptQueueMutex);
-	p_EventsQueue->Clear();
 	for(unsigned int iF = 0; iF != PBCount(Group); iF++)
 	{
 		p_EventsQueue->AddNewGroup(PBAccess(Group,iF)->oPSchGroupBase, QUEUE_TO_CLIENT);
@@ -1071,22 +1074,16 @@ void* Environment::EnvThread(void *p_vPlug)
 		}
 		MSleep(ENV_STEP_WAITING);
 	}
+	LOG_P_1(LOG_CAT_I, "Finishing client operations...");
+	while(NetOperations())
+	{
+		MSleep(ENV_STEP_WAITING);
+	}
 	bEnvThreadAlive = false;
 	LOG_P_1(LOG_CAT_I, "Environment thread terminated.");
 	bStopEnvUpdate = false;
 	RETURN_THREAD
 }
-
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX >
-// oPSchReadyFrame.oDbFrame.dbX) &
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY >
-// oPSchReadyFrame.oDbFrame.dbY) &
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbX <
-// (oPSchReadyFrame.oDbFrame.dbX +
-//  oPSchReadyFrame.oDbFrame.dbW)) &
-//(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame.dbY <
-// (oPSchReadyFrame.oDbFrame.dbY +
-//  oPSchReadyFrame.oDbFrame.dbH))
 
 // Проверка и установка признака последней новости.
 void Environment::CheckLastInQueue(unsigned short ushNewsQantity, bool& abLastInQueue)
@@ -1102,7 +1099,7 @@ void Environment::CheckLastInQueue(unsigned short ushNewsQantity, bool& abLastIn
 }
 
 // Работа с сетью.
-void Environment::NetOperations()
+bool Environment::NetOperations()
 {
 	PSchElementBase* p_PSchElementBase;
 	PSchElementVars* p_PSchElementVars;
@@ -1120,735 +1117,745 @@ void Environment::NetOperations()
 	//
 	bool bPresent = false;
 	unsigned short ushNewsQantity = 2;
+	bool bAllowToClient;
 	//
-	if(MainWindow::p_Server->GetConnectionData(0).iStatus != NO_CONNECTION)
+	if(MainWindow::p_Server->GetConnectionData(0, DONT_TRY_LOCK).iStatus != NO_CONNECTION)
 	{
 		if(MainWindow::p_Server->IsConnectionSecured(0))
 		{
-			if(bRequested) // Если был запрос сессии от клиента...
-			{
-				TryMutexInit;
-				TryMutexLock(ptQueueMutex);
-				// Цикл по всей очереди событий до конца или исчерпания лимита новостей (если новосте меньше, чем очередь).
-				if(ushNewsQantity > p_EventsQueue->Count()) ushNewsQantity = p_EventsQueue->Count();
-				while(p_EventsQueue->Count())
-				{
-					if(ushNewsQantity > 0)
-					{
-						const EventsQueue::QueueSegment* pc_QueueSegment = p_EventsQueue->Get(0);
-						//
-						switch(pc_QueueSegment->uchType)
-						{
-							case QUEUE_NEW_ELEMENT:
-							{
-								p_PSchElementBase = (PSchElementBase*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchElementBase->oPSchElementVars.bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_ELEMENT_BASE,
-																							  (char*)p_PSchElementBase,
-																							  sizeof(PSchElementBase)));
-									LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_PSchElementBase->m_chName).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									Element* p_Element;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
-											<< "] base from client.");
-									AppendToPB(Element, p_Element = new Element(*p_PSchElementBase));
-								}
-								break;
-							}
-							case QUEUE_CHANGED_ELEMENT:
-							{
-								p_PSchElementVars = (PSchElementVars*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchElementVars->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_ELEMENT_VARS,
-																							  (char*)p_PSchElementVars,
-																							  sizeof(PSchElementVars)));
-									LOG_P_2(LOG_CAT_I, "{Out} Changed element [" <<
-											QString::number(p_PSchElementVars->ullIDInt).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iEC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
-									iEC = PBCount(Element);
-									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-									{
-										Element* p_Element;
-										//
-										p_Element = PBAccess(Element, iE);
-										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
-										   p_PSchElementVars->ullIDInt) // При совп. с запрошенным...
-										{
-											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_ZPOS)
-											{
-												p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos =
-														p_PSchElementVars->oSchEGGraph.dbObjectZPos;
-												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-														<< "] z-pos is: " <<
-														QString::number((int)p_PSchElementVars->oSchEGGraph.dbObjectZPos).toStdString());
-											}
-											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_BUSY)
-											{
-												CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
-														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
-														SCH_SETTINGS_EG_BIT_BUSY);
-												if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
-												   SCH_SETTINGS_EG_BIT_BUSY)
-												{
-													LOG_P_2(LOG_CAT_I, "Element [" <<
-															QString(p_Element->oPSchElementBase.m_chName).toStdString()
-															<< "] is busy by client.");
-												}
-												else
-												{
-													LOG_P_2(LOG_CAT_I, "Element [" <<
-															QString(p_Element->oPSchElementBase.m_chName).toStdString()
-															<< "] is free.");
-												}
-											}
-											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_FRAME)
-											{
-												p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame =
-														p_PSchElementVars->oSchEGGraph.oDbFrame;
-												LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-																   << "] frame.");
-											}
-											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_MIN)
-											{
-												CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
-														p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
-														SCH_SETTINGS_EG_BIT_MIN);
-												if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
-												   SCH_SETTINGS_EG_BIT_MIN)
-												{
-													LOG_P_2(LOG_CAT_I, "Element [" <<
-															QString(p_Element->oPSchElementBase.m_chName).toStdString()
-																	   << "] minimized.");
-												}
-												else
-												{
-													LOG_P_2(LOG_CAT_I, "Element [" <<
-															QString(p_Element->oPSchElementBase.m_chName).toStdString()
-																	   << "] restored.");
-												}
-											}
-											if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_GROUP)
-											{
-												if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
-												{
-													if(p_Element->p_Group != nullptr)
-													{
-														if(p_Element->p_Group->vp_ConnectedElements.contains(p_Element))
-														{
-															p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
-															LOG_P_2(LOG_CAT_I, "Element [" <<
-																	QString(p_Element->oPSchElementBase.m_chName).toStdString()
-																	<< "] group - detach.");
-															if(p_Element->p_Group->vp_ConnectedElements.isEmpty() &
-															   p_Element->p_Group->vp_ConnectedGroups.isEmpty())
-															{
-																LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
-																Environment::EraseGroup(p_Element->p_Group);
-															}
-															p_Element->p_Group = nullptr;
-															p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
-															goto gEOK;
-														}
-														else
-														{
-gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
-															goto gEOK;
-														}
-													}
-													else goto gGEx;
-												}
-												// Обработка включения в группу.
-												for(int iG = 0; iG < (int)PBCount(Group); iG++)
-												{
-													if(PBAccess(Group, iG)->
-													   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
-													{
-														p_Element->p_Group = PBAccess(Group, iG);
-														if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup !=
-														   p_PSchElementVars->ullIDGroup)
-														{
-															p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup =
-																	p_PSchElementVars->ullIDGroup;
-															LOG_P_2(LOG_CAT_I, "Element [" <<
-																	QString(p_Element->oPSchElementBase.m_chName).toStdString()
-																	<< "] group - attach.");
-															p_Element->p_Group->vp_ConnectedElements.append(p_Element);
-														}
-														goto gEOK;
-													}
-												}
-												LOG_P_0(LOG_CAT_W, "Wrong group number for element");
-											}
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
-								}
-								break;
-							}
-							case QUEUE_RENAMED_ELEMENT:
-							{
-								p_PSchElementName = (PSchElementName*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchElementName->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->
-												AddPocketToOutputBuffer(0,
-																		PROTO_O_SCH_ELEMENT_NAME,
-																		(char*)p_PSchElementName, sizeof(PSchElementName)));
-									LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iEC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
-									iEC = PBCount(Element);
-									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-									{
-										Element* p_Element;
-										//
-										p_Element = PBAccess(Element, iE);
-										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
-										   p_PSchElementName->ullIDInt) // При совп. с запрошенным...
-										{
-											CopyStrArray(p_PSchElementName->m_chName,
-														 p_Element->oPSchElementBase.m_chName, SCH_OBJ_NAME_STR_LEN);
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
-								}
-								break;
-							}
-							case QUEUE_COLORED_ELEMENT:
-							{
-								p_PSchElementColor = (PSchElementColor*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchElementColor->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_ELEMENT_COLOR,
-																							  (char*)p_PSchElementColor,
-																							  sizeof(PSchElementColor)));
-									LOG_P_2(LOG_CAT_I, "{Out} Recolored element [" <<
-											QString::number(p_PSchElementColor->ullIDInt).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iEC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
-									iEC = PBCount(Element);
-									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-									{
-										Element* p_Element;
-										//
-										p_Element = PBAccess(Element, iE);
-										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
-										   p_PSchElementColor->ullIDInt) // При совп. с запрошенным...
-										{
-											p_Element->oPSchElementBase.uiObjectBkgColor = p_PSchElementColor->uiObjectBkgColor;
-											LOG_P_2(LOG_CAT_I, "Element [" <<
-													QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] color changed.");
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong element number for change color from client.");
-								}
-								break;
-							}
-							case QUEUE_ERASED_ELEMENT:
-							{
-								p_PSchElementEraser = (PSchElementEraser*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchElementEraser->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_ELEMENT_ERASE,
-																							  (char*)p_PSchElementEraser,
-																							  sizeof(PSchElementEraser)));
-									LOG_P_2(LOG_CAT_I, "{Out} Erased element [" <<
-											QString::number(p_PSchElementEraser->ullIDInt).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iEC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
-									iEC = PBCount(Element);
-									for(int iE = 0; iE < iEC; iE++) // По всем элементам...
-									{
-										Element* p_Element;
-										//
-										p_Element = PBAccess(Element, iE);
-										if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
-										   p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
-										{
-											LOG_P_2(LOG_CAT_I, "Element [" <<
-													QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erase.");
-											EraseElementAt(iE);
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
-								}
-								break;
-							}
-							case QUEUE_NEW_LINK:
-							{
-								p_PSchLinkBase = (PSchLinkBase*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchLinkBase->oPSchLinkVars.bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_LINK_BASE,
-																							  (char*)p_PSchLinkBase,
-																							  sizeof(PSchLinkBase)));
-									LOG_P_2(LOG_CAT_I, "{Out} New link [" <<
-											QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDSrc).toStdString()
-											<< "<>" <<
-											QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDDst).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									Link* p_Link;
-									char* p_chSrc = nullptr;
-									char* p_chDst = nullptr;
-									//
-									for(unsigned int uiF = 0; uiF != PBCount(Element); uiF++)
-									{
-										Element* p_Element = PBAccess(Element, uiF);
-										//
-										if(p_PSchLinkBase->oPSchLinkVars.ullIDSrc == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
-										{
-											p_chSrc = p_Element->oPSchElementBase.m_chName;
-										}
-										if(p_PSchLinkBase->oPSchLinkVars.ullIDDst == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
-										{
-											p_chDst = p_Element->oPSchElementBase.m_chName;
-										}
-										if((p_chSrc != nullptr) & (p_chDst != nullptr)) goto gLO;
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
-									goto gEOK;
-gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
-									AppendToPB(Link, p_Link = new Link(*p_PSchLinkBase));
-								}
-								break;
-							}
-							case QUEUE_CHANGED_LINK:
-							{
-								p_PSchLinkVars = (PSchLinkVars*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchLinkVars->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_LINK_VARS,
-																							  (char*)p_PSchLinkVars,
-																							  sizeof(PSchLinkVars)));
-									LOG_P_2(LOG_CAT_I, "{Out} Changed link [" <<
-											QString::number(p_PSchLinkVars->ullIDSrc).toStdString()
-											<< "<>" <<
-											QString::number(p_PSchLinkVars->ullIDDst).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iLC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
-									iLC = PBCount(Link);
-									for(int iL = 0; iL < iLC; iL++) // По всем линкам...
-									{
-										Link* p_Link;
-										//
-										p_Link = PBAccess(Link, iL);
-										if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkVars->ullIDSrc) &&
-												(p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkVars->ullIDDst) &&
-												(p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkVars->ushiSrcPort) &&
-												(p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
-										// При совпадении с запрошенным...
-										{
-											if(p_PSchLinkVars->oSchLGraph.uchChangesBits & SCH_CHANGES_LINK_BIT_SCR_PORT_POS)
-											{
-												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos =
-														p_PSchLinkVars->oSchLGraph.oDbSrcPortGraphPos;
-												LOG_P_2(LOG_CAT_I, "Link vars - src port position.");
-											}
-											if(p_PSchLinkVars->oSchLGraph.uchChangesBits & SCH_CHANGES_LINK_BIT_DST_PORT_POS)
-											{
-												p_Link->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos =
-														p_PSchLinkVars->oSchLGraph.oDbDstPortGraphPos;
-												LOG_P_2(LOG_CAT_I, "Link vars - dst port position.");
-											}
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong link number from client.");
-								}
-								break;
-							}
-							case QUEUE_ERASED_LINK:
-							{
-								p_PSchLinkEraser = (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchLinkEraser->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_LINK_ERASE,
-																							  (char*)p_PSchLinkEraser,
-																							  sizeof(PSchLinkEraser)));
-									LOG_P_2(LOG_CAT_I, "{Out} Erased link [" <<
-											QString::number(p_PSchLinkEraser->ullIDSrc).toStdString()
-											<< "<>" <<
-											QString::number(p_PSchLinkEraser->ullIDDst).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iLC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
-									iLC = PBCount(Link);
-									for(int iL = 0; iL < iLC; iL++) // По всем линкам...
-									{
-										Link* p_Link;
-										//
-										p_Link = PBAccess(Link, iL);
-										if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkEraser->ullIDDst) &
-										   (p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc) &
-										   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort ==
-											p_PSchLinkEraser->ushiDstPort) &
-										   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort ==
-											p_PSchLinkEraser->ushiSrcPort)) // При совп. с запрошенным...
-										{
-											LOG_P_2(LOG_CAT_I, "Link erase.");
-											EraseLinkAt(iL);
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong link for erase from client.");
-								}
-								break;
-							}
-							case QUEUE_NEW_GROUP:
-							{
-								p_PSchGroupBase = (PSchGroupBase*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchGroupBase->oPSchGroupVars.bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_GROUP_BASE,
-																							  (char*)p_PSchGroupBase,
-																							  sizeof(PSchGroupBase)));
-									LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_PSchGroupBase->m_chName).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									Group* p_Group;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
-											<< "] base from client.");
-									AppendToPB(Group, p_Group = new Group(*p_PSchGroupBase));
-								}
-								break;
-							}
-							case QUEUE_CHANGED_GROUP:
-							{
-								p_PSchGroupVars = (PSchGroupVars*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchGroupVars->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_GROUP_VARS,
-																							  (char*)p_PSchGroupVars,
-																							  sizeof(PSchGroupVars)));
-									LOG_P_2(LOG_CAT_I, "{Out} Changed group [" <<
-											QString::number(p_PSchGroupVars->ullIDInt).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iGC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
-									iGC = PBCount(Group);
-									for(int iE = 0; iE < iGC; iE++) // По всем группам...
-									{
-										Group* p_Group;
-										//
-										p_Group = PBAccess(Group, iE);
-										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
-										   p_PSchGroupVars->ullIDInt) // При совп. с запрошенным...
-										{
-											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_FRAME)
-											{
-												p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame =
-														p_PSchGroupVars->oSchEGGraph.oDbFrame;
-												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-														<< "] frame.");
-											}
-											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_MIN)
-											{
-												CopyBits(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
-														p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits,
-														SCH_SETTINGS_EG_BIT_MIN);
-												if(p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits &
-												   SCH_SETTINGS_EG_BIT_MIN)
-												{
-													LOG_P_2(LOG_CAT_I, "Group [" <<
-															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-																	   << "] minimized.");
-												}
-												else
-												{
-													LOG_P_2(LOG_CAT_I, "Group [" <<
-															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-																	   << "] restored.");
-												}
-											}
-											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_ZPOS)
-											{
-												p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos =
-														p_PSchGroupVars->oSchEGGraph.dbObjectZPos;
-												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-														<< "] z-pos is: " <<
-														QString::number((int)p_PSchGroupVars->oSchEGGraph.dbObjectZPos).toStdString());
-											}
-											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_BUSY)
-											{
-												CopyBits(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
-														p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits,
-														SCH_SETTINGS_EG_BIT_BUSY);
-												if(p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits &
-												   SCH_SETTINGS_EG_BIT_BUSY)
-												{
-													LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-															<< "] is busy by client.");
-												}
-												else
-												{
-													LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-															<< "] is free.");
-												}
-											}
-											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_GROUP)
-											{
-												if(p_PSchGroupVars->ullIDGroup == 0) // Обработка отсоединения от группы.
-												{
-													if(p_Group->p_GroupAbove != nullptr)
-													{
-														if(p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group))
-														{
-															p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
-															LOG_P_2(LOG_CAT_I, "Group [" <<
-																	QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-																	<< "] group - detach.");
-															if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() &
-															   p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
-															{
-																LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
-																EraseGroup(p_Group->p_GroupAbove);
-															}
-															p_Group->p_GroupAbove = nullptr;
-															p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = 0;
-															goto gEOK;
-														}
-														else
-														{
-gGGEx:														LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
-															goto gEOK;
-														}
-													}
-													else goto gGGEx;
-												}
-												// Обработка включения в группу.
-												for(int iG = 0; iG < (int)PBCount(Group); iG++)
-												{
-													if(PBAccess(Group, iG)->
-													   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDGroup)
-													{
-														p_Group->p_GroupAbove = PBAccess(Group, iG);
-														if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup != p_PSchGroupVars->ullIDGroup)
-														{
-															p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = p_PSchGroupVars->ullIDGroup;
-															LOG_P_2(LOG_CAT_I, "Group [" <<
-																	QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-																	<< "] group - attach.");
-															p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
-														}
-														goto gEOK;
-													}
-												}
-												LOG_P_0(LOG_CAT_W, "Wrong group number for group");
-											}
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
-								}
-								break;
-							}
-							case QUEUE_RENAMED_GROUP:
-							{
-								p_PSchGroupName = (PSchGroupName*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchGroupName->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_GROUP_NAME,
-																							  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
-									LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iEC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
-									iEC = PBCount(Group);
-									for(int iE = 0; iE < iEC; iE++) // По всем группам...
-									{
-										Group* p_Group;
-										//
-										p_Group = PBAccess(Group, iE);
-										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
-										   p_PSchGroupName->ullIDInt) // При совп. с запрошенным...
-										{
-											CopyStrArray(p_PSchGroupName->m_chName, p_Group->oPSchGroupBase.m_chName, SCH_OBJ_NAME_STR_LEN);
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
-								}
-								break;
-							}
-							case QUEUE_COLORED_GROUP:
-							{
-								p_PSchGroupColor = (PSchGroupColor*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchGroupColor->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_GROUP_COLOR,
-																							  (char*)p_PSchGroupColor,
-																							  sizeof(PSchGroupColor)));
-									LOG_P_2(LOG_CAT_I, "{Out} Recolored group [" <<
-											QString::number(p_PSchGroupColor->ullIDInt).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iGC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
-									iGC = PBCount(Group);
-									for(int iG = 0; iG < iGC; iG++) // По всем группам...
-									{
-										Group* p_Group;
-										//
-										p_Group = PBAccess(Group, iG);
-										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
-										   p_PSchGroupColor->ullIDInt) // При совп. с запрошенным...
-										{
-											p_Group->oPSchGroupBase.uiObjectBkgColor = p_PSchGroupColor->uiObjectBkgColor;
-											LOG_P_2(LOG_CAT_I, "Group [" <<
-													QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] color changed.");
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong group number for change color from client.");
-								}
-								break;
-							}
-							case QUEUE_ERASED_GROUP:
-							{
-								p_PSchGroupEraser = (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject;
-								if(pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT)
-								{
-									CheckLastInQueue(ushNewsQantity, p_PSchGroupEraser->bLastInQueue);
-									LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
-																							  PROTO_O_SCH_GROUP_ERASE,
-																							  (char*)p_PSchGroupEraser,
-																							  sizeof(PSchGroupEraser)));
-									LOG_P_2(LOG_CAT_I, "{Out} Erased group [" <<
-											QString::number(p_PSchGroupEraser->ullIDInt).toStdString()
-											<< m_chLogSentToClient);
-									bPresent = true;
-								}
-								else
-								{
-									int iGC;
-									//
-									LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
-									iGC = PBCount(Group);
-									for(int iG = 0; iG < iGC; iG++) // По всем группам...
-									{
-										Group* p_Group;
-										//
-										p_Group = PBAccess(Group, iG);
-										if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
-										   p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
-										{
-											LOG_P_2(LOG_CAT_I, "Group [" <<
-													QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erase.");
-											EraseGroupAt(iG);
-											goto gEOK;
-										}
-									}
-									LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
-								}
-gEOK:							break;
-							}
-						}
-						p_EventsQueue->Remove(0);
-						ushNewsQantity--;
-					}
-					else break;
-				}
-				//
-				if(bPresent)
-				{
-					LCHECK_BOOL(MainWindow::p_Server->SendBufferToClient(0, true));
-				}
-				TryMutexUnlock(ptQueueMutex);
-			}
+			bAllowToClient = true;
+		}
+		else
+		{
+			bAllowToClient = false;
 		}
 	}
+	if(bRequested) // Если был запрос сессии от клиента...
+	{
+		TryMutexInit;
+		TryMutexLock(ptQueueMutex);
+		// Цикл по всей очереди событий до конца или исчерпания лимита новостей (если новосте меньше, чем очередь).
+		if(ushNewsQantity > p_EventsQueue->Count()) ushNewsQantity = p_EventsQueue->Count();
+		while(p_EventsQueue->Count())
+		{
+			if(ushNewsQantity > 0)
+			{
+				const EventsQueue::QueueSegment* pc_QueueSegment = p_EventsQueue->Get(0);
+				//
+				switch(pc_QueueSegment->uchType)
+				{
+					case QUEUE_NEW_ELEMENT:
+					{
+						p_PSchElementBase = (PSchElementBase*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchElementBase->oPSchElementVars.bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_ELEMENT_BASE,
+																					  (char*)p_PSchElementBase,
+																					  sizeof(PSchElementBase)));
+							LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_PSchElementBase->m_chName).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							Element* p_Element;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
+									<< "] base from client.");
+							AppendToPB(Element, p_Element = new Element(*p_PSchElementBase));
+						}
+						break;
+					}
+					case QUEUE_CHANGED_ELEMENT:
+					{
+						p_PSchElementVars = (PSchElementVars*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchElementVars->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_ELEMENT_VARS,
+																					  (char*)p_PSchElementVars,
+																					  sizeof(PSchElementVars)));
+							LOG_P_2(LOG_CAT_I, "{Out} Changed element [" <<
+									QString::number(p_PSchElementVars->ullIDInt).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iEC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
+							iEC = PBCount(Element);
+							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+							{
+								Element* p_Element;
+								//
+								p_Element = PBAccess(Element, iE);
+								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+								   p_PSchElementVars->ullIDInt) // При совп. с запрошенным...
+								{
+									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_ZPOS)
+									{
+										p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos =
+												p_PSchElementVars->oSchEGGraph.dbObjectZPos;
+										LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+												<< "] z-pos is: " <<
+												QString::number((int)p_PSchElementVars->oSchEGGraph.dbObjectZPos).toStdString());
+									}
+									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_BUSY)
+									{
+										CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+												 p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
+												 SCH_SETTINGS_EG_BIT_BUSY);
+										if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
+										   SCH_SETTINGS_EG_BIT_BUSY)
+										{
+											LOG_P_2(LOG_CAT_I, "Element [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString()
+													<< "] is busy by client.");
+										}
+										else
+										{
+											LOG_P_2(LOG_CAT_I, "Element [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString()
+													<< "] is free.");
+										}
+									}
+									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_FRAME)
+									{
+										p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.oDbFrame =
+												p_PSchElementVars->oSchEGGraph.oDbFrame;
+										LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
+												<< "] frame.");
+									}
+									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_MIN)
+									{
+										CopyBits(p_PSchElementVars->oSchEGGraph.uchSettingsBits,
+												 p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits,
+												 SCH_SETTINGS_EG_BIT_MIN);
+										if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
+										   SCH_SETTINGS_EG_BIT_MIN)
+										{
+											LOG_P_2(LOG_CAT_I, "Element [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString()
+													<< "] minimized.");
+										}
+										else
+										{
+											LOG_P_2(LOG_CAT_I, "Element [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString()
+													<< "] restored.");
+										}
+									}
+									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_GROUP)
+									{
+										if(p_PSchElementVars->ullIDGroup == 0) // Обработка отсоединения от группы.
+										{
+											if(p_Element->p_Group != nullptr)
+											{
+												if(p_Element->p_Group->vp_ConnectedElements.contains(p_Element))
+												{
+													p_Element->p_Group->vp_ConnectedElements.removeOne(p_Element);
+													LOG_P_2(LOG_CAT_I, "Element [" <<
+															QString(p_Element->oPSchElementBase.m_chName).toStdString()
+															<< "] group - detach.");
+													if(p_Element->p_Group->vp_ConnectedElements.isEmpty() &
+													   p_Element->p_Group->vp_ConnectedGroups.isEmpty())
+													{
+														LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+														Environment::EraseGroup(p_Element->p_Group);
+													}
+													p_Element->p_Group = nullptr;
+													p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup = 0;
+													goto gEOK;
+												}
+												else
+												{
+gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
+													goto gEOK;
+												}
+											}
+											else goto gGEx;
+										}
+										// Обработка включения в группу.
+										for(int iG = 0; iG < (int)PBCount(Group); iG++)
+										{
+											if(PBAccess(Group, iG)->
+											   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchElementVars->ullIDGroup)
+											{
+												p_Element->p_Group = PBAccess(Group, iG);
+												if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup !=
+												   p_PSchElementVars->ullIDGroup)
+												{
+													p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup =
+															p_PSchElementVars->ullIDGroup;
+													LOG_P_2(LOG_CAT_I, "Element [" <<
+															QString(p_Element->oPSchElementBase.m_chName).toStdString()
+															<< "] group - attach.");
+													p_Element->p_Group->vp_ConnectedElements.append(p_Element);
+												}
+												goto gEOK;
+											}
+										}
+										LOG_P_0(LOG_CAT_W, "Wrong group number for element");
+									}
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
+						}
+						break;
+					}
+					case QUEUE_RENAMED_ELEMENT:
+					{
+						p_PSchElementName = (PSchElementName*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchElementName->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->
+										AddPocketToOutputBuffer(0,
+																PROTO_O_SCH_ELEMENT_NAME,
+																(char*)p_PSchElementName, sizeof(PSchElementName)));
+							LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iEC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
+							iEC = PBCount(Element);
+							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+							{
+								Element* p_Element;
+								//
+								p_Element = PBAccess(Element, iE);
+								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+								   p_PSchElementName->ullIDInt) // При совп. с запрошенным...
+								{
+									CopyStrArray(p_PSchElementName->m_chName,
+												 p_Element->oPSchElementBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong element number from client.");
+						}
+						break;
+					}
+					case QUEUE_COLORED_ELEMENT:
+					{
+						p_PSchElementColor = (PSchElementColor*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchElementColor->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_ELEMENT_COLOR,
+																					  (char*)p_PSchElementColor,
+																					  sizeof(PSchElementColor)));
+							LOG_P_2(LOG_CAT_I, "{Out} Recolored element [" <<
+									QString::number(p_PSchElementColor->ullIDInt).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iEC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
+							iEC = PBCount(Element);
+							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+							{
+								Element* p_Element;
+								//
+								p_Element = PBAccess(Element, iE);
+								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+								   p_PSchElementColor->ullIDInt) // При совп. с запрошенным...
+								{
+									p_Element->oPSchElementBase.uiObjectBkgColor = p_PSchElementColor->uiObjectBkgColor;
+									LOG_P_2(LOG_CAT_I, "Element [" <<
+											QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] color changed.");
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong element number for change color from client.");
+						}
+						break;
+					}
+					case QUEUE_ERASED_ELEMENT:
+					{
+						p_PSchElementEraser = (PSchElementEraser*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchElementEraser->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_ELEMENT_ERASE,
+																					  (char*)p_PSchElementEraser,
+																					  sizeof(PSchElementEraser)));
+							LOG_P_2(LOG_CAT_I, "{Out} Erased element [" <<
+									QString::number(p_PSchElementEraser->ullIDInt).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iEC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
+							iEC = PBCount(Element);
+							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
+							{
+								Element* p_Element;
+								//
+								p_Element = PBAccess(Element, iE);
+								if(p_Element->oPSchElementBase.oPSchElementVars.ullIDInt ==
+								   p_PSchElementEraser->ullIDInt) // При совп. с запрошенным...
+								{
+									LOG_P_2(LOG_CAT_I, "Element [" <<
+											QString(p_Element->oPSchElementBase.m_chName).toStdString() << "] erase.");
+									EraseElementAt(iE);
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong element number for erase from client.");
+						}
+						break;
+					}
+					case QUEUE_NEW_LINK:
+					{
+						p_PSchLinkBase = (PSchLinkBase*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchLinkBase->oPSchLinkVars.bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_LINK_BASE,
+																					  (char*)p_PSchLinkBase,
+																					  sizeof(PSchLinkBase)));
+							LOG_P_2(LOG_CAT_I, "{Out} New link [" <<
+									QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDSrc).toStdString()
+									<< "<>" <<
+									QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDDst).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							Link* p_Link;
+							char* p_chSrc = nullptr;
+							char* p_chDst = nullptr;
+							//
+							for(unsigned int uiF = 0; uiF != PBCount(Element); uiF++)
+							{
+								Element* p_Element = PBAccess(Element, uiF);
+								//
+								if(p_PSchLinkBase->oPSchLinkVars.ullIDSrc == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
+								{
+									p_chSrc = p_Element->oPSchElementBase.m_chName;
+								}
+								if(p_PSchLinkBase->oPSchLinkVars.ullIDDst == p_Element->oPSchElementBase.oPSchElementVars.ullIDInt)
+								{
+									p_chDst = p_Element->oPSchElementBase.m_chName;
+								}
+								if((p_chSrc != nullptr) & (p_chDst != nullptr)) goto gLO;
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
+							goto gEOK;
+gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
+							AppendToPB(Link, p_Link = new Link(*p_PSchLinkBase));
+						}
+						break;
+					}
+					case QUEUE_CHANGED_LINK:
+					{
+						p_PSchLinkVars = (PSchLinkVars*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchLinkVars->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_LINK_VARS,
+																					  (char*)p_PSchLinkVars,
+																					  sizeof(PSchLinkVars)));
+							LOG_P_2(LOG_CAT_I, "{Out} Changed link [" <<
+									QString::number(p_PSchLinkVars->ullIDSrc).toStdString()
+									<< "<>" <<
+									QString::number(p_PSchLinkVars->ullIDDst).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iLC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
+							iLC = PBCount(Link);
+							for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+							{
+								Link* p_Link;
+								//
+								p_Link = PBAccess(Link, iL);
+								if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkVars->ullIDSrc) &&
+								   (p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkVars->ullIDDst) &&
+								   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort == p_PSchLinkVars->ushiSrcPort) &&
+								   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort == p_PSchLinkVars->ushiDstPort))
+									// При совпадении с запрошенным...
+								{
+									if(p_PSchLinkVars->oSchLGraph.uchChangesBits & SCH_CHANGES_LINK_BIT_SCR_PORT_POS)
+									{
+										p_Link->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbSrcPortGraphPos =
+												p_PSchLinkVars->oSchLGraph.oDbSrcPortGraphPos;
+										LOG_P_2(LOG_CAT_I, "Link vars - src port position.");
+									}
+									if(p_PSchLinkVars->oSchLGraph.uchChangesBits & SCH_CHANGES_LINK_BIT_DST_PORT_POS)
+									{
+										p_Link->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos =
+												p_PSchLinkVars->oSchLGraph.oDbDstPortGraphPos;
+										LOG_P_2(LOG_CAT_I, "Link vars - dst port position.");
+									}
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong link number from client.");
+						}
+						break;
+					}
+					case QUEUE_ERASED_LINK:
+					{
+						p_PSchLinkEraser = (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchLinkEraser->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_LINK_ERASE,
+																					  (char*)p_PSchLinkEraser,
+																					  sizeof(PSchLinkEraser)));
+							LOG_P_2(LOG_CAT_I, "{Out} Erased link [" <<
+									QString::number(p_PSchLinkEraser->ullIDSrc).toStdString()
+									<< "<>" <<
+									QString::number(p_PSchLinkEraser->ullIDDst).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iLC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
+							iLC = PBCount(Link);
+							for(int iL = 0; iL < iLC; iL++) // По всем линкам...
+							{
+								Link* p_Link;
+								//
+								p_Link = PBAccess(Link, iL);
+								if((p_Link->oPSchLinkBase.oPSchLinkVars.ullIDDst == p_PSchLinkEraser->ullIDDst) &
+								   (p_Link->oPSchLinkBase.oPSchLinkVars.ullIDSrc == p_PSchLinkEraser->ullIDSrc) &
+								   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiDstPort ==
+									p_PSchLinkEraser->ushiDstPort) &
+								   (p_Link->oPSchLinkBase.oPSchLinkVars.ushiSrcPort ==
+									p_PSchLinkEraser->ushiSrcPort)) // При совп. с запрошенным...
+								{
+									LOG_P_2(LOG_CAT_I, "Link erase.");
+									EraseLinkAt(iL);
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong link for erase from client.");
+						}
+						break;
+					}
+					case QUEUE_NEW_GROUP:
+					{
+						p_PSchGroupBase = (PSchGroupBase*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchGroupBase->oPSchGroupVars.bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_GROUP_BASE,
+																					  (char*)p_PSchGroupBase,
+																					  sizeof(PSchGroupBase)));
+							LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_PSchGroupBase->m_chName).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							Group* p_Group;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
+									<< "] base from client.");
+							AppendToPB(Group, p_Group = new Group(*p_PSchGroupBase));
+						}
+						break;
+					}
+					case QUEUE_CHANGED_GROUP:
+					{
+						p_PSchGroupVars = (PSchGroupVars*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchGroupVars->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_GROUP_VARS,
+																					  (char*)p_PSchGroupVars,
+																					  sizeof(PSchGroupVars)));
+							LOG_P_2(LOG_CAT_I, "{Out} Changed group [" <<
+									QString::number(p_PSchGroupVars->ullIDInt).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iGC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
+							iGC = PBCount(Group);
+							for(int iE = 0; iE < iGC; iE++) // По всем группам...
+							{
+								Group* p_Group;
+								//
+								p_Group = PBAccess(Group, iE);
+								if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+								   p_PSchGroupVars->ullIDInt) // При совп. с запрошенным...
+								{
+									if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_FRAME)
+									{
+										p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.oDbFrame =
+												p_PSchGroupVars->oSchEGGraph.oDbFrame;
+										LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+												<< "] frame.");
+									}
+									if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_MIN)
+									{
+										CopyBits(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
+												 p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits,
+												 SCH_SETTINGS_EG_BIT_MIN);
+										if(p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits &
+										   SCH_SETTINGS_EG_BIT_MIN)
+										{
+											LOG_P_2(LOG_CAT_I, "Group [" <<
+													QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+													<< "] minimized.");
+										}
+										else
+										{
+											LOG_P_2(LOG_CAT_I, "Group [" <<
+													QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+													<< "] restored.");
+										}
+									}
+									if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_ZPOS)
+									{
+										p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos =
+												p_PSchGroupVars->oSchEGGraph.dbObjectZPos;
+										LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+												<< "] z-pos is: " <<
+												QString::number((int)p_PSchGroupVars->oSchEGGraph.dbObjectZPos).toStdString());
+									}
+									if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_BUSY)
+									{
+										CopyBits(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
+												 p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits,
+												 SCH_SETTINGS_EG_BIT_BUSY);
+										if(p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits &
+										   SCH_SETTINGS_EG_BIT_BUSY)
+										{
+											LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+													<< "] is busy by client.");
+										}
+										else
+										{
+											LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+													<< "] is free.");
+										}
+									}
+									if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_GROUP)
+									{
+										if(p_PSchGroupVars->ullIDGroup == 0) // Обработка отсоединения от группы.
+										{
+											if(p_Group->p_GroupAbove != nullptr)
+											{
+												if(p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group))
+												{
+													p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
+													LOG_P_2(LOG_CAT_I, "Group [" <<
+															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+															<< "] group - detach.");
+													if(p_Group->p_GroupAbove->vp_ConnectedGroups.isEmpty() &
+													   p_Group->p_GroupAbove->vp_ConnectedElements.isEmpty())
+													{
+														LOG_P_2(LOG_CAT_I, "Group is empty - erase.");
+														EraseGroup(p_Group->p_GroupAbove);
+													}
+													p_Group->p_GroupAbove = nullptr;
+													p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = 0;
+													goto gEOK;
+												}
+												else
+												{
+gGGEx:														LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
+													goto gEOK;
+												}
+											}
+											else goto gGGEx;
+										}
+										// Обработка включения в группу.
+										for(int iG = 0; iG < (int)PBCount(Group); iG++)
+										{
+											if(PBAccess(Group, iG)->
+											   oPSchGroupBase.oPSchGroupVars.ullIDInt == p_PSchGroupVars->ullIDGroup)
+											{
+												p_Group->p_GroupAbove = PBAccess(Group, iG);
+												if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup != p_PSchGroupVars->ullIDGroup)
+												{
+													p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup = p_PSchGroupVars->ullIDGroup;
+													LOG_P_2(LOG_CAT_I, "Group [" <<
+															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+															<< "] group - attach.");
+													p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
+												}
+												goto gEOK;
+											}
+										}
+										LOG_P_0(LOG_CAT_W, "Wrong group number for group");
+									}
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
+						}
+						break;
+					}
+					case QUEUE_RENAMED_GROUP:
+					{
+						p_PSchGroupName = (PSchGroupName*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchGroupName->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_GROUP_NAME,
+																					  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
+							LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iEC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
+							iEC = PBCount(Group);
+							for(int iE = 0; iE < iEC; iE++) // По всем группам...
+							{
+								Group* p_Group;
+								//
+								p_Group = PBAccess(Group, iE);
+								if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+								   p_PSchGroupName->ullIDInt) // При совп. с запрошенным...
+								{
+									CopyStrArray(p_PSchGroupName->m_chName, p_Group->oPSchGroupBase.m_chName, SCH_OBJ_NAME_STR_LEN);
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong group number from client.");
+						}
+						break;
+					}
+					case QUEUE_COLORED_GROUP:
+					{
+						p_PSchGroupColor = (PSchGroupColor*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchGroupColor->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_GROUP_COLOR,
+																					  (char*)p_PSchGroupColor,
+																					  sizeof(PSchGroupColor)));
+							LOG_P_2(LOG_CAT_I, "{Out} Recolored group [" <<
+									QString::number(p_PSchGroupColor->ullIDInt).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iGC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
+							iGC = PBCount(Group);
+							for(int iG = 0; iG < iGC; iG++) // По всем группам...
+							{
+								Group* p_Group;
+								//
+								p_Group = PBAccess(Group, iG);
+								if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+								   p_PSchGroupColor->ullIDInt) // При совп. с запрошенным...
+								{
+									p_Group->oPSchGroupBase.uiObjectBkgColor = p_PSchGroupColor->uiObjectBkgColor;
+									LOG_P_2(LOG_CAT_I, "Group [" <<
+											QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] color changed.");
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong group number for change color from client.");
+						}
+						break;
+					}
+					case QUEUE_ERASED_GROUP:
+					{
+						p_PSchGroupEraser = (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject;
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchGroupEraser->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_GROUP_ERASE,
+																					  (char*)p_PSchGroupEraser,
+																					  sizeof(PSchGroupEraser)));
+							LOG_P_2(LOG_CAT_I, "{Out} Erased group [" <<
+									QString::number(p_PSchGroupEraser->ullIDInt).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iGC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
+							iGC = PBCount(Group);
+							for(int iG = 0; iG < iGC; iG++) // По всем группам...
+							{
+								Group* p_Group;
+								//
+								p_Group = PBAccess(Group, iG);
+								if(p_Group->oPSchGroupBase.oPSchGroupVars.ullIDInt ==
+								   p_PSchGroupEraser->ullIDInt) // При совп. с запрошенным...
+								{
+									LOG_P_2(LOG_CAT_I, "Group [" <<
+											QString(p_Group->oPSchGroupBase.m_chName).toStdString() << "] erase.");
+									EraseGroupAt(iG);
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
+						}
+gEOK:							break;
+					}
+				}
+				p_EventsQueue->Remove(0);
+				ushNewsQantity--;
+			}
+			else break;
+		}
+		//
+		if(bPresent)
+		{
+			if(bAllowToClient)
+			{
+				LCHECK_BOOL(MainWindow::p_Server->SendBufferToClient(0, RESET_POINTER));
+			}
+		}
+		TryMutexUnlock(ptQueueMutex);
+	}
+	return p_EventsQueue->Count() != 0;
 }
 
 // Удаление линка в позиции и удаление указателя на него.

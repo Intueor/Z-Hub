@@ -185,7 +185,8 @@ private:
 										///< \param[in] ushNewsQantity Кол-во новостей за цикл.
 										///< \param[in] abLastInQueue Ссылка на признак последней новости.
 	/// Работа с сетью.
-	static void NetOperations();
+	static bool NetOperations();
+										///< \return false при пустой цепочке новостей.
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)

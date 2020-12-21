@@ -370,10 +370,10 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 	NetHub::ConnectionData oConnectionDataInt;
 	//
 	LOG_P_1(LOG_CAT_I, "ID: " << iConnection << " have status: " << bConnected);
-	oConnectionDataInt = p_Server->GetConnectionData(iConnection, false);
+	oConnectionDataInt = p_Server->GetConnectionData(iConnection, DONT_TRY_LOCK);
 	if(oConnectionDataInt.iStatus != NO_CONNECTION)
 	{
-		p_Server->FillIPAndPortNames(oConnectionDataInt, m_chIPNameBuffer, m_chPortNameBuffer, false);
+		p_Server->FillIPAndPortNames(oConnectionDataInt, m_chIPNameBuffer, m_chPortNameBuffer, DONT_TRY_LOCK);
 		if(NetHub::CheckIPv4(m_chIPNameBuffer))
 		{
 			LOG_P_1(LOG_CAT_I, "IP: " << m_chIPNameBuffer << " Port: " << m_chPortNameBuffer);
@@ -440,7 +440,8 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 					oPSchStatusInfo.uchBits = 0;
 				}
 				p_Server->SendToClientImmediately(iCurrentClientConnection,
-												  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
+												  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo),
+												  RESET_POINTER, DONT_TRY_LOCK);
 			}
 			goto gLEx;
 		}
@@ -468,11 +469,12 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 gUO:					Environment::iLastFetchingSegNumber = UPLOAD_STATUS_INACTIVE;
 						oPSchStatusInfo.uchBits = SCH_STATUS_LOADED; // Отправка клиенту сообщения о конце выгрузки.
 						p_Server->SendToClientImmediately(iCurrentClientConnection,
-														  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo), true, false);
+														  PROTO_O_SCH_STATUS, (char*)&oPSchStatusInfo, sizeof(PSchStatusInfo),
+														  RESET_POINTER, DONT_TRY_LOCK);
 					}
 				}
 			}
-gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, false) != RETVAL_OK)
+gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_LOCK) != RETVAL_OK)
 			{
 				RETVAL_SET(RETVAL_ERR);
 			}
@@ -673,7 +675,6 @@ bool MainWindow::EnvStartProcedures()
 		p_ui->action_StartStopEnv->setChecked(false);
 		return false;
 	}
-	p_Environment->FetchEnvToQueue();
 	p_ui->action_ChangeEnv->setDisabled(true);
 	p_ui->action_SaveCurrent->setDisabled(true);
 	if(iCurrentClientConnection != NO_CLIENT) // Если есть клиент, отправка ответа о работающей среде.
