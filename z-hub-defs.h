@@ -11,7 +11,7 @@
 #define ENV_NAME_LEN					64
 #define SCH_NEXT_Z_SHIFT				1.0
 #define SCH_LINK_Z_SHIFT				0.01
-#define ENV_STEP_WAITING				1
+#define ENV_STEP_WAITING				200
 #define NO_CLIENT						-1
 #define UPLOAD_STATUS_INACTIVE			-1
 
