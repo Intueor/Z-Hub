@@ -1620,6 +1620,25 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 												LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 														<< "] frame.");
 											}
+											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_MIN)
+											{
+												CopyBits(p_PSchGroupVars->oSchEGGraph.uchSettingsBits,
+														p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits,
+														SCH_SETTINGS_EG_BIT_MIN);
+												if(p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits &
+												   SCH_SETTINGS_EG_BIT_MIN)
+												{
+													LOG_P_2(LOG_CAT_I, "Group [" <<
+															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+																	   << "] minimized.");
+												}
+												else
+												{
+													LOG_P_2(LOG_CAT_I, "Group [" <<
+															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
+																	   << "] restored.");
+												}
+											}
 											if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_ZPOS)
 											{
 												p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos =
