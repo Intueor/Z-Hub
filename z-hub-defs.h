@@ -14,6 +14,7 @@
 #define ENV_STEP_WAITING				1
 #define NO_CLIENT						-1
 #define UPLOAD_STATUS_INACTIVE			-1
+#define UPLOAD_STATUS_EMPTY				-2
 
 //== КОНСТАНТЫ.
 // Многократно используемые строки.

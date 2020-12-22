@@ -37,7 +37,7 @@ Environment::EventsQueue::QueueSegment Environment::EventsQueue::oQueueSegment;
 Environment::EventsQueue* Environment::p_EventsQueue = nullptr;
 pthread_mutex_t Environment::ptQueueMutex = PTHREAD_MUTEX_INITIALIZER;
 unsigned int Environment::EventsQueue::uiCurrentSegNumber;
-int Environment::iLastFetchingSegNumber;
+int Environment::iLastFetchingSegNumber = 0;
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс очереди событий. Методы вызывать только из-под мьютекса.
 // Конструктор.
@@ -1004,26 +1004,35 @@ bool Environment::SaveEnv()
 // Прогрузка цепочки событий для подключившегося клиента.
 void Environment::FetchEnvToQueue()
 {
+	unsigned int uiG = PBCount(Group);
+	unsigned int uiE = PBCount(Element);
+	unsigned int uiL = PBCount(Link);
+	//
 	while(p_EventsQueue->Count() != 0)
 	{
 		MSleep(ENV_STEP_WAITING);
 	}
 	TryMutexInit;
 	TryMutexLock(ptQueueMutex);
-	for(unsigned int iF = 0; iF != PBCount(Group); iF++)
+	if((uiG + uiE + uiL) == 0)
+	{
+		iLastFetchingSegNumber = UPLOAD_STATUS_EMPTY;
+		goto gEm;
+	}
+	for(unsigned int iF = 0; iF != uiG; iF++)
 	{
 		p_EventsQueue->AddNewGroup(PBAccess(Group,iF)->oPSchGroupBase, QUEUE_TO_CLIENT);
 	}
-	for(unsigned int iF = 0; iF != PBCount(Element); iF++)
+	for(unsigned int iF = 0; iF != uiE; iF++)
 	{
 		p_EventsQueue->AddNewElement(PBAccess(Element,iF)->oPSchElementBase, QUEUE_TO_CLIENT);
 	}
-	for(unsigned int iF = 0; iF != PBCount(Link); iF++)
+	for(unsigned int iF = 0; iF != uiL; iF++)
 	{
 		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
 	}
 	iLastFetchingSegNumber = (int)EventsQueue::uiCurrentSegNumber - 1; // Если не грузилось ничего, будет статус UPLOAD_STATUS_INACTIVE автом.
-	TryMutexUnlock(ptQueueMutex);
+gEm:TryMutexUnlock(ptQueueMutex);
 }
 
 // Запуск среды.

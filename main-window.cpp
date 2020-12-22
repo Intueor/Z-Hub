@@ -455,6 +455,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 			}
 			Environment::bRequested = true;
 			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
+			if(Environment::iLastFetchingSegNumber == UPLOAD_STATUS_EMPTY) goto gUO;
 			if(Environment::iLastFetchingSegNumber != UPLOAD_STATUS_INACTIVE) // Если идёт процесс выгрузки на клиент...
 			{
 				if(Environment::EventsQueue::Count() == 0) // Если выгрузилась вся цепочка...
@@ -677,6 +678,7 @@ bool MainWindow::EnvStartProcedures()
 	}
 	p_ui->action_ChangeEnv->setDisabled(true);
 	p_ui->action_SaveCurrent->setDisabled(true);
+	bJustConnected = true;
 	if(iCurrentClientConnection != NO_CLIENT) // Если есть клиент, отправка ответа о работающей среде.
 	{
 		if(p_Server->IsConnectionSecured(iCurrentClientConnection))
