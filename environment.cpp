@@ -1901,34 +1901,31 @@ void Environment::EraseLinksForElement(Element* p_Element)
 	}
 }
 
-// Удаление элемента в позиции и обнуление указателя на него.
+// Удаление элемента в позиции и возможных опустевших групп рекурсивно.
 void Environment::EraseElementAt(int iPos)
 {
 	Element* p_Element = PBAccess(Element, iPos);
-	// Работа с группой.
-	if(p_Element->oPSchElementBase.oPSchElementVars.ullIDGroup != 0)
+	//
+	if(p_Element->p_Group)
 	{
-		Group* p_Group = p_Element->p_Group;
-		//
-		if(p_Group != nullptr)
-		{
-			if(!p_Group->vp_ConnectedElements.isEmpty())
-			{
-				p_Group->vp_ConnectedElements.removeOne(p_Element);
-				if(p_Group->vp_ConnectedElements.isEmpty())
-				{
-					RemoveObjectFromPBByPointer(Group, p_Group);
-				}
-			}
-		}
+		p_Element->p_Group->vp_ConnectedElements.removeAll(p_Element);
+		EraseGroupIfEmptyAndParentsRecursively(p_Element->p_Group);
 	}
 	EraseLinksForElement(p_Element);
 	RemoveObjectFromPBByPos(Element, iPos);
 }
 
-// Удаление элементов из группы.
-void Environment::EraseElementsFromGroup(Group* p_Group)
+// Удаление группы в позиции и возможных опустевших групп рекурсивно.
+void Environment::EraseGroupAt(int iPos)
 {
+	EraseGroup(PBAccess(Group, iPos));
+}
+
+/// Рекурсивное удаление детей группы и все их элементы, включая основную.
+Group* Environment::EraseGroupAndChildrenAndElementsRecursively(Group* p_Group, bool bFirst)
+{
+	Group* p_GroupAboveInt = p_Group->p_GroupAbove;
+	//
 	while(!p_Group->vp_ConnectedElements.isEmpty())
 	{
 		Element* p_Element = p_Group->vp_ConnectedElements.at(0);
@@ -1937,35 +1934,40 @@ void Environment::EraseElementsFromGroup(Group* p_Group)
 		EraseLinksForElement(p_Element);
 		RemoveObjectFromPBByPointer(Element, p_Element);
 	}
+	while(!p_Group->vp_ConnectedGroups.isEmpty()) // Пока есть дети...
+	{
+		Group* p_GroupInt = p_Group->vp_ConnectedGroups.at(0); // Берём первую.
+		//
+		p_Group->vp_ConnectedGroups.removeAt(0); // Удаляем из списка.
+		EraseGroupAndChildrenAndElementsRecursively(p_GroupInt, false); // Рекурсия без удаления из группы-родителя (она сама).
+	}
+	if(p_GroupAboveInt) // Если есть родитель.
+	{
+		if(bFirst) p_GroupAboveInt->vp_ConnectedGroups.removeAll(p_Group); // На первом входе удаляем группу из списка у родителя.
+	}
+	RemoveObjectFromPBByPointer(Group, p_Group); // Удаление группы.
+	return p_GroupAboveInt; // Возврат ук. на группу родителя для дальнейших действий или ноль при отсутствии.
 }
 
-// Удаление групп из группы.
-void Environment::EraseGroupsFromGroup(Group* p_Group)
+// Рекурсивное удаление пустой группы и её пустых родителей рекурсивно.
+void Environment::EraseGroupIfEmptyAndParentsRecursively(Group* p_ParentGroup)
 {
-	while(!p_Group->vp_ConnectedGroups.isEmpty())
+	if(p_ParentGroup) // Для взаимодействия с EraseGroupAndChildrenAndElementsRecursively.
 	{
-		Group* p_GroupInt = p_Group->vp_ConnectedGroups.at(0);
-		//
-		p_Group->vp_ConnectedGroups.removeOne(p_GroupInt);
-		EraseGroup(p_GroupInt); // Рекурсия.
+		if(p_ParentGroup->vp_ConnectedElements.isEmpty() && p_ParentGroup->vp_ConnectedGroups.isEmpty()) // Если группа пустая...
+		{
+			if(p_ParentGroup->p_GroupAbove) // Если есть родитель...
+			{
+				p_ParentGroup->p_GroupAbove->vp_ConnectedGroups.removeAll(p_ParentGroup); // Удаление из списка у родителя.
+				EraseGroupIfEmptyAndParentsRecursively(p_ParentGroup->p_GroupAbove); // Рекурсия для родителя.
+			}
+			RemoveObjectFromPBByPointer(Group, p_ParentGroup); // Удаление группы.
+		}
 	}
 }
 
-// Удаление группы в позиции и обнуление указателя на неё.
-void Environment::EraseGroupAt(int iPos)
-{
-	EraseGroup(PBAccess(Group, iPos));
-}
-
-// Удаление группы по указателю.
+// Удаление группы по указателю и возможных опустевших групп.
 void Environment::EraseGroup(Group* p_Group)
 {
-	EraseElementsFromGroup(p_Group);
-	EraseGroupsFromGroup(p_Group);
-	if(p_Group->p_GroupAbove != nullptr)
-	{
-		p_Group->p_GroupAbove->vp_ConnectedGroups.removeOne(p_Group);
-	}
-	// Удаление группы.
-	RemoveObjectFromPBByPointer(Group, p_Group);
+	EraseGroupIfEmptyAndParentsRecursively(EraseGroupAndChildrenAndElementsRecursively(p_Group));
 }

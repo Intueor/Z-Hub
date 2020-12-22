@@ -158,24 +158,19 @@ public:
 	/// Удаление линков для элемента.
 	static void EraseLinksForElement(Element* p_Element);
 										///< \param[in] p_Element Указатель на элемент.
-	/// Удаление элемента в позиции и обнуление указателя на него.
+	// Удаление элемента в позиции и возможных опустевших групп рекурсивно.
 	static void EraseElementAt(int iPos);
 										///< \param[in] uiPos Позиция в массиве.
-	/// Удаление группы в позиции и обнуление указателя на неё.
+	/// Удаление группы в позиции и возможных опустевших групп рекурсивно.
 	static void EraseGroupAt(int iPos);
 										///< \param[in] uiPos Позиция в массиве.
-	/// Удаление группы по указателю.
+	/// Удаление группы по указателю и возможных опустевших групп рекурсивно.
 	static void EraseGroup(Group* p_Group);
 										///< \param[in] p_Group Указатель на группу.
 	/// Прогрузка цепочки событий для подключившегося клиента.
 	static void FetchEnvToQueue();
+
 private:
-	/// Удаление элементов из группы.
-	static void EraseElementsFromGroup(Group* p_Group);
-								///< \param[in] p_Group Указатель на группу.
-	/// Удаление групп из группы.
-	static void EraseGroupsFromGroup(Group* p_Group);
-								///< \param[in] p_Group Указатель на группу.
 	/// Поток шагов среды.
 	static void* EnvThread(void *p_vPlug);
 										///< \param[in] p_vPlug Заглушка.
@@ -187,6 +182,14 @@ private:
 	/// Работа с сетью.
 	static bool NetOperations();
 										///< \return false при пустой цепочке новостей.
+	/// Рекурсивное удаление детей группы и все их элементы, включая основную.
+	static Group* EraseGroupAndChildrenAndElementsRecursively(Group* p_Group, bool bFirst = true);
+										///< \param[in] p_Group Указатель на группу.
+										///< \param[in] bFirst Служебный флаг первого входа в рекурсию.
+										///< \return Указатель на родителя, если был.
+	/// Рекурсивное удаление пустой группы и её пустых родителей.
+	static void EraseGroupIfEmptyAndParentsRecursively(Group* p_ParentGroup);
+										///< \param[in] p_Group Указатель на группу.
 public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
