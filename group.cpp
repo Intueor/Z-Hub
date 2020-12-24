@@ -14,4 +14,20 @@ Group::Group(PSchGroupBase& a_PSchGroupBase)
 	{
 		oPSchGroupBase.oPSchGroupVars.ullIDInt = GenerateID();
 	}
+	p_GroupAbove = nullptr;
+	// Если не был вписан в группу, а надо...
+	if(oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
+	{
+		for(uint uiG = 0; uiG < PBCountExternal(Group, Environment); uiG++)
+		{
+			Group* p_GroupInt = PBAccessExternal(Group, uiG, Environment);
+			//
+			if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == oPSchGroupBase.oPSchGroupVars.ullIDGroup)
+			{
+				p_GroupAbove = p_GroupInt;
+				p_GroupAbove->vp_ConnectedGroups.append(this);
+				break;
+			}
+		}
+	}
 }

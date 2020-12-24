@@ -1702,7 +1702,7 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 												}
 												else
 												{
-gGGEx:														LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
+gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 													goto gEOK;
 												}
 											}
