@@ -1686,7 +1686,7 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 											{
 												if(p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group))
 												{
-													p_Group->p_GroupAbove->vp_ConnectedGroups.contains(p_Group);
+													p_Group->p_GroupAbove->vp_ConnectedGroups.removeAll(p_Group);
 													LOG_P_2(LOG_CAT_I, "Group [" <<
 															QString(p_Group->oPSchGroupBase.m_chName).toStdString()
 															<< "] group - detach.");
