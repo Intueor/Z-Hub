@@ -32,9 +32,9 @@ private slots:
 	void reject();
 
 private:
-	Ui::Set_Proposed_String_Dialog* p_ui;
-	static char* p_chTextInt;
-	static unsigned char uchMaxLengthInt;
+	Ui::Set_Proposed_String_Dialog* p_ui; ///< Указатель на интерфейс.
+	static char* p_chTextInt; ///< Внутренний указатель на текст.
+	static unsigned char uchMaxLengthInt; ///< Внутренняя переменная макс. длины строки.
 };
 
 #endif // SET_PROPOSED_STRING_DIALOG_H

@@ -31,7 +31,7 @@ private slots:
 	void reject();
 
 private:
-	Ui::Set_Proposed_Bool_Dialog* p_ui;
+	Ui::Set_Proposed_Bool_Dialog* p_ui; ///< Указатель на интерфейс.
 };
 
 #endif // SET_PROPOSED_BOOL_DIALOG_H

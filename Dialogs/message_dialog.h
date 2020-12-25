@@ -20,7 +20,7 @@ class Message_Dialog : public QDialog
 
 public:
 	/// Конструктор.
-    explicit Message_Dialog(const char* p_chCaption, const char* p_chMessage, QWidget *p_parent = nullptr);
+	explicit Message_Dialog(const char* p_chCaption, const char* p_chMessage, QWidget* p_parent = nullptr);
 								///< \param[in] p_chCaption Указатель на массив строки с заголовком.
 								///< \param[in] p_chMessage Указатель на массив строки с сообщением.
 								///< \param[in] p_parent Указатель на родительский виджет.
@@ -28,7 +28,7 @@ public:
 	~Message_Dialog();
 
 private:
-	Ui::Message_Dialog* p_ui; //< Указатель на UI.
+	Ui::Message_Dialog* p_ui; ///< Указатель на интерфейс.
 };
 
 #endif // MESSAGE_DIALOG_H

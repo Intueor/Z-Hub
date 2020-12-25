@@ -28,7 +28,7 @@ public:
 
 public:
 	/// Конструктор.
-	explicit Set_Server_Dialog(char* p_chIP, char* p_Port, char* p_chPassword, QWidget *p_parent = 0);
+	explicit Set_Server_Dialog(char* p_chIP, char* p_Port, char* p_chPassword, QWidget* p_parent = 0);
 											///< \param[in] p_chIP - Указатель на массив строки для предустановки IP.
 											///< \param[in] p_Port - Указатель на массив строки для предустановки порта.
 											///< \param[in] p_chPassword - Указатель на массив строки для предустановки пароля.
@@ -46,7 +46,7 @@ public:
 	static IPPortPasswordStrings oIPPortPasswordStrings; ///< Объект со строками IP и порта.
 
 private:
-	Ui::Set_Server_Dialog* p_ui; ///< Указатель на UI.
+	Ui::Set_Server_Dialog* p_ui; ///< Указатель на интерфейс.
 };
 
 #endif // SET_SERVER_DIALOG_H

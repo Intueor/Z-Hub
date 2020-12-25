@@ -4,6 +4,7 @@
 #include "ui_set_proposed_string_dialog.h"
 #include "../Z-Hub/main-hub.h"
 
+//== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 unsigned char Set_Proposed_String_Dialog::uchMaxLengthInt;
 char* Set_Proposed_String_Dialog::p_chTextInt = nullptr;
 
