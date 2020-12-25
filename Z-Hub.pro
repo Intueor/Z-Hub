@@ -25,7 +25,6 @@ DEFINES += WIN32 _WINDOWS _CRT_SECURE_NO_WARNINGS
 }
 
 SOURCES += \
-    Dialogs/set-server-dialog.cpp \
     Dialogs/set_proposed_bool_dialog.cpp \
     Dialogs/set_proposed_string_dialog.cpp \
     element.cpp \
@@ -43,10 +42,10 @@ SOURCES += \
     Server/proto-parser.cpp \
     Server/proto-util.cpp \
     Server/server.cpp \
-    Dialogs/message-dialog.cpp
+    Dialogs/set_server_dialog.cpp \
+    Dialogs/message_dialog.cpp
 
 HEADERS += \
-    Dialogs/set-server-dialog.h \
     Dialogs/set_proposed_bool_dialog.h \
     Dialogs/set_proposed_string_dialog.h \
     element.h \
@@ -72,14 +71,15 @@ HEADERS += \
     Server/protocol.h \
     Server/server.h \
     z-hub-defs.h \
-    Dialogs/message-dialog.h
+    Dialogs/set_server_dialog.h \
+    Dialogs/message_dialog.h
 
 FORMS += \
-    Dialogs/set-server-dialog.ui \
     Dialogs/set_proposed_bool_dialog.ui \
     Dialogs/set_proposed_string_dialog.ui \
     main-window.ui \
-    Dialogs/message-dialog.ui
+    Dialogs/set_server_dialog.ui \
+    Dialogs/message_dialog.ui
 
 RESOURCES += \
     resources.qrc

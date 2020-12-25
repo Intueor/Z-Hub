@@ -1,7 +1,7 @@
 //== ВКЛЮЧЕНИЯ.
 #include <QPushButton>
-#include "message-dialog.h"
-#include "ui_message-dialog.h"
+#include "message_dialog.h"
+#include "ui_message_dialog.h"
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс диалога сообщения об ошибке.

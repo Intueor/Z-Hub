@@ -2,9 +2,9 @@
 #include <QScrollBar>
 #include "main-window.h"
 #include "ui_main-window.h"
-#include "Dialogs/message-dialog.h"
+#include "Dialogs/message_dialog.h"
 #include "Dialogs/set_proposed_string_dialog.h"
-#include "Dialogs/set-server-dialog.h"
+#include "Dialogs/set_server_dialog.h"
 #include "Dialogs/set_proposed_bool_dialog.h"
 
 //== МАКРОСЫ.

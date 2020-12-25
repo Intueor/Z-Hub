@@ -1,7 +1,7 @@
 //== ВКЛЮЧЕНИЯ.
 #include <QPushButton>
-#include "set-server-dialog.h"
-#include "ui_set-server-dialog.h"
+#include "set_server_dialog.h"
+#include "ui_set_server_dialog.h"
 
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 Set_Server_Dialog::IPPortPasswordStrings Set_Server_Dialog::oIPPortPasswordStrings;
