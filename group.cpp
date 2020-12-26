@@ -7,7 +7,7 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс группы.
 // Конструктор.
-Group::Group(PSchGroupBase& a_PSchGroupBase)
+Group::Group(PSchGroupBase& a_PSchGroupBase, bool bConnectWithParent)
 {
 	oPSchGroupBase = a_PSchGroupBase;
 	if(oPSchGroupBase.oPSchGroupVars.ullIDInt == 0)
@@ -15,18 +15,21 @@ Group::Group(PSchGroupBase& a_PSchGroupBase)
 		oPSchGroupBase.oPSchGroupVars.ullIDInt = GenerateID();
 	}
 	p_GroupAbove = nullptr;
-	// Если не был вписан в группу, а надо...
-	if(oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
+	if(bConnectWithParent)
 	{
-		for(uint uiG = 0; uiG < PBCountExternal(Group, Environment); uiG++)
+		// Если не был вписан в группу, а надо...
+		if(oPSchGroupBase.oPSchGroupVars.ullIDGroup != 0)
 		{
-			Group* p_GroupInt = PBAccessExternal(Group, uiG, Environment);
-			//
-			if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == oPSchGroupBase.oPSchGroupVars.ullIDGroup)
+			for(uint uiG = 0; uiG < PBCountExternal(Group, Environment); uiG++)
 			{
-				p_GroupAbove = p_GroupInt;
-				p_GroupAbove->vp_ConnectedGroups.append(this);
-				break;
+				Group* p_GroupInt = PBAccessExternal(Group, uiG, Environment);
+				//
+				if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == oPSchGroupBase.oPSchGroupVars.ullIDGroup)
+				{
+					p_GroupAbove = p_GroupInt;
+					p_GroupAbove->vp_ConnectedGroups.append(this);
+					break;
+				}
 			}
 		}
 	}

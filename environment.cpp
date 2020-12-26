@@ -644,7 +644,7 @@ bool Environment::LoadEnv()
 			}
 			oPSchGroupBase.oPSchGroupVars.ullIDGroup = strHelper.toULongLong();
 		} FIND_IN_CHILDLIST_END(p_ListGroupIDs);
-		AppendToPB(Group, new Group(oPSchGroupBase));
+		AppendToPB(Group, new Group(oPSchGroupBase, false));
 	} PARSE_CHILDLIST_END(p_ListGroups);
 	// Заполнение вложенностей групп.
 	for(uint  uiF = 0; uiF != PBCount(Group); uiF++)
@@ -659,11 +659,14 @@ bool Environment::LoadEnv()
 			{
 				Group* p_GroupInt = PBAccess(Group, uiG);
 				//
-				if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup)
+				if(p_GroupInt != p_Group)
 				{
-					p_Group->p_GroupAbove = p_GroupInt;
-					p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
-					break;
+					if(p_GroupInt->oPSchGroupBase.oPSchGroupVars.ullIDInt == p_Group->oPSchGroupBase.oPSchGroupVars.ullIDGroup)
+					{
+						p_Group->p_GroupAbove = p_GroupInt;
+						p_Group->p_GroupAbove->vp_ConnectedGroups.append(p_Group);
+						break;
+					}
 				}
 			}
 		}
@@ -1924,29 +1927,28 @@ void Environment::EraseGroupAt(int iPos)
 /// Рекурсивное удаление детей группы и все их элементы, включая основную.
 Group* Environment::EraseGroupAndChildrenAndElementsRecursively(Group* p_Group, bool bFirst)
 {
-	Group* p_GroupAboveInt = p_Group->p_GroupAbove;
+	Group* p_GroupAboveInt = nullptr;
 	//
-	while(!p_Group->vp_ConnectedElements.isEmpty())
+	for(int iF = 0; iF != p_Group->vp_ConnectedElements.count(); iF++)
 	{
-		Element* p_Element = p_Group->vp_ConnectedElements.at(0);
+		Element* p_Element = p_Group->vp_ConnectedElements.at(iF);
 		//
-		p_Group->vp_ConnectedElements.removeOne(p_Element);
 		EraseLinksForElement(p_Element);
 		RemoveObjectFromPBByPointer(Element, p_Element);
 	}
-	while(!p_Group->vp_ConnectedGroups.isEmpty()) // Пока есть дети...
+	for(int iF = 0; iF != p_Group->vp_ConnectedGroups.count(); iF++)
 	{
-		Group* p_GroupInt = p_Group->vp_ConnectedGroups.at(0); // Берём первую.
-		//
-		p_Group->vp_ConnectedGroups.removeAt(0); // Удаляем из списка.
-		EraseGroupAndChildrenAndElementsRecursively(p_GroupInt, false); // Рекурсия без удаления из группы-родителя (она сама).
+		// Рекурсия без удаления из группы-родителя (она сама).
+		EraseGroupAndChildrenAndElementsRecursively(p_Group->vp_ConnectedGroups.at(iF), false);
 	}
-	if(p_GroupAboveInt) // Если есть родитель.
+	if(bFirst)
 	{
-		if(bFirst) p_GroupAboveInt->vp_ConnectedGroups.removeAll(p_Group); // На первом входе удаляем группу из списка у родителя.
+		p_GroupAboveInt = p_Group->p_GroupAbove;
+		if(p_GroupAboveInt)
+			p_GroupAboveInt->vp_ConnectedGroups.removeAll(p_Group); // На первом входе удаляем группу из списка у родителя.
 	}
 	RemoveObjectFromPBByPointer(Group, p_Group); // Удаление группы.
-	return p_GroupAboveInt; // Возврат ук. на группу родителя для дальнейших действий или ноль при отсутствии.
+	return p_GroupAboveInt; // Возврат nullptr - родителей нет или адрес родителя.
 }
 
 // Рекурсивное удаление пустой группы и её пустых родителей рекурсивно.

@@ -17,8 +17,9 @@ class Group
 {
 public:
 	/// Конструктор
-	Group(PSchGroupBase& a_PSchGroupBase);
+	Group(PSchGroupBase& a_PSchGroupBase, bool bConnectWithParent = true);
 									///< \param[in] a_PSchGroupBase Ссылка на структуру с данными по группе.
+									///< \param[in] bConnectWithParent false - в прогрузке сцены, там зависимости расставляются после созд. групп.
 public:
 	PSchGroupBase oPSchGroupBase; ///< Структура с данными по группе.
 	QVector<Element*> vp_ConnectedElements; ///< Вектор указателей на элементы, включённые в группу.
