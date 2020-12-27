@@ -45,6 +45,7 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define SCH_CHANGES_ELEMENT_BIT_GROUP           0b00000100
 #define SCH_CHANGES_ELEMENT_BIT_ZPOS            0b00001000
 #define SCH_CHANGES_ELEMENT_BIT_MIN				0b00010000
+#define SCH_CHANGES_ELEMENT_BIT_EXTPORT			0b00100000
 //
 #define SCH_CHANGES_LINK_BIT_SCR_PORT_POS       0b00000001
 #define SCH_CHANGES_LINK_BIT_DST_PORT_POS       0b00000010
@@ -70,9 +71,7 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define _PSch_EG_Name(type)				struct PSch##type##Name{unsigned long long ullIDInt; char m_chName[SCH_OBJ_NAME_STR_LEN];			\
 											bool bLastInQueue;}
 #define _PSch_EG_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
-											SchEGGraph oSchEGGraph; bool bLastInQueue;}
-#define _PSch_BR_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
-											SchBRGraph oSchBRGraph; bool bLastInQueue;}
+											SchEGGraph oSchEGGraph; unsigned short int ushiExtPort; bool bLastInQueue;}
 #define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc; unsigned char uchSrcType;							\
 											unsigned long long ullIDDst; unsigned char uchDstType;											\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort;									\
