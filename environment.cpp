@@ -380,6 +380,29 @@ bool Environment::InitElementForEnv(PSchElementBase& a_oPSchElementBase, XMLNode
 		p_NodeMinimize = p_NodeMinimize; // Заглушка.
 		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
 	} FIND_IN_CHILDLIST_END(p_ListMinimizes);
+	if(uchElementTypeBits & SCH_SETTINGS_ELEMENT_BIT_EXTENDED)
+	{
+		FIND_IN_CHILDLIST(p_NodeElement, p_ListExtPorts,
+						  m_chExtPort, FCN_ONE_LEVEL, p_NodeExtPort)
+		{
+			strHelper = QString(p_NodeExtPort->FirstChild()->Value());
+			if(strHelper.isEmpty())
+			{
+				LOG_P_0(LOG_CAT_E,
+						m_chLogEnvFileCorrupt << m_chLogEnvElement << m_chLogEnvNodeFormatIncorrect <<
+						m_chLogWrong << m_chLogExtPort << m_chLogNode);
+				return false;
+			}
+			a_oPSchElementBase.oPSchElementVars.ushiExtPort = strHelper.toUShort();
+			bPresent = true;
+		} FIND_IN_CHILDLIST_END(p_ListExtPorts);
+	}
+	if(!bPresent)
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElement <<
+				m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogExtPort << m_chLogNode);
+		return false;
+	}
 	bPresent = false;
 	FIND_IN_CHILDLIST(p_NodeElement, p_ListZs,
 					  m_chZ, FCN_ONE_LEVEL, p_NodeZ)
@@ -436,8 +459,6 @@ bool Environment::LoadEnv()
 	QString strHelper;
 	list<XMLNode*> l_pGroups;
 	list<XMLNode*> l_pElements;
-	list<XMLNode*> l_pBroadcasters;
-	list<XMLNode*> l_pReceivers;
 	list<XMLNode*> l_pLinks;
 	list<XMLNode*> l_pZs;
 	//
@@ -867,6 +888,7 @@ bool Environment::SaveEnv()
 	XMLNode* p_NodeName;
 	XMLNode* p_NodeBkgColor;
 	XMLNode* p_NodeFrame;
+	XMLNode* p_NodeExtPort;
 	XMLNode* p_NodeZ;
 	XMLNode* p_NodeGroupID;
 	XMLNode* p_NodeSrcID;
@@ -955,6 +977,12 @@ bool Environment::SaveEnv()
 		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_EG_BIT_MIN)
 		{
 			p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chMinimized));
+		}
+		if(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits & SCH_SETTINGS_ELEMENT_BIT_EXTENDED)
+		{
+			p_NodeExtPort = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chExtPort));
+			p_NodeExtPort->ToElement()->
+					SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.ushiExtPort).toStdString().c_str());
 		}
 		p_NodeZ = p_NodeElement->InsertEndChild(xmlEnv.NewElement(m_chZ));
 		p_NodeZ->ToElement()->
@@ -1260,6 +1288,23 @@ bool Environment::NetOperations()
 											LOG_P_2(LOG_CAT_I, "Element [" <<
 													QString(p_Element->oPSchElementBase.m_chName).toStdString()
 													<< "] restored.");
+										}
+									}
+									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_EXTPORT)
+									{
+										p_Element->oPSchElementBase.oPSchElementVars.ushiExtPort = p_PSchElementVars->ushiExtPort;
+										if(p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits &
+										   SCH_SETTINGS_ELEMENT_BIT_RECEIVER)
+										{
+											LOG_P_2(LOG_CAT_I, "Receiver [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString()
+													<< "] external port changed.");
+										}
+										else
+										{
+											LOG_P_2(LOG_CAT_I, "Broadcaster [" <<
+													QString(p_Element->oPSchElementBase.m_chName).toStdString()
+													<< "] external port changed.");
 										}
 									}
 									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_GROUP)
