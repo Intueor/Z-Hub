@@ -171,7 +171,7 @@ void Environment::EventsQueue::AddGroupColorAndFlush(PSchGroupColor& aPSchGroupC
 gF:	while(iN < iQ)
 	{
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
-		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
+		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_GROUP)
 		{
 			PSchGroupColor* p_PSchGroupColorStored = (PSchGroupColor*)(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchGroupColorStored->ullIDInt == aPSchGroupColor.ullIDInt)
@@ -183,7 +183,7 @@ gF:	while(iN < iQ)
 		}
 		iN++;
 	}
-	_SQ_Util(QUEUE_COLORED_ELEMENT, PSchGroupColor);
+	_SQ_Util(QUEUE_COLORED_GROUP, PSchGroupColor);
 }
 // Добавление удаления группы.
 void Environment::EventsQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, bool bDirectionOut)
