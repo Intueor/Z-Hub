@@ -72,8 +72,8 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 											bool bLastInQueue;}
 #define _PSch_EG_Vars(type)				struct PSch##type##Vars{unsigned long long ullIDInt; unsigned long long ullIDGroup;					\
 											SchEGGraph oSchEGGraph; unsigned short int ushiExtPort; bool bLastInQueue;}
-#define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc; unsigned char uchSrcType;							\
-											unsigned long long ullIDDst; unsigned char uchDstType;											\
+#define _PSch_L_Vars					struct PSchLinkVars{unsigned long long ullIDSrc;													\
+											unsigned long long ullIDDst;																	\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort;									\
 											SchLGraph oSchLGraph; bool bLastInQueue;}
 #define _PSch_EG_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
