@@ -1157,17 +1157,13 @@ bool Environment::NetOperations()
 	//
 	bool bPresent = false;
 	unsigned short ushNewsQantity = 2;
-	bool bAllowToClient;
+	bool bAllowToClient = false;
 	//
 	if(MainWindow::p_Server->GetConnectionData(0, DONT_TRY_LOCK).iStatus != NO_CONNECTION)
 	{
 		if(MainWindow::p_Server->IsConnectionSecured(0))
 		{
 			bAllowToClient = true;
-		}
-		else
-		{
-			bAllowToClient = false;
 		}
 	}
 	if(bRequested) // Если был запрос сессии от клиента...
