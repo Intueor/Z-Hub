@@ -34,6 +34,7 @@ SOURCES += \
     main.cpp \
     main-window.cpp \
     main-hub.cpp \
+    pseudonym.cpp \
     tester.cpp \
     TinyXML2/tinyxml2.cpp \
     dlfcn-win32/dlfcn.c \
@@ -56,6 +57,7 @@ HEADERS += \
     logger.h \
     main-hub-defs.h \
     p_buffer.h \
+    pseudonym.h \
     tester.h \
     dlfcn-win32/dlfcn.h \
     pthread/include/pthread.h \

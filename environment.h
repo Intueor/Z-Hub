@@ -11,12 +11,14 @@
 #include "element.h"
 #include "link.h"
 #include "group.h"
+#include "pseudonym.h"
 #include "p_buffer.h"
 
 //== МАКРОСЫ.
 #define MAX_ELEMENTS				1024
 #define MAX_LINKS					4096
 #define MAX_GROUPS					512
+#define MAX_PSEUDONYMS				256
 #define QUEUE_NEW_ELEMENT			1
 #define QUEUE_CHANGED_ELEMENT		2
 #define QUEUE_RENAMED_ELEMENT		3
@@ -194,6 +196,7 @@ public:
 	StaticPBHeaderInit(Element,, MAX_ELEMENTS)
 	StaticPBHeaderInit(Link,, MAX_LINKS)
 	StaticPBHeaderInit(Group,, MAX_GROUPS)
+	StaticPBHeaderInit(Pseudonym,, MAX_PSEUDONYMS)
 	static bool bEnvThreadAlive; ///< Флаг живого потока среды.
 	static bool bStopEnvUpdate; ///< Сигнал на остановку потока среды.
 	static bool bRequested; ///< Наличие запроса от клиента.

@@ -63,6 +63,8 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define SCH_SETTINGS_ELEMENT_BIT_EXTENDED		0b00000100
 #define SCH_SETTINGS_ELEMENT_BIT_RECEIVER		0b00001000
 //============================ СТАНДАРТИЗАЦИЯ ОПРЕДЕЛЕНИЙ =========================
+#define _PSch_StatusInfo				struct PSchStatusInfo{unsigned char uchBits;}
+#define _PSch_ReadyFrame				struct PSchReadyFrame{DbFrame oDbFrame;}
 #define _PSch_EG_Eraser(type)			struct PSch##type##Eraser{unsigned long long ullIDInt; bool bLastInQueue;}
 #define _PSch_L_Eraser					struct PSchLinkEraser{unsigned long long ullIDSrc; unsigned long long ullIDDst;						\
 											unsigned short int ushiSrcPort; unsigned short int ushiDstPort; bool bLastInQueue;}
@@ -79,6 +81,8 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define _PSch_EG_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
 											unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 #define _PSch_L_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
+#define _PSch_P							struct PSchPseudonym{unsigned short int ushiPort; char m_chName[SCH_OBJ_NAME_STR_LEN];}
+#define _PSch_P_Eraser					struct PSchPseudonymEraser{unsigned short int ushiPort;}
 //============================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ =============================
 //============================= ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ ===========================
 /// Структура определения точки.
@@ -111,17 +115,8 @@ struct SchLGraph
 	unsigned char uchChangesBits; ///< Поле признаков актуальных полей при изменении.
 };
 //=============================== ИСПОЛЬЗУЕМЫЕ СТРУКТУРЫ ===========================
-/// Структура ответа готовности принятия фрейма схемы.
-struct PSchReadyFrame
-{
-	DbFrame oDbFrame; ///< Фрейм.
-};
-/// Структура готовности Хаба к работе с клиентом.
-struct PSchStatusInfo
-{
-	unsigned char uchBits; ///< Биты статуса.
-};
-/// Стандартизируемые определения.
+_PSch_StatusInfo;
+_PSch_ReadyFrame;
 _PSch_EG_Eraser(Element);
 _PSch_L_Eraser;
 _PSch_EG_Eraser(Group);
@@ -135,5 +130,7 @@ _PSch_EG_Vars(Group);
 _PSch_EG_Base(Element);
 _PSch_L_Base;
 _PSch_EG_Base(Group);
+_PSch_P;
+_PSch_P_Eraser;
 
 #endif // PROTOCOL_H

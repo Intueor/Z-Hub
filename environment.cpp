@@ -23,6 +23,7 @@ LOGDECL_INIT_PTHRD_INCLASS_EXT_ADD(Environment)
 StaticPBSourceInit(Element,, Environment, MAX_ELEMENTS)
 StaticPBSourceInit(Link,, Environment, MAX_LINKS)
 StaticPBSourceInit(Group,, Environment, MAX_GROUPS)
+StaticPBSourceInit(Pseudonym,, Environment, MAX_PSEUDONYMS);
 //
 char* Environment::p_chEnvNameInt = nullptr;
 bool Environment::bEnvLoaded = false;
@@ -255,6 +256,7 @@ Environment::~Environment()
 	ReleasePB(Group);
 	ReleasePB(Link);
 	ReleasePB(Element);
+	ReleasePB(Pseudonym);
 	delete p_EventsQueue;
 	LOG_CLOSE;
 }
@@ -449,6 +451,7 @@ bool Environment::LoadEnv()
 	PSchGroupBase oPSchGroupBase;
 	PSchElementBase oPSchElementBase;
 	PSchLinkBase oPSchLinkBase;
+	PSchPseudonym oPSchPseudonym;
 	XMLError eResult;
 	tinyxml2::XMLDocument xmlDocEnv;
 	QStringList lstrHelper;
@@ -462,6 +465,7 @@ bool Environment::LoadEnv()
 	list<XMLNode*> l_pElements;
 	list<XMLNode*> l_pLinks;
 	list<XMLNode*> l_pZs;
+	list<XMLNode*> l_pPseudonyms;
 	//
 	strEnvPath.clear();
 	strEnvFilename.clear();
@@ -512,6 +516,12 @@ bool Environment::LoadEnv()
 					   m_chLinks, FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
 		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLinks << m_chLogEnvNodeAbsend);
+		return false;
+	}
+	if(!FindChildNodes(xmlDocEnv.LastChild(), l_pPseudonyms,
+					   m_chPseudonyms, FCN_ONE_LEVEL, FCN_FIRST_ONLY))
+	{
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chPseudonyms << m_chLogEnvNodeAbsend);
 		return false;
 	}
 	// ГРУППЫ.
@@ -866,6 +876,56 @@ bool Environment::LoadEnv()
 		}
 		AppendToPB(Link, new Link(oPSchLinkBase));
 	} PARSE_CHILDLIST_END(p_ListLinks);
+	// ПСЕВДОНИМЫ.
+	PARSE_CHILDLIST(l_pPseudonyms.front(), p_ListPseudonyms, m_chPseudonym,
+					FCN_ONE_LEVEL, p_NodePseudonym)
+	{
+		memset(&oPSchPseudonym, 0, sizeof(oPSchPseudonym));
+		bPresent = false;
+		FIND_IN_CHILDLIST(p_NodePseudonym, p_ListPortIDs,
+						  m_chPortID, FCN_ONE_LEVEL, p_NodePortID)
+		{
+			strHelper = QString(p_NodePortID->FirstChild()->Value());
+			if(strHelper.isEmpty())
+			{
+				LOG_P_0(LOG_CAT_E,
+						m_chLogEnvFileCorrupt << m_chLogEnvPseudonym << m_chLogEnvNodeFormatIncorrect <<
+						m_chLogWrong << m_chLogPortID << m_chLogNode);
+				return false;
+			}
+			oPSchPseudonym.ushiPort = strHelper.toUShort();
+			bPresent = true;
+		} FIND_IN_CHILDLIST_END(p_ListPortIDs);
+		if(!bPresent)
+		{
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonym <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogPortID << m_chLogNode);
+			return false;
+		}
+		bPresent = false;
+		FIND_IN_CHILDLIST(p_NodePseudonym, p_ListNames,
+						  m_chName, FCN_ONE_LEVEL, p_NodeName)
+		{
+			strHelper = QString(p_NodeName->FirstChild()->Value());
+			if(strHelper.isEmpty())
+			{
+				LOG_P_0(LOG_CAT_E,
+						m_chLogEnvFileCorrupt << m_chLogEnvPseudonym << m_chLogEnvNodeFormatIncorrect <<
+						m_chLogWrong << m_chLogName << m_chLogNode);
+				return false;
+			}
+			memcpy(oPSchPseudonym.m_chName,
+				   strHelper.toStdString().c_str(), SizeOfChars(strHelper.toStdString().length() + 1));
+			bPresent = true;
+		} FIND_IN_CHILDLIST_END(p_ListNames);
+		if(!bPresent)
+		{
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonym <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
+			return false;
+		}
+		AppendToPB(Pseudonym, new Pseudonym(oPSchPseudonym));
+	} PARSE_CHILDLIST_END(p_ListPseudonyms);
 	//
 	LOG_P_1(LOG_CAT_I, "Environment has been initialized.");
 	bEnvLoaded = true;
@@ -887,6 +947,8 @@ bool Environment::SaveEnv()
 	XMLNode* p_NodeElement;
 	XMLNode* p_NodeLinks;
 	XMLNode* p_NodeLink;
+	XMLNode* p_NodePseudonyms;
+	XMLNode* p_NodePseudonym;
 	XMLNode* p_NodeID;
 	XMLNode* p_NodeName;
 	XMLNode* p_NodeBkgColor;
@@ -1025,6 +1087,19 @@ bool Environment::SaveEnv()
 				SetText((strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbX) + "," +
 						 strHTwo.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbY)).
 						toStdString().c_str());
+	}
+	p_NodePseudonyms = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chPseudonyms));
+	for(unsigned int iF = 0; iF != PBCount(Pseudonym); iF++)
+	{
+		XMLNode* p_NodePortID;
+		//
+		p_NodePseudonym = p_NodePseudonyms->InsertEndChild(xmlEnv.NewElement(m_chPseudonym));
+		p_NodePortID = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chID));
+		p_NodePortID->ToElement()->
+				SetText(strHOne.setNum(PBAccess(Pseudonym,iF)->oPSchPseudonym.ushiPort).toStdString().c_str());
+		p_NodeName = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chName));
+		p_NodeName->ToElement()->
+				SetText(PBAccess(Pseudonym,iF)->oPSchPseudonym.m_chName);
 	}
 	eResult = xmlEnv.SaveFile(strEnvPath.toStdString().c_str());
 	if (eResult != XML_SUCCESS)
