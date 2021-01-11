@@ -40,7 +40,6 @@
 								}}
 #define TryMutexUnlock(Mutex)	{if(*p_iLocked == 0) pthread_mutex_unlock(&Mutex);														\
 								delete p_iLocked;}
-
 // Сообщения.
 #define MSG_WRONG_CONNECTION    "Wrong connection number."
 
@@ -118,7 +117,8 @@ private:
 	char* p_chPocketsBufferPositionPointer; ///< Указатель на позицию в буфере.
 
 public:
-	static char m_chDec[];
-	static char m_chHex[];
+	static char m_chDec[]; ///< Десятичный набор символов.
+	static char m_chHex[]; ///< Шестнадцатиричный набор символов.
+	static pthread_attr_t _attr; ///< Атрибуты для безопасного создания потоков.
 };
 #endif // NET_HUB_H

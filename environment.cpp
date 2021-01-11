@@ -1076,7 +1076,7 @@ bool Environment::Start()
 	LOG_P_1(LOG_CAT_I, "Start environment.");
 	bRequested = false;
 	memset(&oPSchReadyFrame, 0, sizeof(PSchReadyFrame));
-	pthread_create(&thrEnv, nullptr, EnvThread, nullptr);
+	SafeThreadStart(thrEnv, EnvThread, nullptr);
 	return true;
 }
 
@@ -1122,7 +1122,7 @@ void* Environment::EnvThread(void *p_vPlug)
 	bEnvThreadAlive = false;
 	LOG_P_1(LOG_CAT_I, "Environment thread terminated.");
 	bStopEnvUpdate = false;
-	RETURN_THREAD
+	RETURN_THREAD;
 }
 
 // Проверка и установка признака последней новости.

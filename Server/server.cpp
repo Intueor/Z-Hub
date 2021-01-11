@@ -49,7 +49,7 @@ bool Server::Start(NetHub::IPPortPassword* p_IPPortPassword, char* p_chServerNam
 		memcpy(&oPServerName.m_chServerName, p_chServerName, SERVER_NAME_STR_LEN);
 		LOG_P_1(LOG_CAT_I, "Starting server thread.");
 		p_IPPortPasswordInt = p_IPPortPassword;
-		pthread_create(&ServerThr, nullptr, ServerThread, nullptr); // Запуск потока сервера.
+		SafeThreadStart(ServerThr, ServerThread, nullptr); // Запуск потока сервера.
 		return true;
 	}
 	LOG_P_0(LOG_CAT_E, "The server can`t be started - it is already running.");
@@ -886,14 +886,12 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 	if(iCurrPos == NO_CONNECTION)
 	{
 		LOG_P_0(LOG_CAT_I, "Server is full.");
-		pthread_create(&p_ThreadOverrunned, NULL,
-					   ConversationThread, &iCurrPos);
+		SafeThreadStart(p_ThreadOverrunned, ConversationThread, &iCurrPos);
 	}
 	else
 	{
 		LOG_P_1(LOG_CAT_I, "Free ID slot: " << iCurrPos);
-		pthread_create(&mThreadDadas[iCurrPos].p_Thread, nullptr,
-					   ConversationThread, &iCurrPos); // Создание нового потока приёмки.
+		SafeThreadStart(mThreadDadas[iCurrPos].p_Thread, ConversationThread, &iCurrPos); // Создание нового потока приёмки.
 	}
 	while(!bExitSignal)
 	{

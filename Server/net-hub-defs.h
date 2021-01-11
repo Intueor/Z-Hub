@@ -23,7 +23,10 @@
 #define PORT_STR_LEN				6
 #define IP_STR_LEN                  40
 #define BUFFER_IS_FULL				_NMG-1 // См. protocol.h для занятия нового свободного номера.
-#define RETURN_THREAD				pthread_exit(0); return 0;
+#define RETURN_THREAD				pthread_exit(0); return 0
+#define SafeThreadStart(id,fn,a_v)	pthread_attr_init(&NetHub::_attr); pthread_attr_setdetachstate(&NetHub::_attr, 1);		\
+									pthread_create(&id, &NetHub::_attr, fn, a_v);											\
+									pthread_attr_destroy(&NetHub::_attr)
 #define SizeOfChars(num)			(sizeof(char) * num)
 #define	DATA_ACCESS_ERROR			_NMG-2 // См. protocol.h для занятия нового свободного номера.
 #define	BUFFER_IS_EMPTY				_NMG-3 // См. protocol.h для занятия нового свободного номера.

@@ -8,11 +8,12 @@
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 char NetHub::m_chDec[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 char NetHub::m_chHex[] = {'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'};
+pthread_attr_t NetHub::_attr;
 
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс хаба сетевых операций.
 // Конструктор.
-NetHub::NetHub()
+NetHub::NetHub() : m_chPocketsBuffer("")
 {
 	ResetPocketsBufferPositionPointer();
 	memset(m_chPocketsBuffer, 0, sizeof(m_chPocketsBuffer));
@@ -67,7 +68,7 @@ bool NetHub::SendToAddress(ConnectionData &oConnectionData, bool bResetPointer)
 	sigaddset(&ssNewset, SIGPIPE);
 	pthread_sigmask(SIG_BLOCK, &ssNewset, &ssOldset);
 	iLength = (int)(p_chPocketsBufferPositionPointer - m_chPocketsBuffer);
-	oConnectionData.iStatus = (int)send(oConnectionData.iSocket, (void*)m_chPocketsBuffer, (size_t)iLength, 0);
+	oConnectionData.iStatus = (int)send(oConnectionData.iSocket, (const char*)m_chPocketsBuffer, (size_t)iLength, 0);
 #else
 	iLength = (int)(p_chPocketsBufferPositionPointer - m_chPocketsBuffer);
 	oConnectionData.iStatus = send(oConnectionData.iSocket,
