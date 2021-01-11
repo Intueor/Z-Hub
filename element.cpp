@@ -5,9 +5,8 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс элемента.
 // Конструктор.
-Element::Element(PSchElementBase& a_PSchElementBase)
+Element::Element(PSchElementBase& a_PSchElementBase) : oPSchElementBase(a_PSchElementBase)
 {
-	oPSchElementBase = a_PSchElementBase;
 	if(oPSchElementBase.oPSchElementVars.ullIDInt == 0)
 	{
 		oPSchElementBase.oPSchElementVars.ullIDInt = GenerateID();

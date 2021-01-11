@@ -365,14 +365,14 @@ bool MainWindow::SaveEnvConfig()
 // Кэлбэк обработки отслеживания статута клиентов.
 void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 {
-	char m_chIPNameBuffer[IP_STR_LEN];
-	char m_chPortNameBuffer[PORT_STR_LEN];
 	NetHub::ConnectionData oConnectionDataInt;
 	//
 	LOG_P_1(LOG_CAT_I, "ID: " << iConnection << " have status: " << bConnected);
 	oConnectionDataInt = p_Server->GetConnectionData(iConnection, DONT_TRY_LOCK);
 	if(oConnectionDataInt.iStatus != NO_CONNECTION)
 	{
+		char m_chIPNameBuffer[IP_STR_LEN];
+		char m_chPortNameBuffer[PORT_STR_LEN];
 		p_Server->FillIPAndPortNames(oConnectionDataInt, m_chIPNameBuffer, m_chPortNameBuffer, DONT_TRY_LOCK);
 		if(NetHub::CheckIPv4(m_chIPNameBuffer))
 		{
@@ -427,7 +427,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 		case PROTO_O_SCH_STATUS: // Отправка ответа о статусе среды при запросе клеинта.
 		{
 			//
-			oPSchStatusInfo = *((PSchStatusInfo*)p_ReceivedData);
+			oPSchStatusInfo = *static_cast<PSchStatusInfo*>(p_ReceivedData);
 			if(oPSchStatusInfo.uchBits & SCH_STATUS_READY)
 			{
 				oPSchStatusInfo.uchBits = 0;
@@ -454,7 +454,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 				bJustConnected = false;
 			}
 			Environment::bRequested = true;
-			Environment::oPSchReadyFrame = *((PSchReadyFrame*)p_ReceivedData);
+			Environment::oPSchReadyFrame = *static_cast<PSchReadyFrame*>(p_ReceivedData);
 			if(Environment::iLastFetchingSegNumber == UPLOAD_STATUS_EMPTY) goto gUO;
 			if(Environment::iLastFetchingSegNumber != UPLOAD_STATUS_INACTIVE) // Если идёт процесс выгрузки на клиент...
 			{
@@ -484,7 +484,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		/////////////////////////////////// ЭЛЕМЕНТ ////////////////////////////////////
 		case PROTO_O_SCH_ELEMENT_BASE:
 		{
-			p_PSchElementBase = ((PSchElementBase*)p_ReceivedData);
+			p_PSchElementBase = static_cast<PSchElementBase*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddNewElement(*p_PSchElementBase, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -492,7 +492,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_ELEMENT_VARS:
 		{
-			p_PSchElementVars = ((PSchElementVars*)p_ReceivedData);
+			p_PSchElementVars = static_cast<PSchElementVars*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddElementChanges(*p_PSchElementVars, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -500,7 +500,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_ELEMENT_NAME:
 		{
-			p_PSchElementName = ((PSchElementName*)p_ReceivedData);
+			p_PSchElementName = static_cast<PSchElementName*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddElementRenameAndFlush(*p_PSchElementName, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -508,7 +508,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_ELEMENT_COLOR:
 		{
-			p_PSchElementColor = ((PSchElementColor*)p_ReceivedData);
+			p_PSchElementColor = static_cast<PSchElementColor*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddElementColorAndFlush(*p_PSchElementColor, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -516,7 +516,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_ELEMENT_ERASE:
 		{
-			p_PSchElementEraser = ((PSchElementEraser*)p_ReceivedData);
+			p_PSchElementEraser = static_cast<PSchElementEraser*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddEraseElement(*p_PSchElementEraser, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -525,7 +525,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		/////////////////////////////////// ЛИНК ////////////////////////////////////
 		case PROTO_O_SCH_LINK_BASE:
 		{
-			p_PSchLinkBase = ((PSchLinkBase*)p_ReceivedData);
+			p_PSchLinkBase = static_cast<PSchLinkBase*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddNewLink(*p_PSchLinkBase, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -533,7 +533,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_LINK_VARS:
 		{
-			p_PSchLinkVars = ((PSchLinkVars*)p_ReceivedData);
+			p_PSchLinkVars = static_cast<PSchLinkVars*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddLinkChanges(*p_PSchLinkVars, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -541,7 +541,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_LINK_ERASE:
 		{
-			p_PSchLinkEraser = ((PSchLinkEraser*)p_ReceivedData);
+			p_PSchLinkEraser = static_cast<PSchLinkEraser*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddEraseLink(*p_PSchLinkEraser, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -550,7 +550,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		/////////////////////////////////// ГРУППА ////////////////////////////////////
 		case PROTO_O_SCH_GROUP_BASE:
 		{
-			p_PSchGroupBase = ((PSchGroupBase*)p_ReceivedData);
+			p_PSchGroupBase = static_cast<PSchGroupBase*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddNewGroup(*p_PSchGroupBase, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -558,7 +558,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_GROUP_VARS:
 		{
-			p_PSchGroupVars = ((PSchGroupVars*)p_ReceivedData);
+			p_PSchGroupVars = static_cast<PSchGroupVars*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddGroupChanges(*p_PSchGroupVars, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -566,7 +566,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_GROUP_NAME:
 		{
-			p_PSchGroupName = ((PSchGroupName*)p_ReceivedData);
+			p_PSchGroupName = static_cast<PSchGroupName*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddGroupRenameAndFlush(*p_PSchGroupName, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -574,7 +574,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_GROUP_COLOR:
 		{
-			p_PSchGroupColor = ((PSchGroupColor*)p_ReceivedData);
+			p_PSchGroupColor = static_cast<PSchGroupColor*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddGroupColorAndFlush(*p_PSchGroupColor, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);
@@ -582,7 +582,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 		}
 		case PROTO_O_SCH_GROUP_ERASE:
 		{
-			p_PSchGroupEraser = ((PSchGroupEraser*)p_ReceivedData);
+			p_PSchGroupEraser = static_cast<PSchGroupEraser*>(p_ReceivedData);
 			TryMutexLock(Environment::ptQueueMutex);
 			Environment::p_EventsQueue->AddEraseGroup(*p_PSchGroupEraser, QUEUE_FROM_CLIENT);
 			TryMutexUnlock(Environment::ptQueueMutex);

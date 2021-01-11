@@ -12,8 +12,9 @@
 														oQueueSegment.uchType = Type;											\
 														oQueueSegment.p_vUnitObject = (void*)(new Struct);						\
 														oQueueSegment.bDirectionOut = bDirectionOut;							\
-														*(Struct*)oQueueSegment.p_vUnitObject = a##Struct;						\
+														*static_cast<Struct*>(oQueueSegment.p_vUnitObject) = a##Struct;			\
 														l_Queue.append(oQueueSegment);
+#define	DRNodeMinimize									p_NodeMinimize = p_NodeMinimize
 //== ДЕКЛАРАЦИИ СТАТИЧЕСКИХ ПЕРЕМЕННЫХ.
 // Основное.
 LOGDECL_INIT_INCLASS(Environment)
@@ -72,7 +73,7 @@ gF:	while(iN < iQ)
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
 		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_ELEMENT)
 		{
-			PSchElementName* p_PSchElementNameStored = (PSchElementName*)(pc_QueueSegmentStored->p_vUnitObject);
+			PSchElementName* p_PSchElementNameStored = static_cast<PSchElementName*>(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchElementNameStored->ullIDInt == aPSchElementName.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -95,7 +96,7 @@ gF:	while(iN < iQ)
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
 		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
 		{
-			PSchElementColor* p_PSchElementColorStored = (PSchElementColor*)(pc_QueueSegmentStored->p_vUnitObject);
+			PSchElementColor* p_PSchElementColorStored = static_cast<PSchElementColor*>(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchElementColorStored->ullIDInt == aPSchElementColor.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -150,7 +151,7 @@ gF:	while(iN < iQ)
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
 		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_GROUP)
 		{
-			PSchGroupName* p_PSchGroupNameStored = (PSchGroupName*)(pc_QueueSegmentStored->p_vUnitObject);
+			PSchGroupName* p_PSchGroupNameStored = static_cast<PSchGroupName*>(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchGroupNameStored->ullIDInt == aPSchGroupName.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -173,7 +174,7 @@ gF:	while(iN < iQ)
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
 		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_GROUP)
 		{
-			PSchGroupColor* p_PSchGroupColorStored = (PSchGroupColor*)(pc_QueueSegmentStored->p_vUnitObject);
+			PSchGroupColor* p_PSchGroupColorStored = static_cast<PSchGroupColor*>(pc_QueueSegmentStored->p_vUnitObject);
 			if(p_PSchGroupColorStored->ullIDInt == aPSchGroupColor.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -204,19 +205,19 @@ void Environment::EventsQueue::Remove(int iNum)
 	//
 	switch(pc_QueueSegment->uchType)
 	{
-		case QUEUE_NEW_ELEMENT:{delete (PSchElementBase*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_CHANGED_ELEMENT:{delete (PSchElementVars*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_RENAMED_ELEMENT:{delete (PSchElementName*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_COLORED_ELEMENT:{delete (PSchElementColor*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_ERASED_ELEMENT:{delete (PSchElementEraser*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_NEW_LINK:{delete (PSchLinkBase*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_CHANGED_LINK:{delete (PSchLinkVars*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_ERASED_LINK:{delete (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_NEW_GROUP:{delete (PSchGroupBase*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_CHANGED_GROUP:{delete (PSchGroupVars*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_RENAMED_GROUP:{delete (PSchGroupName*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_COLORED_GROUP:{delete (PSchGroupColor*)pc_QueueSegment->p_vUnitObject; break;}
-		case QUEUE_ERASED_GROUP:{delete (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject; break;}
+		case QUEUE_NEW_ELEMENT:{delete static_cast<PSchElementBase*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_CHANGED_ELEMENT:{delete static_cast<PSchElementVars*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_RENAMED_ELEMENT:{delete static_cast<PSchElementName*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_COLORED_ELEMENT:{delete static_cast<PSchElementColor*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_ERASED_ELEMENT:{delete static_cast<PSchElementEraser*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_NEW_LINK:{delete static_cast<PSchLinkBase*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_CHANGED_LINK:{delete static_cast<PSchLinkVars*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_ERASED_LINK:{delete static_cast<PSchLinkEraser*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_NEW_GROUP:{delete static_cast<PSchGroupBase*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_CHANGED_GROUP:{delete static_cast<PSchGroupVars*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_RENAMED_GROUP:{delete static_cast<PSchGroupName*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_COLORED_GROUP:{delete static_cast<PSchGroupColor*>(pc_QueueSegment->p_vUnitObject); break;}
+		case QUEUE_ERASED_GROUP:{delete static_cast<PSchGroupEraser*>(pc_QueueSegment->p_vUnitObject); break;}
 	}
 	l_Queue.removeAt(iNum);
 }
@@ -264,7 +265,7 @@ bool Environment::InitElementForEnv(PSchElementBase& a_oPSchElementBase, XMLNode
 	bool bPresent;
 	QString strHelper;
 	QStringList lstrHelper;
-	//
+	// cppcheck-suppress memsetClassFloat
 	memset(&a_oPSchElementBase, 0, sizeof(a_oPSchElementBase));
 	bPresent = false;
 	FIND_IN_CHILDLIST(p_NodeElement, p_ListIDs,
@@ -377,7 +378,7 @@ bool Environment::InitElementForEnv(PSchElementBase& a_oPSchElementBase, XMLNode
 	FIND_IN_CHILDLIST(p_NodeElement, p_ListMinimizes,
 					  m_chMinimized, FCN_ONE_LEVEL, p_NodeMinimize)
 	{
-		p_NodeMinimize = p_NodeMinimize; // Заглушка.
+		DRNodeMinimize;
 		a_oPSchElementBase.oPSchElementVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
 	} FIND_IN_CHILDLIST_END(p_ListMinimizes);
 	if(uchElementTypeBits & SCH_SETTINGS_ELEMENT_BIT_EXTENDED)
@@ -517,6 +518,7 @@ bool Environment::LoadEnv()
 	PARSE_CHILDLIST(l_pGroups.front(), p_ListGroups, m_chGroup,
 					FCN_ONE_LEVEL, p_NodeGroup)
 	{
+		// cppcheck-suppress memsetClassFloat
 		memset(&oPSchGroupBase, 0, sizeof(oPSchGroupBase));
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListIDs,
@@ -628,7 +630,7 @@ bool Environment::LoadEnv()
 		FIND_IN_CHILDLIST(p_NodeGroup, p_ListMinimizes,
 						  m_chMinimized, FCN_ONE_LEVEL, p_NodeMinimize)
 		{
-			p_NodeMinimize = p_NodeMinimize; // Заглушка.
+			DRNodeMinimize;
 			oPSchGroupBase.oPSchGroupVars.oSchEGGraph.uchSettingsBits |= SCH_SETTINGS_EG_BIT_MIN;
 		} FIND_IN_CHILDLIST_END(p_ListMinimizes);
 		bPresent = false;
@@ -716,6 +718,7 @@ bool Environment::LoadEnv()
 	PARSE_CHILDLIST(l_pLinks.front(), p_ListLinks, m_chLink,
 					FCN_ONE_LEVEL, p_NodeLink)
 	{
+		// cppcheck-suppress memsetClassFloat
 		memset(&oPSchLinkBase, 0, sizeof(oPSchLinkBase));
 		bPresent = false;
 		FIND_IN_CHILDLIST(p_NodeLink, p_ListSrcIDs,
@@ -891,12 +894,6 @@ bool Environment::SaveEnv()
 	XMLNode* p_NodeExtPort;
 	XMLNode* p_NodeZ;
 	XMLNode* p_NodeGroupID;
-	XMLNode* p_NodeSrcID;
-	XMLNode* p_NodeSrcPortID;
-	XMLNode* p_NodeSrcPortPos;
-	XMLNode* p_NodeDstID;
-	XMLNode* p_NodeDstPortID;
-	XMLNode* p_NodeDstPortPos;
 	//
 	LOG_P_1(LOG_CAT_I, "Saving environment to: " << strEnvFilename.toStdString());
 	xmlEnv.InsertEndChild(xmlEnv.NewDeclaration());
@@ -998,6 +995,13 @@ bool Environment::SaveEnv()
 	p_NodeLinks = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chLinks));
 	for(unsigned int iF = 0; iF != PBCount(Link); iF++)
 	{
+		XMLNode* p_NodeSrcID;
+		XMLNode* p_NodeSrcPortID;
+		XMLNode* p_NodeSrcPortPos;
+		XMLNode* p_NodeDstID;
+		XMLNode* p_NodeDstPortID;
+		XMLNode* p_NodeDstPortPos;
+		//
 		p_NodeLink = p_NodeLinks->InsertEndChild(xmlEnv.NewElement(m_chLink));
 		p_NodeSrcID = p_NodeLink->InsertEndChild(xmlEnv.NewElement(m_chSrcID));
 		p_NodeSrcID->ToElement()->
@@ -1075,6 +1079,7 @@ bool Environment::Start()
 	}
 	LOG_P_1(LOG_CAT_I, "Start environment.");
 	bRequested = false;
+	// cppcheck-suppress memsetClassFloat
 	memset(&oPSchReadyFrame, 0, sizeof(PSchReadyFrame));
 	SafeThreadStart(thrEnv, EnvThread, nullptr);
 	return true;
@@ -1098,9 +1103,8 @@ bool Environment::CheckInitialized()
 }
 
 // Поток шагов среды.
-void* Environment::EnvThread(void *p_vPlug)
+void* Environment::EnvThread(void*)
 {
-	p_vPlug = p_vPlug;
 	bEnvThreadAlive = true;
 	LOG_P_1(LOG_CAT_I, "Environment thread alive.");
 	while(!bStopEnvUpdate)
@@ -1182,8 +1186,8 @@ bool Environment::NetOperations()
 				{
 					case QUEUE_NEW_ELEMENT:
 					{
-						p_PSchElementBase = (PSchElementBase*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchElementBase = static_cast<PSchElementBase*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchElementBase->oPSchElementVars.bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1206,8 +1210,8 @@ bool Environment::NetOperations()
 					}
 					case QUEUE_CHANGED_ELEMENT:
 					{
-						p_PSchElementVars = (PSchElementVars*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchElementVars = static_cast<PSchElementVars*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchElementVars->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1364,8 +1368,8 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 					}
 					case QUEUE_RENAMED_ELEMENT:
 					{
-						p_PSchElementName = (PSchElementName*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchElementName = static_cast<PSchElementName*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchElementName->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->
@@ -1401,8 +1405,8 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 					}
 					case QUEUE_COLORED_ELEMENT:
 					{
-						p_PSchElementColor = (PSchElementColor*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchElementColor = static_cast<PSchElementColor*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchElementColor->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1440,8 +1444,8 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 					}
 					case QUEUE_ERASED_ELEMENT:
 					{
-						p_PSchElementEraser = (PSchElementEraser*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchElementEraser = static_cast<PSchElementEraser*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchElementEraser->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1479,8 +1483,8 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 					}
 					case QUEUE_NEW_LINK:
 					{
-						p_PSchLinkBase = (PSchLinkBase*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchLinkBase = static_cast<PSchLinkBase*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchLinkBase->oPSchLinkVars.bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1523,8 +1527,8 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 					}
 					case QUEUE_CHANGED_LINK:
 					{
-						p_PSchLinkVars = (PSchLinkVars*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchLinkVars = static_cast<PSchLinkVars*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchLinkVars->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1576,8 +1580,8 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 					}
 					case QUEUE_ERASED_LINK:
 					{
-						p_PSchLinkEraser = (PSchLinkEraser*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchLinkEraser = static_cast<PSchLinkEraser*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchLinkEraser->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1620,8 +1624,8 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 					}
 					case QUEUE_NEW_GROUP:
 					{
-						p_PSchGroupBase = (PSchGroupBase*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchGroupBase = static_cast<PSchGroupBase*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchGroupBase->oPSchGroupVars.bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1644,8 +1648,8 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 					}
 					case QUEUE_CHANGED_GROUP:
 					{
-						p_PSchGroupVars = (PSchGroupVars*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchGroupVars = static_cast<PSchGroupVars*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchGroupVars->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1781,8 +1785,8 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 					}
 					case QUEUE_RENAMED_GROUP:
 					{
-						p_PSchGroupName = (PSchGroupName*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchGroupName = static_cast<PSchGroupName*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchGroupName->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1816,8 +1820,8 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 					}
 					case QUEUE_COLORED_GROUP:
 					{
-						p_PSchGroupColor = (PSchGroupColor*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchGroupColor = static_cast<PSchGroupColor*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchGroupColor->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
@@ -1855,8 +1859,8 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 					}
 					case QUEUE_ERASED_GROUP:
 					{
-						p_PSchGroupEraser = (PSchGroupEraser*)pc_QueueSegment->p_vUnitObject;
-						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) & bAllowToClient)
+						p_PSchGroupEraser = static_cast<PSchGroupEraser*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
 						{
 							CheckLastInQueue(ushNewsQantity, p_PSchGroupEraser->bLastInQueue);
 							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,

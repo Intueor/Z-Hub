@@ -316,14 +316,14 @@ int Server::ReleaseDataInPosition(int iConnection, uint uiPos, bool bTryLock)
 // Доступ к первому элементу заданного типа из массива принятых пакетов от текущего клиента.
 int Server::AccessSelectedTypeOfData(int iConnection, void** pp_vDataBuffer, unsigned short ushType, bool bTryLock)
 {
-	int iRes;
 	TryMutexInit;
 	//
 	if(bTryLock) TryMutexLock(ptConnMutex);
 	if(iConnection != NO_CONNECTION)
 	{
-		iRes = mThreadDadas[iConnection].
+		int iRes = mThreadDadas[iConnection].
 				oLocalNetHub.AccessSelectedTypeOfData(pp_vDataBuffer, mThreadDadas[iConnection].mReceivedPockets, ushType);
+		//
 		if(bTryLock) TryMutexUnlock(ptConnMutex);
 		return iRes;
 	}

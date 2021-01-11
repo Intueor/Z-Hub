@@ -2,6 +2,9 @@
 #include "proto-parser.h"
 #include "string.h"
 
+//== МАКРОСЫ.
+#define DisableRedundants				int iSizeOfStructure = 0; iSizeOfStructure = iSizeOfStructure; bDoNotStore = bDoNotStore
+
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс парсера протокола.
 // Парсинг пакета в соответствующий член хранилища класса парсера.
@@ -11,12 +14,10 @@ ProtoParser::ParseResult ProtoParser::ParsePocket(char* p_chData, int iLength,
 	unsigned short* p_ushCurrPos;
 	unsigned int* p_uiCurrPos;
 	ParseResult oParseResult;
-	int iSizeOfStructure = 0;
 	//
-	iSizeOfStructure = iSizeOfStructure; // Заглушка.
+	DisableRedundants;
 	oParseResult.iRes = PROTOPARSER_UNKNOWN_COMMAND;
 	oParseResult.bStored = false;
-	bDoNotStore = bDoNotStore;
 	int iCurrentLength;
 	bool bOutOfRange;
 	int iSizeOfHeader = sizeof(unsigned int) + sizeof(unsigned short);

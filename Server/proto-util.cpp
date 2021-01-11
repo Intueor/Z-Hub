@@ -5,7 +5,7 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс хранилища пакета протокола.
 // Конструктор.
-ProtocolStorage::ProtocolStorage()
+ProtocolStorage::ProtocolStorage() : ushTypeCode(0)
 {
 	p_Data = nullptr;
 }

@@ -172,7 +172,7 @@ public:
 
 private:
 	/// Поток шагов среды.
-	static void* EnvThread(void *p_vPlug);
+	static void* EnvThread(void*);
 										///< \param[in] p_vPlug Заглушка.
 										///< \return Заглушка.
 	/// Проверка и установка признака последней новости.

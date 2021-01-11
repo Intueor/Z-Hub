@@ -5,9 +5,8 @@
 //== ФУНКЦИИ КЛАССОВ.
 //== Класс линка.
 // Конструктор.
-Link::Link(PSchLinkBase& a_PSchLinkBase)
+Link::Link(PSchLinkBase& a_PSchLinkBase) : oPSchLinkBase(a_PSchLinkBase)
 {
-	oPSchLinkBase = a_PSchLinkBase;
 	p_SrcElement = nullptr;
 	p_DstElement = nullptr;
 	for(uint uiE = 0; uiE < PBCountExternal(Element, Environment); uiE++)

@@ -3,6 +3,6 @@
 
 //== ФУНКЦИИ.
 /// Тестовая функция для перехвата отладчиком момента изменения результата операций на ошибку.
-void DebugHelper(int iValue);
+void DebugHelper(int);
 
 #endif // TESTER_H
