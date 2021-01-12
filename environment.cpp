@@ -2041,7 +2041,7 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 							Pseudonym* p_Pseudonym;
 							int iPC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Pseudonym [" << QString(p_PSchElementBase->m_chName).toStdString()
+							LOG_P_2(LOG_CAT_I, "{In} Pseudonym [" << QString(p_PSchPseudonym->m_chName).toStdString()
 									<< "] from client.");
 							iPC = PBCount(Pseudonym);
 							for(int iP = 0; iP < iPC; iP++) // По всем псевдонимам...
