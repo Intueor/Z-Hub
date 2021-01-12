@@ -61,10 +61,6 @@ public:
 	static void UncheckSchemaCheckbox();
 
 private:
-	/// Загрузка каталога банов.
-	static bool LoadBansCatalogue(vector<Server::IPBanUnit>& o_vec_IPBanUnits);
-							///< \param[in] o_vec_IPBanUnits Ссылка на заполняемый вектор.
-							///< \return true, при удаче.
 	/// Процедуры запуска сервера.
 	static bool ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword);
 							///< \param[in] o_IPPortPassword Ссылка на структуру с описанием IP, порта и пароля сервера.
@@ -133,7 +129,6 @@ private:
 	static const char* cp_chUISettingsName; ///< Указатель на имя файла с установками UI.
 	static QSettings* p_UISettings; ///< Указатель на строку установок UI.
 	static QLabel* p_QLabelStatusBarText; ///< Указатель на объект метки статуса.
-	static vector<Server::IPBanUnit> vec_IPBanUnits; ///< Список банов по адресам.
 	static NetHub::IPPortPassword oIPPortPassword; ///< Структура со указателями на строки с установками сервера.
 	static char m_chServerName[SERVER_NAME_STR_LEN]; ///< Буфер под строку с именем сервера.
 	static char m_chIP[IP_STR_LEN]; ///< Буфер под строку адреса.

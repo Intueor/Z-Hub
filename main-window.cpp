@@ -21,7 +21,6 @@ Ui::MainWindow* MainWindow::p_ui = new Ui::MainWindow;
 QSettings* MainWindow::p_UISettings = nullptr;
 QLabel* MainWindow::p_QLabelStatusBarText;
 Server* MainWindow::p_Server = nullptr;
-vector<Server::IPBanUnit> MainWindow::vec_IPBanUnits;
 NetHub::IPPortPassword MainWindow::oIPPortPassword;
 char MainWindow::m_chServerName[SERVER_NAME_STR_LEN];
 char MainWindow::m_chIP[IP_STR_LEN];
@@ -70,7 +69,6 @@ MainWindow::MainWindow(QWidget* p_parent) :
 	{
 		LOG_P_0(LOG_CAT_W, m_chLogMainWindowIniAbsent);
 	}
-	if(!LoadBansCatalogue(vec_IPBanUnits)) goto gEI;
 	if(!LoadServerConfig(oIPPortPassword, m_chServerName))
 	{
 gEI:	uchInitRes = RETVAL_ERR;
@@ -78,7 +76,7 @@ gEI:	uchInitRes = RETVAL_ERR;
 		return;
 	}
 	if(!LoadEnvConfig(m_chEnvName)) goto gEI;
-	p_Server = new Server(LOG_MUTEX, &vec_IPBanUnits);
+	p_Server = new Server(LOG_MUTEX);
 	p_Server->SetClientStatusChangedCB(ClientStatusChangedCallback);
 	p_Server->SetClientDataArrivedCB(ClientDataArrivedCallback);
 	p_Server->SetClientRequestArrivedCB(ClientRequestArrivedCallback);
@@ -155,44 +153,6 @@ gNI:	delete p_Environment;
 	p_UISettings->setValue("WindowState", saveState());
 	// Splitters.
 	QMainWindow::closeEvent(p_Event);
-}
-
-// Загрузка каталога банов.
-bool MainWindow::LoadBansCatalogue(vector<Server::IPBanUnit>& o_vec_IPBanUnits)
-{
-	XMLError eResult;
-	tinyxml2::XMLDocument xmlDocBans;
-	Server::IPBanUnit oIPBanUnit;
-	QString strHelper;
-	list<XMLNode*> l_pIPBans;
-	//
-	eResult = xmlDocBans.LoadFile(S_BANS_CAT_PATH);
-	if (eResult != XML_SUCCESS)
-	{
-		LOG_P_0(LOG_CAT_E, m_chLogCantOpen << "bans catalogue file: " << S_BANS_CAT_PATH);
-		return false;
-	}
-	LOG_P_1(LOG_CAT_I, "Bans catalogue" << m_chLogIsLoaded);
-	if(!FindChildNodes(xmlDocBans.LastChild(), l_pIPBans,
-					   "IPBans", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
-	{
-		LOG_P_0(LOG_CAT_E, m_chLogBansCorrupt << "'IPBans' node is absend.");
-		return false;
-	}
-	PARSE_CHILDLIST(l_pIPBans.front(), p_ListIPs, "IP",
-					FCN_ONE_LEVEL, p_NodeIP)
-	{
-		strHelper = QString(p_NodeIP->FirstChild()->Value());
-		if(strHelper.isEmpty())
-		{
-			LOG_P_2(LOG_CAT_I, m_chLogBansCorrupt << "'IP' node is empty.");
-			return false;
-		}
-		memcpy(oIPBanUnit.m_chIP,
-			   strHelper.toStdString().c_str(), SizeOfChars(strHelper.toStdString().length() + 1));
-		o_vec_IPBanUnits.push_back(oIPBanUnit);
-	} PARSE_CHILDLIST_END(p_ListIPs);
-	return true;
 }
 
 // Загрузка конфигурации сервера.
