@@ -526,7 +526,7 @@ bool Environment::LoadEnv()
 	}
 	else
 	{
-		LOG_P_1(LOG_CAT_I, "Environment file loaded: [" << strEnvFilename.toStdString() << "].");
+		LOG_P_1(LOG_CAT_I, "Environment file loaded.");
 	}
 	//
 	FindChildNodes(xmlDocEnv.LastChild(), l_pZs, m_chZ, FCN_MULT_LEVELS, FCN_ALL);
@@ -1201,7 +1201,7 @@ bool Environment::Start()
 	{
 		if(!LoadEnv()) return false;
 	}
-	LOG_P_1(LOG_CAT_I, "Start environment.");
+	LOG_P_1(LOG_CAT_I, "Starting environment.");
 	bRequested = false;
 	// cppcheck-suppress memsetClassFloat
 	memset(&oPSchReadyFrame, 0, sizeof(PSchReadyFrame));
@@ -1212,7 +1212,7 @@ bool Environment::Start()
 // Остановка среды.
 void Environment::Stop()
 {
-	LOG_P_1(LOG_CAT_I, "Stop environment.");
+	LOG_P_1(LOG_CAT_I, "Stopping environment.");
 	bStopEnvUpdate = true;
 	while(bStopEnvUpdate)
 	{
