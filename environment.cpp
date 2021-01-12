@@ -1138,7 +1138,7 @@ bool Environment::SaveEnv()
 		XMLNode* p_NodePortID;
 		//
 		p_NodePseudonym = p_NodePseudonyms->InsertEndChild(xmlEnv.NewElement(m_chPseudonym));
-		p_NodePortID = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chID));
+		p_NodePortID = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chPortID));
 		p_NodePortID->ToElement()->
 				SetText(strHOne.setNum(PBAccess(Pseudonym,iF)->oPSchPseudonym.ushiPort).toStdString().c_str());
 		p_NodeName = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chName));
@@ -1185,6 +1185,10 @@ void Environment::FetchEnvToQueue()
 	for(unsigned int iF = 0; iF != uiL; iF++)
 	{
 		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
+	}
+	for(unsigned int iF = 0; iF != uiP; iF++)
+	{
+		p_EventsQueue->AddSetPseudonymAndFlush(PBAccess(Pseudonym,iF)->oPSchPseudonym, QUEUE_TO_CLIENT);
 	}
 	iLastFetchingSegNumber = (int)EventsQueue::uiCurrentSegNumber - 1; // Если не грузилось ничего, будет статус UPLOAD_STATUS_INACTIVE автом.
 gEm:TryMutexUnlock(ptQueueMutex);
@@ -2035,14 +2039,25 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 						else
 						{
 							Pseudonym* p_Pseudonym;
+							int iPC;
 							//
 							LOG_P_2(LOG_CAT_I, "{In} Pseudonym [" << QString(p_PSchElementBase->m_chName).toStdString()
 									<< "] from client.");
-
-
-
-
-
+							iPC = PBCount(Pseudonym);
+							for(int iP = 0; iP < iPC; iP++) // По всем псевдонимам...
+							{
+								Pseudonym* p_PseudonymOld;
+								//
+								p_PseudonymOld = PBAccess(Pseudonym, iP);
+								if(p_PSchPseudonym->ushiPort ==
+								   p_PseudonymOld->oPSchPseudonym.ushiPort) // При совп. с существующим...
+								{
+									LOG_P_2(LOG_CAT_I, "Pseudonym [" <<
+											QString(p_PseudonymOld->oPSchPseudonym.m_chName).toStdString() << "] replacing.");
+									RemoveObjectFromPBByPos(Pseudonym, iP);
+									break;
+								}
+							}
 							AppendToPB(Pseudonym, p_Pseudonym = new Pseudonym(*p_PSchPseudonym));
 						}
 						break;
@@ -2064,21 +2079,21 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 						}
 						else
 						{
-							int iGC;
+							int iPC;
 							//
 							LOG_P_2(LOG_CAT_I, "{In} Pseudonym for erase from client.");
-							iGC = PBCount(Pseudonym);
-							for(int iG = 0; iG < iGC; iG++) // По всем псевдонимам...
+							iPC = PBCount(Pseudonym);
+							for(int iP = 0; iP < iPC; iP++) // По всем псевдонимам...
 							{
 								Pseudonym* p_Pseudonym;
 								//
-								p_Pseudonym = PBAccess(Pseudonym, iG);
+								p_Pseudonym = PBAccess(Pseudonym, iP);
 								if(p_Pseudonym->oPSchPseudonym.ushiPort ==
 								   p_PSchPseudonymEraser->ushiPort) // При совп. с запрошенным...
 								{
 									LOG_P_2(LOG_CAT_I, "Pseudonym [" <<
 											QString(p_Pseudonym->oPSchPseudonym.m_chName).toStdString() << "] erase.");
-									RemoveObjectFromPBByPos(Pseudonym, iG);
+									RemoveObjectFromPBByPos(Pseudonym, iP);
 									goto gEOK;
 								}
 							}
