@@ -32,6 +32,8 @@
 #define QUEUE_RENAMED_GROUP			11
 #define QUEUE_COLORED_GROUP			12
 #define QUEUE_ERASED_GROUP			13
+#define QUEUE_SET_PSEUDONYM			14
+#define QUEUE_ERASED_PSEUDONYM		15
 #define QUEUE_TO_CLIENT				true
 #define QUEUE_FROM_CLIENT			false
 
@@ -59,56 +61,64 @@ public:
 		~EventsQueue();
 		/// Добавление нового элемента.
 		static void AddNewElement(PSchElementBase& aPSchElementBase, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementBase Ссылка объект базы элемента.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменений элемента.
 		static void AddElementChanges(PSchElementVars& aPSchElementVars, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementVars Ссылка объект переменных элемента.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменения имени элемента и очистка аналогов в очереди.
 		static void AddElementRenameAndFlush(PSchElementName& aPSchElementName, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementName Ссылка объект имени элемента.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменения цвета элемента и очистка аналогов в очереди.
 		static void AddElementColorAndFlush(PSchElementColor& aPSchElementColor, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementName Ссылка объект цвета элемента.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление удаления элемента.
 		static void AddEraseElement(PSchElementEraser& aPSchElementEraser, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchElementEraser Ссылка объект удаления элемента.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление нового линка.
 		static void AddNewLink(PSchLinkBase& aPSchLinkBase, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchLinkBase Ссылка объект базы линка.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменений линка.
 		static void AddLinkChanges(PSchLinkVars& aPSchLinkVars, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchLinkVars Ссылка объект переменных линка.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление удаления линка.
 		static void AddEraseLink(PSchLinkEraser& aPSchLinkEraser, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchLinkEraser Ссылка объект удаления элемента.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление новой группы.
 		static void AddNewGroup(PSchGroupBase& aPSchGroupBase, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupBase Ссылка объект базы группы.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменений группы.
 		static void AddGroupChanges(PSchGroupVars& aPSchGroupVars, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPShcGroupVars Ссылка объект переменных группы.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменения имени группы и очистка аналогов в очереди.
 		static void AddGroupRenameAndFlush(PSchGroupName& aPSchGroupName, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupName Ссылка объект имени группы.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление изменения цвета группы и очистка аналогов в очереди.
 		static void AddGroupColorAndFlush(PSchGroupColor& aPSchGroupColor, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupName Ссылка объект цвета группы.
+										///< \param[in] true, если от сервера к клиенту.
 		/// Добавление удаления группы.
 		static void AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, bool bDirectionOut);
-										///< \param[in] true, если от сервера к клиенту.
 										///< \param[in] aPSchGroupEraser Ссылка объект удаления группы.
+										///< \param[in] true, если от сервера к клиенту.
+		/// Добавление установки псевдонима и очистка аналогов в очереди.
+		static void AddSetPseudonymAndFlush(PSchPseudonym& aPSchPseudonym, bool bDirectionOut);
+										///< \param[in] aPSchPseudonym Ссылка объект псевдонима.
+										///< \param[in] true, если от сервера к клиент.
+		/// Добавление удаления псевдонима.
+		static void AddErasePseudonym(PSchPseudonymEraser& aPSchPseudonymEraser, bool bDirectionOut);
+										///< \param[in] aPSchPseudonym Ссылка объект псевдонима.
+										///< \param[in] true, если от сервера к клиент
 		/// Получение данных из позиции.
 		static const QueueSegment* Get(int iNum);
 										///< \param[in] iNum Номер позиции.

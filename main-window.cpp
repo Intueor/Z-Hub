@@ -417,6 +417,8 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 	PSchLinkVars* p_PSchLinkVars;
 	PSchLinkBase* p_PSchLinkBase;
 	PSchLinkEraser* p_PSchLinkEraser;
+	PSchPseudonym* p_PSchPseudonym;
+	PSchPseudonymEraser* p_PSchPseudonymEraser;
 	const Environment::EventsQueue::QueueSegment* pc_QueueSegment;
 	PSchStatusInfo oPSchStatusInfo;
 	//
@@ -445,7 +447,7 @@ void MainWindow::ClientDataArrivedCallback(int iConnection, unsigned short ushTy
 			}
 			goto gLEx;
 		}
-		//======== Раздел PROTO_O_SCH_READY. ========
+			//======== Раздел PROTO_O_SCH_READY. ========
 		case PROTO_O_SCH_READY:
 		{
 			if(bJustConnected)
@@ -481,7 +483,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 			}
 			break;
 		}
-		/////////////////////////////////// ЭЛЕМЕНТ ////////////////////////////////////
+			/////////////////////////////////// ЭЛЕМЕНТ ////////////////////////////////////
 		case PROTO_O_SCH_ELEMENT_BASE:
 		{
 			p_PSchElementBase = static_cast<PSchElementBase*>(p_ReceivedData);
@@ -522,7 +524,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
-		/////////////////////////////////// ЛИНК ////////////////////////////////////
+			/////////////////////////////////// ЛИНК ////////////////////////////////////
 		case PROTO_O_SCH_LINK_BASE:
 		{
 			p_PSchLinkBase = static_cast<PSchLinkBase*>(p_ReceivedData);
@@ -547,7 +549,7 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
-		/////////////////////////////////// ГРУППА ////////////////////////////////////
+			/////////////////////////////////// ГРУППА ////////////////////////////////////
 		case PROTO_O_SCH_GROUP_BASE:
 		{
 			p_PSchGroupBase = static_cast<PSchGroupBase*>(p_ReceivedData);
@@ -588,7 +590,23 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 			TryMutexUnlock(Environment::ptQueueMutex);
 			goto gLEx;
 		}
-		//======== Следующий раздел... ========
+		case PROTO_O_SCH_PSEUDONYM:
+		{
+			p_PSchPseudonym = static_cast<PSchPseudonym*>(p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
+			Environment::p_EventsQueue->AddSetPseudonymAndFlush(*p_PSchPseudonym, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
+			goto gLEx;
+		}
+		case PROTO_O_SCH_PSEUDONYM_ERASE:
+		{
+			p_PSchPseudonymEraser = static_cast<PSchPseudonymEraser*>(p_ReceivedData);
+			TryMutexLock(Environment::ptQueueMutex);
+			Environment::p_EventsQueue->AddErasePseudonym(*p_PSchPseudonymEraser, QUEUE_FROM_CLIENT);
+			TryMutexUnlock(Environment::ptQueueMutex);
+			goto gLEx;
+		}
+			//======== Следующий раздел... ========
 	}
 }
 

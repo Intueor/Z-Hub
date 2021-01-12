@@ -1,5 +1,5 @@
 //== ВКЛЮЧЕНИЯ.
-#include "pseudonym.h""
+#include "pseudonym.h"
 #include "main-window.h"
 
 //== ФУНКЦИИ КЛАССОВ.

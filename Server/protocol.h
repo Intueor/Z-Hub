@@ -22,6 +22,8 @@
 #define PROTO_O_SCH_GROUP_NAME          13
 #define PROTO_O_SCH_GROUP_COLOR			14
 #define PROTO_O_SCH_GROUP_ERASE			15
+#define PROTO_O_SCH_PSEUDONYM			16
+#define PROTO_O_SCH_PSEUDONYM_ERASE		17
 //============================= ПРИВЯЗКА ТИПОВ ПАКЕТОВ ============================
 #define PocketTypesHub												\
 CasePocket(PROTO_O_SCH_READY, PSchReadyFrame);						\
@@ -39,6 +41,8 @@ CasePocket(PROTO_O_SCH_GROUP_ERASE, PSchGroupEraser);				\
 CasePocket(PROTO_O_SCH_LINK_BASE, PSchLinkBase);					\
 CasePocket(PROTO_O_SCH_LINK_VARS, PSchLinkVars);					\
 CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
+CasePocket(PROTO_O_SCH_PSEUDONYM, PSchPseudonym);					\
+CasePocket(PROTO_O_SCH_PSEUDONYM_ERASE, PSchPseudonymEraser);		\
 //============================= КОДЫ ПОЛЕЙ ПРИЗНАКОВ ==============================
 #define SCH_CHANGES_ELEMENT_BIT_BUSY            0b00000001
 #define SCH_CHANGES_ELEMENT_BIT_FRAME           0b00000010
@@ -81,8 +85,8 @@ CasePocket(PROTO_O_SCH_LINK_ERASE, PSchLinkEraser);					\
 #define _PSch_EG_Base(type)				struct PSch##type##Base{PSch##type##Vars oPSch##type##Vars; char m_chName[SCH_OBJ_NAME_STR_LEN];	\
 											unsigned int uiObjectBkgColor; bool bRequestGroupUpdate;}
 #define _PSch_L_Base					struct PSchLinkBase{PSchLinkVars oPSchLinkVars;}
-#define _PSch_P							struct PSchPseudonym{unsigned short int ushiPort; char m_chName[SCH_OBJ_NAME_STR_LEN];}
-#define _PSch_P_Eraser					struct PSchPseudonymEraser{unsigned short int ushiPort;}
+#define _PSch_P							struct PSchPseudonym{unsigned short int ushiPort; char m_chName[SCH_OBJ_NAME_STR_LEN]; bool bLastInQueue;}
+#define _PSch_P_Eraser					struct PSchPseudonymEraser{unsigned short int ushiPort; bool bLastInQueue;}
 //============================== СТРУКТУРЫ ДЛЯ ПАКЕТОВ =============================
 //============================= ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ ===========================
 /// Структура определения точки.

@@ -23,7 +23,7 @@ LOGDECL_INIT_PTHRD_INCLASS_EXT_ADD(Environment)
 StaticPBSourceInit(Element,, Environment, MAX_ELEMENTS)
 StaticPBSourceInit(Link,, Environment, MAX_LINKS)
 StaticPBSourceInit(Group,, Environment, MAX_GROUPS)
-StaticPBSourceInit(Pseudonym,, Environment, MAX_PSEUDONYMS);
+StaticPBSourceInit(Pseudonym,, Environment, MAX_PSEUDONYMS)
 //
 char* Environment::p_chEnvNameInt = nullptr;
 bool Environment::bEnvLoaded = false;
@@ -69,12 +69,15 @@ void Environment::EventsQueue::AddElementRenameAndFlush(PSchElementName& aPSchEl
 	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
+	//
 gF:	while(iN < iQ)
 	{
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		//
 		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_ELEMENT)
 		{
 			PSchElementName* p_PSchElementNameStored = static_cast<PSchElementName*>(pc_QueueSegmentStored->p_vUnitObject);
+			//
 			if(p_PSchElementNameStored->ullIDInt == aPSchElementName.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -92,12 +95,15 @@ void Environment::EventsQueue::AddElementColorAndFlush(PSchElementColor& aPSchEl
 	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
+	//
 gF:	while(iN < iQ)
 	{
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		//
 		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_ELEMENT)
 		{
 			PSchElementColor* p_PSchElementColorStored = static_cast<PSchElementColor*>(pc_QueueSegmentStored->p_vUnitObject);
+			//
 			if(p_PSchElementColorStored->ullIDInt == aPSchElementColor.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -147,12 +153,15 @@ void Environment::EventsQueue::AddGroupRenameAndFlush(PSchGroupName& aPSchGroupN
 	// Удаление всех предыдущих переименований в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
+	//
 gF:	while(iN < iQ)
 	{
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		//
 		if(pc_QueueSegmentStored->uchType == QUEUE_RENAMED_GROUP)
 		{
 			PSchGroupName* p_PSchGroupNameStored = static_cast<PSchGroupName*>(pc_QueueSegmentStored->p_vUnitObject);
+			//
 			if(p_PSchGroupNameStored->ullIDInt == aPSchGroupName.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -170,12 +179,15 @@ void Environment::EventsQueue::AddGroupColorAndFlush(PSchGroupColor& aPSchGroupC
 	// Удаление всех предыдущих перекрасов в цепочке (ни на что не отразится).
 	int iQ = l_Queue.count();
 	int iN = 0;
+	//
 gF:	while(iN < iQ)
 	{
 		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		//
 		if(pc_QueueSegmentStored->uchType == QUEUE_COLORED_GROUP)
 		{
 			PSchGroupColor* p_PSchGroupColorStored = static_cast<PSchGroupColor*>(pc_QueueSegmentStored->p_vUnitObject);
+			//
 			if(p_PSchGroupColorStored->ullIDInt == aPSchGroupColor.ullIDInt)
 			{
 				l_Queue.removeAt(iN);
@@ -192,7 +204,39 @@ void Environment::EventsQueue::AddEraseGroup(PSchGroupEraser& aPSchGroupEraser, 
 {
 	_SQ_Util(QUEUE_ERASED_GROUP, PSchGroupEraser);
 }
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// ПСЕВДОНИМ ////////////////////////////////////
+// Добавление нового псевдонима и очистка аналогов в очереди.
+void Environment::EventsQueue::AddSetPseudonymAndFlush(PSchPseudonym& aPSchPseudonym, bool bDirectionOut)
+{
+	// Удаление всех предыдущих псевдонимов в цепочке (ни на что не отразится).
+	int iQ = l_Queue.count();
+	int iN = 0;
+	//
+gF:	while(iN < iQ)
+	{
+		const QueueSegment* pc_QueueSegmentStored = &l_Queue.at(iN);
+		//
+		if(pc_QueueSegmentStored->uchType == QUEUE_SET_PSEUDONYM)
+		{
+			PSchPseudonym* p_PSchPseudonymStored = static_cast<PSchPseudonym*>(pc_QueueSegmentStored->p_vUnitObject);
+			//
+			if(p_PSchPseudonymStored->ushiPort == aPSchPseudonym.ushiPort)
+			{
+				l_Queue.removeAt(iN);
+				iQ--;
+				goto gF;
+			}
+		}
+		iN++;
+	}
+	_SQ_Util(QUEUE_SET_PSEUDONYM, PSchPseudonym);
+}
+// Добавление удаления псевдонима.
+void Environment::EventsQueue::AddErasePseudonym(PSchPseudonymEraser& aPSchPseudonymEraser, bool bDirectionOut)
+{
+	_SQ_Util(QUEUE_ERASED_PSEUDONYM, PSchPseudonymEraser);
+}
+//////////////////////////////////////////////////////////////////////////////////
 // Получение данных из позиции.
 const Environment::EventsQueue::QueueSegment* Environment::EventsQueue::Get(int iNum)
 {
@@ -1117,6 +1161,7 @@ void Environment::FetchEnvToQueue()
 	unsigned int uiG = PBCount(Group);
 	unsigned int uiE = PBCount(Element);
 	unsigned int uiL = PBCount(Link);
+	unsigned int uiP = PBCount(Pseudonym);
 	//
 	while(p_EventsQueue->Count() != 0)
 	{
@@ -1124,7 +1169,7 @@ void Environment::FetchEnvToQueue()
 	}
 	TryMutexInit;
 	TryMutexLock(ptQueueMutex);
-	if((uiG + uiE + uiL) == 0)
+	if((uiG + uiE + uiL + uiP) == 0)
 	{
 		iLastFetchingSegNumber = UPLOAD_STATUS_EMPTY;
 		goto gEm;
@@ -1233,6 +1278,8 @@ bool Environment::NetOperations()
 	PSchGroupName* p_PSchGroupName;
 	PSchGroupColor* p_PSchGroupColor;
 	PSchGroupEraser* p_PSchGroupEraser;
+	PSchPseudonym* p_PSchPseudonym;
+	PSchPseudonymEraser* p_PSchPseudonymEraser;
 	//
 	bool bPresent = false;
 	unsigned short ushNewsQantity = 2;
@@ -1969,7 +2016,75 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 							}
 							LOG_P_0(LOG_CAT_W, "Wrong group number for erase from client.");
 						}
-gEOK:							break;
+						break;
+					}
+					case QUEUE_SET_PSEUDONYM:
+					{
+						p_PSchPseudonym = static_cast<PSchPseudonym*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchPseudonym->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_PSEUDONYM,
+																					  (char*)p_PSchPseudonym,
+																					  sizeof(PSchPseudonym)));
+							LOG_P_2(LOG_CAT_I, "{Out} New pseudonym [" << QString(p_PSchPseudonym->m_chName).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							Pseudonym* p_Pseudonym;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Pseudonym [" << QString(p_PSchElementBase->m_chName).toStdString()
+									<< "] from client.");
+
+
+
+
+
+							AppendToPB(Pseudonym, p_Pseudonym = new Pseudonym(*p_PSchPseudonym));
+						}
+						break;
+					}
+					case QUEUE_ERASED_PSEUDONYM:
+					{
+						p_PSchPseudonymEraser = static_cast<PSchPseudonymEraser*>(pc_QueueSegment->p_vUnitObject);
+						if((pc_QueueSegment->bDirectionOut == QUEUE_TO_CLIENT) && bAllowToClient)
+						{
+							CheckLastInQueue(ushNewsQantity, p_PSchPseudonymEraser->bLastInQueue);
+							LCHECK_BOOL(MainWindow::p_Server->AddPocketToOutputBuffer(0,
+																					  PROTO_O_SCH_PSEUDONYM_ERASE,
+																					  (char*)p_PSchPseudonymEraser,
+																					  sizeof(PSchPseudonymEraser)));
+							LOG_P_2(LOG_CAT_I, "{Out} Erased pseudonym for port [" <<
+									QString::number(p_PSchPseudonymEraser->ushiPort).toStdString()
+									<< m_chLogSentToClient);
+							bPresent = true;
+						}
+						else
+						{
+							int iGC;
+							//
+							LOG_P_2(LOG_CAT_I, "{In} Pseudonym for erase from client.");
+							iGC = PBCount(Pseudonym);
+							for(int iG = 0; iG < iGC; iG++) // По всем псевдонимам...
+							{
+								Pseudonym* p_Pseudonym;
+								//
+								p_Pseudonym = PBAccess(Pseudonym, iG);
+								if(p_Pseudonym->oPSchPseudonym.ushiPort ==
+								   p_PSchPseudonymEraser->ushiPort) // При совп. с запрошенным...
+								{
+									LOG_P_2(LOG_CAT_I, "Pseudonym [" <<
+											QString(p_Pseudonym->oPSchPseudonym.m_chName).toStdString() << "] erase.");
+									RemoveObjectFromPBByPos(Pseudonym, iG);
+									goto gEOK;
+								}
+							}
+							LOG_P_0(LOG_CAT_W, "Wrong pseudonym number for erase from client.");
+						}
+gEOK:					break;
 					}
 				}
 				p_EventsQueue->Remove(0);
