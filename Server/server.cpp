@@ -201,12 +201,12 @@ gUE:if(bRes == false) // При невозможности отправки из
 		{
 			if(mThreadDadas[iConnection].bSecured == false) // При неавторизованном клиенте отправка засчитывается.
 			{
-				LOG_P_1(LOG_CAT_W, "Sending rejected due to not secured for: " << iConnection);
+				LOG_P_1(LOG_CAT_W, "Sending rejected due to not secured for: [" << iConnection << "].");
 				bRes = true;
 			}
 			else
 			{
-				LOG_P_0(LOG_CAT_E, "Sending failed for: " << iConnection);
+				LOG_P_0(LOG_CAT_E, "Sending failed for: [" << iConnection << "].");
 			}
 		}
 	}
@@ -237,12 +237,12 @@ gUE:if(bRes == false)  // При невозможности отправки и�
 		{
 			if(mThreadDadas[iConnection].bSecured == false) // При неавторизованном клиенте отправка засчитывается.
 			{
-				LOG_P_1(LOG_CAT_W, "Sending rejected due to not secured for: " << iConnection);
+				LOG_P_1(LOG_CAT_W, "Sending rejected due to not secured for: [" << iConnection << "].");
 				bRes = true;
 			}
 			else
 			{
-				LOG_P_0(LOG_CAT_E, "Sending failed for: " << iConnection);
+				LOG_P_0(LOG_CAT_E, "Sending failed for: [" << iConnection << "].");
 			}
 		}
 	}
@@ -488,7 +488,7 @@ gBA:if(iTPos != NO_CONNECTION)
 		mThreadDadas[iTPos].bKick = false;
 		mThreadDadas[iTPos].p_Thread = pthread_self(); // Задали ссылку на текущий поток.
 #ifndef WIN32
-		LOG_P_1(LOG_CAT_I, "Waiting for connection on thread: " << mThreadDadas[iTPos].p_Thread);
+		LOG_P_1(LOG_CAT_I, "Waiting for connection on thread: [" << mThreadDadas[iTPos].p_Thread << "].");
 #else
 		LOG_P_1(LOG_CAT_I, "Waiting connection on thread: " << mThreadDadas[iTPos].p_Thread.p);
 #endif
@@ -496,7 +496,7 @@ gBA:if(iTPos != NO_CONNECTION)
 	else
 	{
 #ifndef WIN32
-		LOG_P_1(LOG_CAT_I, "Waiting for connection on reserved thread: " << pthread_self());
+		LOG_P_1(LOG_CAT_I, "Waiting for connection on reserved thread: [" << pthread_self() << "].");
 #else
 		LOG_P_1(LOG_CAT_I, "Waiting connection on reserved thread: " << pthread_self().p);
 #endif
@@ -513,14 +513,16 @@ gAG:	iTempListener = (int)accept(iListener, nullptr, nullptr); // Ждём пе�
 #else
 			closesocket(iTempListener);
 #endif
+#ifndef LOG_LEVEL_0
 			if(NetHub::CheckIPv4(m_chIPNameBuffer))
 			{
-				LOG_P_1(LOG_CAT_W, "Connection rejected for: " << m_chIPNameBuffer);
+				LOG_P_1(LOG_CAT_W, "IPv4 connection rejected for: [" << m_chIPNameBuffer << "].");
 			}
 			else
 			{
-				LOG_P_1(LOG_CAT_W, "Connection rejected for: [" << m_chIPNameBuffer << "]");
+				LOG_P_1(LOG_CAT_W, "IPv6 connection rejected for: [" << m_chIPNameBuffer << "].");
 			}
+#endif
 			goto gAG;
 		}
 		iTPos = iTempTPos;
@@ -533,7 +535,7 @@ gAG:	iTempListener = (int)accept(iListener, nullptr, nullptr); // Ждём пе�
 		if(!bExitSignal) // Если не было сигнала на выход от основного потока...
 		{
 			pthread_mutex_lock(&ptConnMutex);
-			LOG_P_0(LOG_CAT_E, "'accept': " << gai_strerror(mThreadDadas[iTPos].oConnectionData.iSocket)); // Про ошибку.
+			LOG_P_0(LOG_CAT_E, "'accept': [" << gai_strerror(mThreadDadas[iTPos].oConnectionData.iSocket) << "]."); // Про ошибку.
 			RETVAL_SET(RETVAL_ERR);
 			goto enc;
 		}
@@ -571,7 +573,7 @@ gOE:		pthread_mutex_lock(&ptConnMutex);
 		{
 			if(!strcmp((*p_vIPBansInt).at(uiN).m_chIP, m_chIPNameBuffer))
 			{
-				LOG_P_0(LOG_CAT_W, "Connection is rejected due to a ban for: " << m_chIPNameBuffer);
+				LOG_P_0(LOG_CAT_W, "Connection is rejected due to a ban for: [" << m_chIPNameBuffer << "].");
 				SendToConnectionImmediately(iTPos, PROTO_S_BAN);
 				MSleep(WAITING_FOR_CLIENT_DSC);
 #ifndef WIN32
@@ -586,11 +588,11 @@ gOE:		pthread_mutex_lock(&ptConnMutex);
 	}
 	LOG_P_1(LOG_CAT_I, "New connection is accepted.");
 	mThreadDadas[iTPos].bInUse = true; // Флаг занятости структуры.
-	LOG_P_1(LOG_CAT_I, "Connected with: " << m_chIPNameBuffer << ":" << m_chPortNameBuffer << " ID: " << iTPos);
+	LOG_P_1(LOG_CAT_I, "Connected with: [" << m_chIPNameBuffer << ":" << m_chPortNameBuffer << "] ID: [" << iTPos << "].");
 	if(mThreadDadas[iTPos].oConnectionData.iStatus == -1) // Если не вышло отправить...
 	{
 		pthread_mutex_lock(&ptConnMutex);
-		LOG_P_0(LOG_CAT_E, "'send': " << gai_strerror(mThreadDadas[iTPos].oConnectionData.iStatus));
+		LOG_P_0(LOG_CAT_E, "'send': [" << gai_strerror(mThreadDadas[iTPos].oConnectionData.iStatus) << "].");
 		RETVAL_SET(RETVAL_ERR);
 		goto ec;
 	}
@@ -611,12 +613,12 @@ gOE:		pthread_mutex_lock(&ptConnMutex);
 		pthread_mutex_lock(&ptConnMutex);
 		if (bExitSignal == true) // Если по выходу из приёмки обнаружен общий сигнал на выход...
 		{
-			LOG_P_1(LOG_CAT_I, "Exiting reading from ID: " << iTPos);
+			LOG_P_1(LOG_CAT_I, "Exiting reading from ID: [" << iTPos << "].");
 			goto ecd;
 		}
 		if (mThreadDadas[iTPos].oConnectionData.iStatus <= 0) // Если статус приёмки - отказ (вместо принятых байт)...
 		{
-			LOG_P_1(LOG_CAT_I, "Reading socket stopped for ID: " << iTPos);
+			LOG_P_1(LOG_CAT_I, "Reading socket stopped for ID: [" << iTPos << "].");
 			goto ecd;
 		}
 		p_chData = mThreadDadas[iTPos].m_chData;
@@ -658,13 +660,13 @@ gDp:	mThreadDadas[iTPos].iCurrentFreePocket =
 							mThreadDadas[iTPos].bSecured = true;
 							SendToConnectionImmediately(iTPos, PROTO_S_SERVER_NAME, false,
 														(char*)&oPServerName, sizeof(PServerName));
-							LOG_P_1(LOG_CAT_I, "Connection is secured for ID: " << iTPos);
+							LOG_P_1(LOG_CAT_I, "Connection is secured for ID: [" << iTPos << "].");
 						}
 						else
 						{
 							SendToConnectionImmediately(iTPos, PROTO_S_PASSW_ERR);
 							mThreadDadas[iTPos].bSecured = false;
-							LOG_P_0(LOG_CAT_W, "Authentification failed for ID: " << iTPos);
+							LOG_P_0(LOG_CAT_W, "Authentification failed for ID: [" << iTPos << "].");
 						}
 						p_CurrentData->oProtocolStorage.Release();
 						p_CurrentData->bBusy = false;
@@ -675,7 +677,7 @@ gDp:	mThreadDadas[iTPos].iCurrentFreePocket =
 						if(oParsingResult.ushTypeCode != PROTO_C_REQUEST_LEAVING)
 						{
 							SendToConnectionImmediately(iTPos, PROTO_S_UNSECURED);
-							LOG_P_0(LOG_CAT_W, "Client is not autherised, ID: " << iTPos);
+							LOG_P_0(LOG_CAT_W, "Client is not autherised, ID: [" << iTPos << "].");
 						}
 						goto gI;
 					}
@@ -700,21 +702,21 @@ gI:				switch(oParsingResult.ushTypeCode)
 				{
 					case PROTO_C_BUFFER_FULL:
 					{
-						LOG_P_1(LOG_CAT_W, "Buffer is full on ID: " << iTPos);
+						LOG_P_1(LOG_CAT_W, "Buffer is full on ID: [" << iTPos << "].");
 						mThreadDadas[iTPos].bFullOnClient = true;
 						break;
 					}
 					case PROTO_A_BUFFER_READY:
 					{
-						LOG_P_1(LOG_CAT_I, "Buffer is ready on ID: " << iTPos);
+						LOG_P_1(LOG_CAT_I, "Buffer is ready on ID: [" << iTPos << "].");
 						mThreadDadas[iTPos].bFullOnClient = false;
 						break;
 					}
 					case PROTO_C_REQUEST_LEAVING:
 					{
-						LOG_P_1(LOG_CAT_I, "ID: " << iTPos << " request leaving.");
+						LOG_P_1(LOG_CAT_I, "ID: [" << iTPos << "] request leaving.");
 						SendToConnectionImmediately(iTPos, PROTO_S_ACCEPT_LEAVING);
-						LOG_P_1(LOG_CAT_I, "ID: " << iTPos << " leaving accepted.");
+						LOG_P_1(LOG_CAT_I, "ID: [" << iTPos << "] leaving accepted.");
 						bLocalExitSignal = true; // Флаг самостоятельного отключения клиента.
 						MSleep(WAITING_FOR_CLIENT_DSC); // Ожидание самостоятельного отключения клиента.
 						goto ecd;
@@ -732,19 +734,19 @@ gI:				switch(oParsingResult.ushTypeCode)
 			case PROTOPARSER_UNKNOWN_COMMAND:
 			{
 				SendToConnectionImmediately(iTPos, PROTO_S_UNKNOWN_COMMAND);
-				LOG_P_0(LOG_CAT_W, (char*)MSG_UNKNOWN_COMMAND  << ": '" << oParsingResult.ushTypeCode << "'"
-					  << " from ID: " << iTPos);
+				LOG_P_0(LOG_CAT_W, (char*)MSG_UNKNOWN_COMMAND  << ": [" << oParsingResult.ushTypeCode << "]"
+					  << " from ID: [" << iTPos << "].");
 				break;
 			}
 			case PROTOPARSER_WRONG_FORMAT:
 			{
-				LOG_P_0(LOG_CAT_W, "ID: " << iTPos << (char*)MSG_WRONG_FORMAT);
+				LOG_P_0(LOG_CAT_W, "ID: [" << iTPos << "]" << (char*)MSG_WRONG_FORMAT);
 				break;
 			}
 		}
 		if(mThreadDadas[iTPos].oLocalNetHub.FindFreeReceivedPocketsPos(mThreadDadas[iTPos].mReceivedPockets) == BUFFER_IS_FULL)
 		{
-			LOG_P_1(LOG_CAT_W, "Buffer is full for ID: " << iTPos);
+			LOG_P_1(LOG_CAT_W, "Buffer is full for ID: [" << iTPos << "].");
 			mThreadDadas[iTPos].bFullOnServer = true;
 			SendToConnectionImmediately(iTPos, PROTO_S_BUFFER_FULL);
 		}
@@ -765,11 +767,11 @@ ec: if(bLocalExitSignal == false) // Если не было локального
 		{
 			if(mThreadDadas[iTPos].bKick)
 			{
-				LOG_P_1(LOG_CAT_W, "Closed due kicking out: " << m_chIPNameBuffer << " ID: " << iTPos)
+				LOG_P_1(LOG_CAT_W, "Closed due kicking out: [" << m_chIPNameBuffer << "] ID: [" << iTPos << "].")
 			}
 			else
 			{
-				LOG_P_0(LOG_CAT_W, "Closed by client absence: " << m_chIPNameBuffer << " ID: " << iTPos);
+				LOG_P_0(LOG_CAT_W, "Closed by client absence: [" << m_chIPNameBuffer << "] ID: [" << iTPos << "].");
 			}
 		}
 	}
@@ -781,22 +783,22 @@ ec: if(bLocalExitSignal == false) // Если не было локального
 #else
 		closesocket(mThreadDadas[iTPos].oConnectionData.iSocket);
 #endif
-		LOG_P_1(LOG_CAT_I, "Closed ordinary: " << m_chIPNameBuffer << ":" << m_chPortNameBuffer << " ID: " << iTPos);
+		LOG_P_1(LOG_CAT_I, "Closed ordinary: [" << m_chIPNameBuffer << ":" << m_chPortNameBuffer << "] ID: [" << iTPos << "].");
 	}
 enc:if(iTPos != NO_CONNECTION)
 	{
 #ifndef WIN32
-	LOG_P_1(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread);
+	LOG_P_1(LOG_CAT_I, "Exiting thread: [" << mThreadDadas[iTPos].p_Thread << "].");
 #else
-	LOG_P_1(LOG_CAT_I, "Exiting thread: " << mThreadDadas[iTPos].p_Thread.p);
+	LOG_P_1(LOG_CAT_I, "Exiting thread: {" << mThreadDadas[iTPos].p_Thread.p << "].");
 #endif
 	}
 	else
 	{
 #ifndef WIN32
-		LOG_P_1(LOG_CAT_I, "Exiting reserved thread: " << pthread_self());
+		LOG_P_1(LOG_CAT_I, "Exiting reserved thread: [" << pthread_self() << "].");
 #else
-		LOG_P_1(LOG_CAT_W, "Exiting reserved thread: " << pthread_self().p);
+		LOG_P_1(LOG_CAT_W, "Exiting reserved thread: [" << pthread_self().p << "].");
 #endif
 	}
 	if(!bKillListenerAccept)
@@ -851,28 +853,28 @@ void* Server::ServerThread(void *p_vPlug)
 	iServerStatus = getaddrinfo(p_IPPortPasswordInt->p_chIPNameBuffer, p_IPPortPasswordInt->p_chPortNameBuffer, &o_Hints, &p_Res);
 	if(iServerStatus != 0)
 	{
-		LOG_P_0(LOG_CAT_E, "'getaddrinfo': " << gai_strerror(iServerStatus));
+		LOG_P_0(LOG_CAT_E, "'getaddrinfo': [" << gai_strerror(iServerStatus) << "].");
 		RETVAL_SET(RETVAL_ERR);
 		goto ex;
 	}
 	iListener = (int)socket(p_Res->ai_family, p_Res->ai_socktype, p_Res->ai_protocol); // Получение сокета для приёмника.
 	if(iListener < 0 )
 	{
-		LOG_P_0(LOG_CAT_E, "'socket': "  << gai_strerror(iServerStatus));
+		LOG_P_0(LOG_CAT_E, "'socket': ["  << gai_strerror(iServerStatus) << "].");
 		RETVAL_SET(RETVAL_ERR);
 		goto ex;
 	}
 	iServerStatus = (int)bind(iListener, p_Res->ai_addr, (socklen_t)p_Res->ai_addrlen); // Привязка к указанному IP.
 	if(iServerStatus < 0)
 	{
-		LOG_P_0(LOG_CAT_E, "'bind': " << gai_strerror(iServerStatus));
+		LOG_P_0(LOG_CAT_E, "'bind': [" << gai_strerror(iServerStatus) << "].");
 		RETVAL_SET(RETVAL_ERR);
 		goto ex;
 	}
 	iServerStatus = listen(iListener, 10); // Запуск приёмника.
 	if(iServerStatus < 0)
 	{
-		LOG_P_0(LOG_CAT_E, "'listen': " << gai_strerror(iServerStatus));
+		LOG_P_0(LOG_CAT_E, "'listen': [" << gai_strerror(iServerStatus) << "].");
 		RETVAL_SET(RETVAL_ERR);
 		goto ex;
 	}
@@ -885,12 +887,12 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 	iCurrPos = FindFreeThrDadaPos();
 	if(iCurrPos == NO_CONNECTION)
 	{
-		LOG_P_0(LOG_CAT_I, "Server is full.");
+		LOG_P_1(LOG_CAT_I, "Server is full.");
 		SafeThreadStart(p_ThreadOverrunned, ConversationThread, &iCurrPos);
 	}
 	else
 	{
-		LOG_P_1(LOG_CAT_I, "Free ID slot: " << iCurrPos);
+		LOG_P_1(LOG_CAT_I, "Free ID slot: [" << iCurrPos << "].");
 		SafeThreadStart(mThreadDadas[iCurrPos].p_Thread, ConversationThread, &iCurrPos); // Создание нового потока приёмки.
 	}
 	while(!bExitSignal)
@@ -937,14 +939,16 @@ nc:	bRequestNewConn = false; // Вход в звено цикла ожидани
 #else
 			closesocket(mThreadDadas[iCurrPos].oConnectionData.iSocket);
 #endif
+#ifndef LOG_LEVEL_0
 			if(NetHub::CheckIPv4(m_chIPNameBuffer))
 			{
-				LOG_P_1(LOG_CAT_I, "Socket has been closed internally: " << m_chIPNameBuffer << ":" << m_chPortNameBuffer);
+				LOG_P_1(LOG_CAT_I, "IPv4 socket has been closed internally: [" << m_chIPNameBuffer << ":" << m_chPortNameBuffer << "].");
 			}
 			else
 			{
-				LOG_P_1(LOG_CAT_I, "Socket has been closed internally: [" << m_chIPNameBuffer << "]:" << m_chPortNameBuffer);
+				LOG_P_1(LOG_CAT_I, "IPv6 Socket has been closed internally: [" << m_chIPNameBuffer << ":" << m_chPortNameBuffer << "].");
 			}
+#endif
 		}
 	}
 	for(int iF = 0; iF != MAX_CONN; iF++)

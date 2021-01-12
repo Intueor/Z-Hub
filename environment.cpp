@@ -517,16 +517,16 @@ bool Environment::LoadEnv()
 	strEnvFilename += m_chXML;
 	strEnvPath = ENVS_DIR;
 	strEnvPath += strEnvFilename;
-	LOG_P_1(LOG_CAT_I, "Loading environment from: " << strEnvFilename.toStdString());
+	LOG_P_1(LOG_CAT_I, "Loading environment from: [" << strEnvFilename.toStdString() << "].");
 	eResult = xmlDocEnv.LoadFile(strEnvPath.toStdString().c_str());
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, "Can`t open environment file: " << strEnvFilename.toStdString());
+		LOG_P_0(LOG_CAT_E, "Can`t open environment file: [" << strEnvFilename.toStdString() << "].");
 		return false;
 	}
 	else
 	{
-		LOG_P_1(LOG_CAT_I, "Environment file loaded: " << strEnvFilename.toStdString());
+		LOG_P_1(LOG_CAT_I, "Environment file loaded: [" << strEnvFilename.toStdString() << "].");
 	}
 	//
 	FindChildNodes(xmlDocEnv.LastChild(), l_pZs, m_chZ, FCN_MULT_LEVELS, FCN_ALL);
@@ -547,25 +547,25 @@ bool Environment::LoadEnv()
 	if(!FindChildNodes(xmlDocEnv.LastChild(), l_pGroups,
 					   m_chGroups, FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chGroups << m_chLogEnvNodeAbsend);
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvGroups << m_chLogEnvNodeAbsend);
 		return false;
 	}
 	if(!FindChildNodes(xmlDocEnv.LastChild(), l_pElements,
 					   m_chElements, FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chElements << m_chLogEnvNodeAbsend);
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvElements << m_chLogEnvNodeAbsend);
 		return false;
 	}
 	if(!FindChildNodes(xmlDocEnv.LastChild(), l_pLinks,
 					   m_chLinks, FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLinks << m_chLogEnvNodeAbsend);
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvLinks << m_chLogEnvNodeAbsend);
 		return false;
 	}
 	if(!FindChildNodes(xmlDocEnv.LastChild(), l_pPseudonyms,
 					   m_chPseudonyms, FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chPseudonyms << m_chLogEnvNodeAbsend);
+		LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonyms << m_chLogEnvNodeAbsend);
 		return false;
 	}
 	// ГРУППЫ.
@@ -1001,7 +1001,7 @@ bool Environment::SaveEnv()
 	XMLNode* p_NodeZ;
 	XMLNode* p_NodeGroupID;
 	//
-	LOG_P_1(LOG_CAT_I, "Saving environment to: " << strEnvFilename.toStdString());
+	LOG_P_1(LOG_CAT_I, "Saving environment to: [" << strEnvFilename.toStdString() << "].");
 	xmlEnv.InsertEndChild(xmlEnv.NewDeclaration());
 	p_NodeRoot = xmlEnv.InsertEndChild(xmlEnv.NewElement("Root"));
 	p_NodeGroups = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chGroups));
@@ -1321,7 +1321,7 @@ bool Environment::NetOperations()
 																					  (char*)p_PSchElementBase,
 																					  sizeof(PSchElementBase)));
 							LOG_P_2(LOG_CAT_I, "{Out} New element [" << QString(p_PSchElementBase->m_chName).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
@@ -1329,7 +1329,7 @@ bool Environment::NetOperations()
 							Element* p_Element;
 							//
 							LOG_P_2(LOG_CAT_I, "{In} Element [" << QString(p_PSchElementBase->m_chName).toStdString()
-									<< "] base from client.");
+									<< "] base.");
 							AppendToPB(Element, p_Element = new Element(*p_PSchElementBase));
 						}
 						break;
@@ -1346,14 +1346,14 @@ bool Environment::NetOperations()
 																					  sizeof(PSchElementVars)));
 							LOG_P_2(LOG_CAT_I, "{Out} Changed element [" <<
 									QString::number(p_PSchElementVars->ullIDInt).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iEC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Element vars from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Element vars.");
 							iEC = PBCount(Element);
 							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 							{
@@ -1368,8 +1368,8 @@ bool Environment::NetOperations()
 										p_Element->oPSchElementBase.oPSchElementVars.oSchEGGraph.dbObjectZPos =
 												p_PSchElementVars->oSchEGGraph.dbObjectZPos;
 										LOG_P_2(LOG_CAT_I, "Element [" << QString(p_Element->oPSchElementBase.m_chName).toStdString()
-												<< "] z-pos is: " <<
-												QString::number((int)p_PSchElementVars->oSchEGGraph.dbObjectZPos).toStdString());
+												<< "] z-pos is: [" <<
+												QString::number((int)p_PSchElementVars->oSchEGGraph.dbObjectZPos).toStdString() << "].");
 									}
 									if(p_PSchElementVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_ELEMENT_BIT_BUSY)
 									{
@@ -1483,7 +1483,7 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 												goto gEOK;
 											}
 										}
-										LOG_P_0(LOG_CAT_W, "Wrong group number for element");
+										LOG_P_0(LOG_CAT_W, "Wrong group number for element.");
 									}
 									goto gEOK;
 								}
@@ -1503,14 +1503,14 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 																PROTO_O_SCH_ELEMENT_NAME,
 																(char*)p_PSchElementName, sizeof(PSchElementName)));
 							LOG_P_2(LOG_CAT_I, "{Out} Renamed element [" << QString(p_PSchElementName->m_chName).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iEC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Element name from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Element name.");
 							iEC = PBCount(Element);
 							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 							{
@@ -1541,14 +1541,14 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 																					  sizeof(PSchElementColor)));
 							LOG_P_2(LOG_CAT_I, "{Out} Recolored element [" <<
 									QString::number(p_PSchElementColor->ullIDInt).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iEC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Element color change from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Element color change.");
 							iEC = PBCount(Element);
 							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 							{
@@ -1580,14 +1580,14 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 																					  sizeof(PSchElementEraser)));
 							LOG_P_2(LOG_CAT_I, "{Out} Erased element [" <<
 									QString::number(p_PSchElementEraser->ullIDInt).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iEC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Element for erase from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Element for erase.");
 							iEC = PBCount(Element);
 							for(int iE = 0; iE < iEC; iE++) // По всем элементам...
 							{
@@ -1621,7 +1621,7 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 									QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDSrc).toStdString()
 									<< "<>" <<
 									QString::number(p_PSchLinkBase->oPSchLinkVars.ullIDDst).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
@@ -1646,7 +1646,7 @@ gGEx:														LOG_P_0(LOG_CAT_E, "Error element detaching from group.");
 							}
 							LOG_P_0(LOG_CAT_W, "Wrong link elements from client.");
 							goto gEOK;
-gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base from client.");
+gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "] base.");
 							AppendToPB(Link, p_Link = new Link(*p_PSchLinkBase));
 						}
 						break;
@@ -1665,14 +1665,14 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 									QString::number(p_PSchLinkVars->ullIDSrc).toStdString()
 									<< "<>" <<
 									QString::number(p_PSchLinkVars->ullIDDst).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iLC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Link vars from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Link vars.");
 							iLC = PBCount(Link);
 							for(int iL = 0; iL < iLC; iL++) // По всем линкам...
 							{
@@ -1718,14 +1718,14 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 									QString::number(p_PSchLinkEraser->ullIDSrc).toStdString()
 									<< "<>" <<
 									QString::number(p_PSchLinkEraser->ullIDDst).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iLC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Link for erase from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Link for erase.");
 							iLC = PBCount(Link);
 							for(int iL = 0; iL < iLC; iL++) // По всем линкам...
 							{
@@ -1759,7 +1759,7 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 																					  (char*)p_PSchGroupBase,
 																					  sizeof(PSchGroupBase)));
 							LOG_P_2(LOG_CAT_I, "{Out} New group [" << QString(p_PSchGroupBase->m_chName).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
@@ -1767,7 +1767,7 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 							Group* p_Group;
 							//
 							LOG_P_2(LOG_CAT_I, "{In} Group [" << QString(p_PSchGroupBase->m_chName).toStdString()
-									<< "] base from client.");
+									<< "] base.");
 							AppendToPB(Group, p_Group = new Group(*p_PSchGroupBase));
 						}
 						break;
@@ -1784,14 +1784,14 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 																					  sizeof(PSchGroupVars)));
 							LOG_P_2(LOG_CAT_I, "{Out} Changed group [" <<
 									QString::number(p_PSchGroupVars->ullIDInt).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iGC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Group vars from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Group vars.");
 							iGC = PBCount(Group);
 							for(int iE = 0; iE < iGC; iE++) // По всем группам...
 							{
@@ -1832,8 +1832,8 @@ gLO:								LOG_P_2(LOG_CAT_I, "{In} Link [" << p_chSrc << "<>" << p_chDst << "]
 										p_Group->oPSchGroupBase.oPSchGroupVars.oSchEGGraph.dbObjectZPos =
 												p_PSchGroupVars->oSchEGGraph.dbObjectZPos;
 										LOG_P_2(LOG_CAT_I, "Group [" << QString(p_Group->oPSchGroupBase.m_chName).toStdString()
-												<< "] z-pos is: " <<
-												QString::number((int)p_PSchGroupVars->oSchEGGraph.dbObjectZPos).toStdString());
+												<< "] z-pos is: [" <<
+												QString::number((int)p_PSchGroupVars->oSchEGGraph.dbObjectZPos).toStdString() << "].");
 									}
 									if(p_PSchGroupVars->oSchEGGraph.uchChangesBits & SCH_CHANGES_GROUP_BIT_BUSY)
 									{
@@ -1900,7 +1900,7 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 												goto gEOK;
 											}
 										}
-										LOG_P_0(LOG_CAT_W, "Wrong group number for group");
+										LOG_P_0(LOG_CAT_W, "Wrong group number for group.");
 									}
 									goto gEOK;
 								}
@@ -1919,14 +1919,14 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 																					  PROTO_O_SCH_GROUP_NAME,
 																					  (char*)p_PSchGroupName, sizeof(PSchGroupName)));
 							LOG_P_2(LOG_CAT_I, "{Out} Renamed group [" << QString(p_PSchGroupName->m_chName).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iEC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Group name from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Group name.");
 							iEC = PBCount(Group);
 							for(int iE = 0; iE < iEC; iE++) // По всем группам...
 							{
@@ -1956,14 +1956,14 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 																					  sizeof(PSchGroupColor)));
 							LOG_P_2(LOG_CAT_I, "{Out} Recolored group [" <<
 									QString::number(p_PSchGroupColor->ullIDInt).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iGC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Group color change from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Group color change.");
 							iGC = PBCount(Group);
 							for(int iG = 0; iG < iGC; iG++) // По всем группам...
 							{
@@ -1995,14 +1995,14 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 																					  sizeof(PSchGroupEraser)));
 							LOG_P_2(LOG_CAT_I, "{Out} Erased group [" <<
 									QString::number(p_PSchGroupEraser->ullIDInt).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iGC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Group for erase from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Group for erase.");
 							iGC = PBCount(Group);
 							for(int iG = 0; iG < iGC; iG++) // По всем группам...
 							{
@@ -2033,7 +2033,7 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 																					  (char*)p_PSchPseudonym,
 																					  sizeof(PSchPseudonym)));
 							LOG_P_2(LOG_CAT_I, "{Out} New pseudonym [" << QString(p_PSchPseudonym->m_chName).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
@@ -2042,7 +2042,7 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 							int iPC;
 							//
 							LOG_P_2(LOG_CAT_I, "{In} Pseudonym [" << QString(p_PSchPseudonym->m_chName).toStdString()
-									<< "] from client.");
+									<< "].");
 							iPC = PBCount(Pseudonym);
 							for(int iP = 0; iP < iPC; iP++) // По всем псевдонимам...
 							{
@@ -2074,14 +2074,14 @@ gGGEx:												LOG_P_0(LOG_CAT_E, "Error detaching group from group.");
 																					  sizeof(PSchPseudonymEraser)));
 							LOG_P_2(LOG_CAT_I, "{Out} Erased pseudonym for port [" <<
 									QString::number(p_PSchPseudonymEraser->ushiPort).toStdString()
-									<< m_chLogSentToClient);
+									<< "].");
 							bPresent = true;
 						}
 						else
 						{
 							int iPC;
 							//
-							LOG_P_2(LOG_CAT_I, "{In} Pseudonym for erase from client.");
+							LOG_P_2(LOG_CAT_I, "{In} Pseudonym for erase.");
 							iPC = PBCount(Pseudonym);
 							for(int iP = 0; iP < iPC; iP++) // По всем псевдонимам...
 							{

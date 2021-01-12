@@ -54,9 +54,13 @@ public:
 							///< \param[in] p_ReceivedData Указатель на принятый пакет.
 							///< \param[in] iPocket Номер пакета для освобождения с ReleaseDataInPosition после использования.
 	/// Кэлбэк обработки приходящих запросов.
+#ifdef LOG_LEVEL_2
 	static void ClientRequestArrivedCallback(int iConnection, unsigned short ushRequest);
 							///< \param[in] iConnection Номер соединения.
 							///< \param[in] ushRequest Запрос клиента.
+#else
+	static void ClientRequestArrivedCallback(int, unsigned short);
+#endif
 	/// Для внешнего переключения чекбокса кнопки 'Схема'.
 	static void UncheckSchemaCheckbox();
 

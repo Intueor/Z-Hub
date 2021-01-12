@@ -109,7 +109,7 @@ MainWindow::~MainWindow()
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogErrorExit << RETVAL);
+		LOG_P_0(LOG_CAT_E, m_chLogErrorExit << RETVAL << "].");
 	}
 	LOG_CLOSE;
 	delete p_ui;
@@ -169,7 +169,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	eResult = xmlDocSConf.LoadFile(S_CONF_PATH);
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << S_CONF_PATH);
+		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << S_CONF_PATH << "].");
 		return false;
 	}
 	LOG_P_1(LOG_CAT_I, "Server configuration" << m_chLogIsLoaded);
@@ -180,7 +180,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 		return false;
 	}
 	CopyStrArray((char*)l_pName.front()->FirstChild()->Value(), p_chServerName, SERVER_NAME_STR_LEN);
-	LOG_P_1(LOG_CAT_I, "Server name: " << m_chServerName);
+	LOG_P_1(LOG_CAT_I, "Server name: [" << m_chServerName << "].");
 	if(!FindChildNodes(xmlDocSConf.LastChild(), l_pNet,
 					   "Net", FCN_ONE_LEVEL, FCN_FIRST_ONLY))
 	{
@@ -196,18 +196,20 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	{
 		CopyStrArray(oIPPortPassword.p_chIPNameBuffer, m_chIP, IP_STR_LEN);
 		oIPPortPassword.p_chIPNameBuffer = m_chIP;
+#ifndef LOG_LEVEL_0
 		if(NetHub::CheckIPv4(o_IPPortPassword.p_chIPNameBuffer))
 		{
-			LOG_P_1(LOG_CAT_I, "Server IP: " << o_IPPortPassword.p_chIPNameBuffer);
+			LOG_P_1(LOG_CAT_I, "Server IPv4: [" << o_IPPortPassword.p_chIPNameBuffer << "].");
 		}
 		else
 		{
-			LOG_P_1(LOG_CAT_I, "Server IP: [" << o_IPPortPassword.p_chIPNameBuffer << "]");
+			LOG_P_1(LOG_CAT_I, "Server IPv6: [" << o_IPPortPassword.p_chIPNameBuffer << "].");
 		}
+#endif
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No '(Net)IP' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No [(Net)IP] node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListPort, "Port",
@@ -219,11 +221,11 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	{
 		CopyStrArray(oIPPortPassword.p_chPortNameBuffer, m_chPort, PORT_STR_LEN);
 		oIPPortPassword.p_chPortNameBuffer = m_chPort;
-		LOG_P_1(LOG_CAT_I, "Server port: " << o_IPPortPassword.p_chPortNameBuffer)
+		LOG_P_1(LOG_CAT_I, "Server port: [" << o_IPPortPassword.p_chPortNameBuffer << "].")
 	}
 	else
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No '(Net)Port' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No [(Net)Port] node.");
 		return false;
 	}
 	FIND_IN_CHILDLIST(l_pNet.front(), p_ListPassword, "Password",
@@ -233,7 +235,7 @@ bool MainWindow::LoadServerConfig(NetHub::IPPortPassword& o_IPPortPassword, char
 	} FIND_IN_CHILDLIST_END(p_ListPassword);
 	if(o_IPPortPassword.p_chPasswordNameBuffer == nullptr)
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No 'Password' node.");
+		LOG_P_0(LOG_CAT_E, m_chLogCorruptConf << "No [Password] node.");
 		return false;
 	}
 	else
@@ -254,7 +256,7 @@ bool MainWindow::LoadEnvConfig(char* p_chName)
 	eResult = xmlDocEConf.LoadFile(E_CONF_PATH);
 	if (eResult != XML_SUCCESS)
 	{
-		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << E_CONF_PATH);
+		LOG_P_0(LOG_CAT_E, m_chLogCantOpenConfig << E_CONF_PATH << "].");
 		return false;
 	}
 	LOG_P_1(LOG_CAT_I, "Environment configuration" << m_chLogIsLoaded);
@@ -265,7 +267,7 @@ bool MainWindow::LoadEnvConfig(char* p_chName)
 		return false;
 	}
 	CopyStrArray((char*)l_pName.front()->FirstChild()->Value(), p_chName, ENV_NAME_LEN);
-	LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << p_chName);
+	LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << p_chName << "].");
 	return true;
 }
 
@@ -327,21 +329,23 @@ void MainWindow::ClientStatusChangedCallback(int iConnection, bool bConnected)
 {
 	NetHub::ConnectionData oConnectionDataInt;
 	//
-	LOG_P_1(LOG_CAT_I, "ID: " << iConnection << " have status: " << bConnected);
+	LOG_P_1(LOG_CAT_I, "ID: [" << iConnection << "] have status: [" << bConnected << "].");
 	oConnectionDataInt = p_Server->GetConnectionData(iConnection, DONT_TRY_LOCK);
 	if(oConnectionDataInt.iStatus != NO_CONNECTION)
 	{
 		char m_chIPNameBuffer[IP_STR_LEN];
 		char m_chPortNameBuffer[PORT_STR_LEN];
 		p_Server->FillIPAndPortNames(oConnectionDataInt, m_chIPNameBuffer, m_chPortNameBuffer, DONT_TRY_LOCK);
+#ifndef LOG_LEVEL_0
 		if(NetHub::CheckIPv4(m_chIPNameBuffer))
 		{
-			LOG_P_1(LOG_CAT_I, "IP: " << m_chIPNameBuffer << " Port: " << m_chPortNameBuffer);
+			LOG_P_1(LOG_CAT_I, "IPv4: [" << m_chIPNameBuffer << m_chIPPort << m_chPortNameBuffer << "].");
 		}
 		else
 		{
-			LOG_P_1(LOG_CAT_I, "IP: [" << m_chIPNameBuffer << "] Port: " << m_chPortNameBuffer);
+			LOG_P_1(LOG_CAT_I, "IPv6: [" << m_chIPNameBuffer << m_chIPPort << m_chPortNameBuffer << "].");
 		}
+#endif
 		if(bConnected)
 		{
 			p_ui->label_ConnectedClient->setText(QString(m_chIPNameBuffer) + ":" + QString(m_chPortNameBuffer));
@@ -571,11 +575,14 @@ gLEx:		if(p_Server->ReleaseDataInPosition(iConnection, (uint)iPocket, DONT_TRY_L
 }
 
 // Кэлбэк обработки приходящих запросов.
+#ifdef LOG_LEVEL_2
 void MainWindow::ClientRequestArrivedCallback(int iConnection, unsigned short ushRequest)
 {
-	//
-	LOG_P_2(LOG_CAT_I, "Client: " << iConnection << " request: " << ushRequest);
+	LOG_P_2(LOG_CAT_I, "Client: [" << iConnection << "] request: [" << ushRequest << "].");
 }
+#else
+void MainWindow::ClientRequestArrivedCallback(int, unsigned short) {}
+#endif
 
 // Процедуры запуска сервера.
 bool MainWindow::ServerStartProcedures(NetHub::IPPortPassword& o_IPPortPassword)
@@ -723,7 +730,7 @@ void MainWindow::on_action_ServerName_triggered()
 	{
 		LCHECK_BOOL(SaveServerConfig());
 		LOG_P_0(LOG_CAT_I, m_chLogServerUpdated);
-		LOG_P_1(LOG_CAT_I, "Server name: " << m_chServerName);
+		LOG_P_1(LOG_CAT_I, "Server name: [" << m_chServerName << "].");
 	}
 }
 
@@ -752,8 +759,8 @@ gA: p_Set_Server_Dialog = new Set_Server_Dialog(m_chIP, m_chPort, m_chPassword);
 		CopyStrArray((char*)Set_Server_Dialog::oIPPortPasswordStrings.strPassword.toStdString().c_str(), m_chPassword, AUTH_PASSWORD_STR_LEN);
 		LCHECK_BOOL(SaveServerConfig());
 		LOG_P_0(LOG_CAT_I, m_chLogServerUpdated);
-		LOG_P_1(LOG_CAT_I, "Server IP: " << oIPPortPassword.p_chIPNameBuffer);
-		LOG_P_1(LOG_CAT_I, "Server port: " << oIPPortPassword.p_chPortNameBuffer);
+		LOG_P_1(LOG_CAT_I, "Server IP: [" << oIPPortPassword.p_chIPNameBuffer << "].");
+		LOG_P_1(LOG_CAT_I, "Server port: [" << oIPPortPassword.p_chPortNameBuffer << "].");
 	}
 }
 
@@ -794,7 +801,7 @@ void MainWindow::on_action_ChangeEnv_triggered()
 		{
 gN:			LCHECK_BOOL(SaveEnvConfig());
 			LOG_P_0(LOG_CAT_I, m_chLogEnvUpdated);
-			LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << m_chEnvName);
+			LOG_P_1(LOG_CAT_I, (char*)m_chLogCurrentEnv << m_chEnvName << "].");
 			delete p_Environment;
 			p_Environment = new Environment(LOG_MUTEX, m_chEnvName);
 		}

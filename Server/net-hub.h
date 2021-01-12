@@ -28,8 +28,7 @@
 									if(*p_ushC > (PTHREAD_TRYLOCK_ATTEMPTS / 2))                                                        \
 									{                                                                                                   \
 										LOG_P_2(LOG_CAT_W, "'ptherad' locking is too long.");											\
-										RETVAL_SET(RETVAL_ERR);                                                                         \
-										DebugHelper(-1);																				\
+										RETVAL_SET(RETVAL_ERR);																			\
 									}                                                                                                   \
 									MSleep(PTHREAD_TRYLOCK_TIMESTEP);																	\
 								}																										\
