@@ -768,6 +768,56 @@ bool Environment::LoadEnv()
 		if(!InitElementForEnv(oPSchElementBase, p_NodeReceiver, SCH_SETTINGS_ELEMENT_BIT_EXTENDED | SCH_SETTINGS_ELEMENT_BIT_RECEIVER))
 			return false;
 	} PARSE_CHILDLIST_END(p_ListReceivers);
+	// ПСЕВДОНИМЫ.
+	PARSE_CHILDLIST(l_pPseudonyms.front(), p_ListPseudonyms, m_chPseudonym,
+					FCN_ONE_LEVEL, p_NodePseudonym)
+	{
+		memset(&oPSchPseudonym, 0, sizeof(oPSchPseudonym));
+		bPresent = false;
+		FIND_IN_CHILDLIST(p_NodePseudonym, p_ListPortIDs,
+						  m_chPortID, FCN_ONE_LEVEL, p_NodePortID)
+		{
+			strHelper = QString(p_NodePortID->FirstChild()->Value());
+			if(strHelper.isEmpty())
+			{
+				LOG_P_0(LOG_CAT_E,
+						m_chLogEnvFileCorrupt << m_chLogEnvPseudonym << m_chLogEnvNodeFormatIncorrect <<
+						m_chLogWrong << m_chLogPortID << m_chLogNode);
+				return false;
+			}
+			oPSchPseudonym.ushiPort = strHelper.toUShort();
+			bPresent = true;
+		} FIND_IN_CHILDLIST_END(p_ListPortIDs);
+		if(!bPresent)
+		{
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonym <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogPortID << m_chLogNode);
+			return false;
+		}
+		bPresent = false;
+		FIND_IN_CHILDLIST(p_NodePseudonym, p_ListNames,
+						  m_chName, FCN_ONE_LEVEL, p_NodeName)
+		{
+			strHelper = QString(p_NodeName->FirstChild()->Value());
+			if(strHelper.isEmpty())
+			{
+				LOG_P_0(LOG_CAT_E,
+						m_chLogEnvFileCorrupt << m_chLogEnvPseudonym << m_chLogEnvNodeFormatIncorrect <<
+						m_chLogWrong << m_chLogName << m_chLogNode);
+				return false;
+			}
+			memcpy(oPSchPseudonym.m_chName,
+				   strHelper.toStdString().c_str(), SizeOfChars(strHelper.toStdString().length() + 1));
+			bPresent = true;
+		} FIND_IN_CHILDLIST_END(p_ListNames);
+		if(!bPresent)
+		{
+			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonym <<
+					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
+			return false;
+		}
+		AppendToPB(Pseudonym, new Pseudonym(oPSchPseudonym));
+	} PARSE_CHILDLIST_END(p_ListPseudonyms);
 	// ЛИНКИ.
 	PARSE_CHILDLIST(l_pLinks.front(), p_ListLinks, m_chLink,
 					FCN_ONE_LEVEL, p_NodeLink)
@@ -920,56 +970,6 @@ bool Environment::LoadEnv()
 		}
 		AppendToPB(Link, new Link(oPSchLinkBase));
 	} PARSE_CHILDLIST_END(p_ListLinks);
-	// ПСЕВДОНИМЫ.
-	PARSE_CHILDLIST(l_pPseudonyms.front(), p_ListPseudonyms, m_chPseudonym,
-					FCN_ONE_LEVEL, p_NodePseudonym)
-	{
-		memset(&oPSchPseudonym, 0, sizeof(oPSchPseudonym));
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodePseudonym, p_ListPortIDs,
-						  m_chPortID, FCN_ONE_LEVEL, p_NodePortID)
-		{
-			strHelper = QString(p_NodePortID->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvPseudonym << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogPortID << m_chLogNode);
-				return false;
-			}
-			oPSchPseudonym.ushiPort = strHelper.toUShort();
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListPortIDs);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonym <<
-					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogPortID << m_chLogNode);
-			return false;
-		}
-		bPresent = false;
-		FIND_IN_CHILDLIST(p_NodePseudonym, p_ListNames,
-						  m_chName, FCN_ONE_LEVEL, p_NodeName)
-		{
-			strHelper = QString(p_NodeName->FirstChild()->Value());
-			if(strHelper.isEmpty())
-			{
-				LOG_P_0(LOG_CAT_E,
-						m_chLogEnvFileCorrupt << m_chLogEnvPseudonym << m_chLogEnvNodeFormatIncorrect <<
-						m_chLogWrong << m_chLogName << m_chLogNode);
-				return false;
-			}
-			memcpy(oPSchPseudonym.m_chName,
-				   strHelper.toStdString().c_str(), SizeOfChars(strHelper.toStdString().length() + 1));
-			bPresent = true;
-		} FIND_IN_CHILDLIST_END(p_ListNames);
-		if(!bPresent)
-		{
-			LOG_P_0(LOG_CAT_E, m_chLogEnvFileCorrupt << m_chLogEnvPseudonym <<
-					m_chLogEnvNodeFormatIncorrect << m_chLogMissing << m_chLogName << m_chLogNode);
-			return false;
-		}
-		AppendToPB(Pseudonym, new Pseudonym(oPSchPseudonym));
-	} PARSE_CHILDLIST_END(p_ListPseudonyms);
 	//
 	LOG_P_1(LOG_CAT_I, "Environment has been initialized.");
 	bEnvLoaded = true;
@@ -1098,6 +1098,19 @@ bool Environment::SaveEnv()
 					SetText(strHOne.setNum(PBAccess(Element,iF)->oPSchElementBase.oPSchElementVars.ullIDGroup).toStdString().c_str());
 		}
 	}
+	p_NodePseudonyms = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chPseudonyms));
+	for(unsigned int iF = 0; iF != PBCount(Pseudonym); iF++)
+	{
+		XMLNode* p_NodePortID;
+		//
+		p_NodePseudonym = p_NodePseudonyms->InsertEndChild(xmlEnv.NewElement(m_chPseudonym));
+		p_NodePortID = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chPortID));
+		p_NodePortID->ToElement()->
+				SetText(strHOne.setNum(PBAccess(Pseudonym,iF)->oPSchPseudonym.ushiPort).toStdString().c_str());
+		p_NodeName = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chName));
+		p_NodeName->ToElement()->
+				SetText(PBAccess(Pseudonym,iF)->oPSchPseudonym.m_chName);
+	}
 	p_NodeLinks = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chLinks));
 	for(unsigned int iF = 0; iF != PBCount(Link); iF++)
 	{
@@ -1131,19 +1144,6 @@ bool Environment::SaveEnv()
 				SetText((strHOne.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbX) + "," +
 						 strHTwo.setNum(PBAccess(Link,iF)->oPSchLinkBase.oPSchLinkVars.oSchLGraph.oDbDstPortGraphPos.dbY)).
 						toStdString().c_str());
-	}
-	p_NodePseudonyms = p_NodeRoot->InsertEndChild(xmlEnv.NewElement(m_chPseudonyms));
-	for(unsigned int iF = 0; iF != PBCount(Pseudonym); iF++)
-	{
-		XMLNode* p_NodePortID;
-		//
-		p_NodePseudonym = p_NodePseudonyms->InsertEndChild(xmlEnv.NewElement(m_chPseudonym));
-		p_NodePortID = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chPortID));
-		p_NodePortID->ToElement()->
-				SetText(strHOne.setNum(PBAccess(Pseudonym,iF)->oPSchPseudonym.ushiPort).toStdString().c_str());
-		p_NodeName = p_NodePseudonym->InsertEndChild(xmlEnv.NewElement(m_chName));
-		p_NodeName->ToElement()->
-				SetText(PBAccess(Pseudonym,iF)->oPSchPseudonym.m_chName);
 	}
 	eResult = xmlEnv.SaveFile(strEnvPath.toStdString().c_str());
 	if (eResult != XML_SUCCESS)
@@ -1182,14 +1182,15 @@ void Environment::FetchEnvToQueue()
 	{
 		p_EventsQueue->AddNewElement(PBAccess(Element,iF)->oPSchElementBase, QUEUE_TO_CLIENT);
 	}
-	for(unsigned int iF = 0; iF != uiL; iF++)
-	{
-		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
-	}
 	for(unsigned int iF = 0; iF != uiP; iF++)
 	{
 		p_EventsQueue->AddSetPseudonymAndFlush(PBAccess(Pseudonym,iF)->oPSchPseudonym, QUEUE_TO_CLIENT);
 	}
+	for(unsigned int iF = 0; iF != uiL; iF++)
+	{
+		p_EventsQueue->AddNewLink(PBAccess(Link,iF)->oPSchLinkBase, QUEUE_TO_CLIENT);
+	}
+
 	iLastFetchingSegNumber = (int)EventsQueue::uiCurrentSegNumber - 1; // Если не грузилось ничего, будет статус UPLOAD_STATUS_INACTIVE автом.
 gEm:TryMutexUnlock(ptQueueMutex);
 }
